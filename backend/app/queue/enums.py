@@ -8,6 +8,7 @@ class TaskName(StrEnum):
     HANDLE_SURVEYS_EMAIL = auto()
     HANDLE_SUPPORT_EMAIL = auto()
     RUN_EVENT_CONSUMER = auto()
+    GENERATE_THUMBNAIL = auto()
 
 
 class TaskRoleType(StrEnum):

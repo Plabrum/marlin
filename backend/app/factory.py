@@ -18,6 +18,8 @@ from app.base.models import BaseDBModel
 from app.base.schema_routes import schema_router
 from app.comms.webhook_routes import comms_webhook_router
 from app.config import Config
+from app.documents import document_router
+from app.media import local_files_router, media_router
 from app.queue.config import queue_config
 from app.threads import thread_handler, thread_router
 from app.utils.deps import get_dependencies
@@ -77,6 +79,9 @@ def create_app(config: Config) -> Litestar:
             comms_webhook_router,
             thread_router,
             thread_handler,
+            media_router,
+            document_router,
+            local_files_router,
         ],
         plugins=plugins,
         cors_config=cors_config,

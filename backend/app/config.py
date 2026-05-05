@@ -34,6 +34,12 @@ class Config:
 
     # ─── S3 ───────────────────────────────────────────────────────────────────
     S3_INBOUND_EMAIL_BUCKET: str = os.getenv("S3_INBOUND_EMAIL_BUCKET", "")
+    S3_MEDIA_BUCKET: str = os.getenv("S3_MEDIA_BUCKET", "sloopquest-media")
+    S3_DOCUMENTS_BUCKET: str = os.getenv("S3_DOCUMENTS_BUCKET", "sloopquest-documents")
+
+    # ─── Upload limits ────────────────────────────────────────────────────────
+    MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", str(50 * 1024 * 1024)))  # 50 MB
+    MAX_DOCUMENT_SIZE: int = int(os.getenv("MAX_DOCUMENT_SIZE", str(100 * 1024 * 1024)))  # 100 MB
 
     # ─── Email templates ──────────────────────────────────────────────────────
     EMAIL_TEMPLATES_DIR: str = "templates/emails-react"
