@@ -30,7 +30,9 @@ class _Vessel(BaseDBModel, SearchMixin):
     deleted_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), default=None)
     name: Mapped[str] = mapped_column(sa.String, nullable=False)
 
-    search_columns = ["name"]
+    # No search_columns: SearchMixin emits no `search_vector` column (sqlite has
+    # no `to_tsvector`), and `search_filter` is a no-op. FTS coverage lives in
+    # tests/test_search.py against Postgres.
 
 
 class VesselListItem(Struct):
