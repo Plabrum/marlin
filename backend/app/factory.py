@@ -19,6 +19,7 @@ from app.base.schema_routes import schema_router
 from app.comms.webhook_routes import comms_webhook_router
 from app.config import Config
 from app.queue.config import queue_config
+from app.threads import thread_handler, thread_router
 from app.utils.deps import get_dependencies
 from app.utils.discovery import discover_and_import
 
@@ -70,7 +71,13 @@ def create_app(config: Config) -> Litestar:
     plugins: list[Any] = [sqlalchemy_plugin, saq_plugin, channels_plugin]
 
     return Litestar(
-        route_handlers=[schema_router, action_router, comms_webhook_router],
+        route_handlers=[
+            schema_router,
+            action_router,
+            comms_webhook_router,
+            thread_router,
+            thread_handler,
+        ],
         plugins=plugins,
         cors_config=cors_config,
         template_config=template_config,

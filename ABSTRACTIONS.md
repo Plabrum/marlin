@@ -16,6 +16,6 @@ Tracks reusable infrastructure abstractions ported from Cuida and arive into slo
 
 ## To port from arive
 
-- Threads + WebSocket channels
+- ~~Threads + WebSocket channels~~ ✓
 - File upload primitive
 - ~~Events framework~~ ✓
