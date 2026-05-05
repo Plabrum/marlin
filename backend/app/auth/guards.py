@@ -1,18 +1,30 @@
-"""Auth guards — minimal stubs until full auth lands."""
+"""Auth guards."""
 
 from litestar import Request
 from litestar.connection import ASGIConnection
-from litestar.exceptions import NotAuthorizedException
+from litestar.exceptions import NotAuthorizedException, PermissionDeniedException
 from litestar.handlers.base import BaseRouteHandler
 
 from app.auth.crypto import verify_payload_signature
 from app.config import config
+from app.users.roles import Role
 
 
 def requires_session(connection: ASGIConnection, _: BaseRouteHandler) -> None:
     """Guard: requires an authenticated session."""
     if not connection.user:
         raise NotAuthorizedException("Authentication required")
+
+
+def requires_role(allowed_roles: list[Role], connection: ASGIConnection) -> None:
+    """Guard helper: requires the user to hold one of the given roles.
+
+    Not a Litestar guard directly — call from inside a route-specific guard wrapper.
+    """
+    if not connection.user:
+        raise NotAuthorizedException("Authentication required")
+    if connection.user.role_enum not in allowed_roles:
+        raise PermissionDeniedException(f"Requires one of: {', '.join(allowed_roles)}")
 
 
 def requires_local(connection: ASGIConnection, _: BaseRouteHandler) -> None:

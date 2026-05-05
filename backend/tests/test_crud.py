@@ -51,10 +51,10 @@ def _to_detail(v: _Vessel, _user: User) -> VesselDetail:
     return VesselDetail(id=v.id, name=v.name)
 
 
-class _StubUser:
-    id = 1
-    organization_id = 42
-    role_enum = Role.ADMIN
+def _make_stub_user() -> User:
+    user = User(name="stub", email="stub@example.test", organization_id=42, role=Role.ADMIN)
+    user.id = 1
+    return user
 
 
 CONFIG = CRUDConfig(
@@ -147,7 +147,7 @@ class _AuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] in ("http", "websocket"):
-            scope["user"] = _StubUser()
+            scope["user"] = _make_stub_user()
         await self.app(scope, receive, send)
 
 
@@ -159,7 +159,7 @@ def _build_app(session_factory: async_sessionmaker[AsyncSession], extra_routes: 
             yield s
 
     async def provide_user() -> User:
-        return cast(User, _StubUser())
+        return _make_stub_user()
 
     async def provide_action_registry() -> ActionRegistry:
         return ActionRegistry()

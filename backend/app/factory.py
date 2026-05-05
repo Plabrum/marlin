@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 from advanced_alchemy.extensions.litestar import (
@@ -9,11 +10,19 @@ from litestar import Litestar
 from litestar.channels import ChannelsPlugin
 from litestar.channels.backends.memory import MemoryChannelsBackend
 from litestar.config.cors import CORSConfig
+from litestar.connection import ASGIConnection
 from litestar.contrib.jinja import JinjaTemplateEngine
+from litestar.middleware.session.base import ONE_DAY_IN_SECONDS
+from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.security.session_auth import SessionAuth
+from litestar.stores.base import Store
+from litestar.stores.redis import RedisStore
 from litestar.template.config import TemplateConfig
 from litestar_saq import SAQConfig, SAQPlugin
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.actions.routes import action_router
+from app.auth.routes import auth_router
 from app.base.models import BaseDBModel
 from app.base.schema_routes import schema_router
 from app.comms.webhook_routes import comms_webhook_router
@@ -22,6 +31,8 @@ from app.documents import document_router
 from app.media import local_files_router, media_router
 from app.queue.config import queue_config
 from app.threads import thread_handler, thread_router
+from app.users.models import User
+from app.users.queries import get_user_by_id
 from app.utils.deps import get_dependencies
 from app.utils.discovery import discover_and_import
 
@@ -41,9 +52,13 @@ def create_app(config: Config) -> Litestar:
         allow_headers=["Content-Type", "Authorization"],
     )
 
+    # Engine is created explicitly so retrieve_user_handler can share the pool.
+    engine = create_async_engine(config.ASYNC_DATABASE_URL)
+    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False, autoflush=False)
+
     sqlalchemy_plugin = SQLAlchemyPlugin(
         config=SQLAlchemyAsyncConfig(
-            connection_string=config.ASYNC_DATABASE_URL,
+            engine_instance=engine,
             metadata=BaseDBModel.metadata,
             session_config=AsyncSessionConfig(expire_on_commit=False, autoflush=False),
             create_all=False,
@@ -70,11 +85,50 @@ def create_app(config: Config) -> Litestar:
         arbitrary_channels_allowed=True,
     )
 
+    # ─── Session auth ─────────────────────────────────────────────────────────
+    inactivity_timeout = 30 * 60  # 30-minute inactivity timeout
+
+    async def retrieve_user_handler(session: dict, _conn: ASGIConnection) -> User | None:
+        user_id = session.get("user_id")
+        if not user_id:
+            return None
+
+        last_activity = session.get("last_activity")
+        if last_activity and (time.time() - last_activity) > inactivity_timeout:
+            session.clear()
+            return None
+
+        session["last_activity"] = time.time()
+
+        async with session_factory() as db:
+            return await get_user_by_id(db, user_id)
+
+    stores: dict[str, Store] = {"sessions": RedisStore.with_client(url=config.REDIS_URL)}
+
+    session_auth = SessionAuth[User, Any](
+        retrieve_user_handler=retrieve_user_handler,
+        session_backend_config=ServerSideSessionConfig(
+            store="sessions",
+            samesite="lax",
+            secure=not config.IS_DEV,
+            httponly=True,
+            max_age=ONE_DAY_IN_SECONDS * 14,
+        ),
+        exclude=[
+            "^/health",
+            "^/auth/magic-link/",
+            "^/auth/logout",
+            "^/schema",
+            "^/webhooks/",
+        ],
+    )
+
     plugins: list[Any] = [sqlalchemy_plugin, saq_plugin, channels_plugin]
 
     return Litestar(
         route_handlers=[
             schema_router,
+            auth_router,
             action_router,
             comms_webhook_router,
             thread_router,
@@ -84,6 +138,8 @@ def create_app(config: Config) -> Litestar:
             local_files_router,
         ],
         plugins=plugins,
+        on_app_init=[session_auth.on_app_init],
+        stores=stores,
         cors_config=cors_config,
         template_config=template_config,
         dependencies=get_dependencies(),

@@ -1,7 +1,7 @@
 """Unit tests for the state machine framework."""
 
 from enum import StrEnum, auto
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -14,6 +14,7 @@ from app.state_machine.machine import (
     Transition,
 )
 from app.state_machine.models import StateTransitionLog
+from app.users.models import User
 from app.users.roles import Role
 
 
@@ -83,7 +84,7 @@ async def test_valid_transition_logs_and_advances(service: StateMachineService, 
     doc = FakeDoc(state=DocStatus.DRAFT)
     actor = FakeUser(role=Role.ADMIN)
 
-    await service.transition(doc_machine, doc, DocStatus.ACTIVE, actor=actor, context={"reason": "ready"})
+    await service.transition(doc_machine, doc, DocStatus.ACTIVE, actor=cast(User, actor), context={"reason": "ready"})
 
     assert doc.state == DocStatus.ACTIVE
     logs = [c.args[0] for c in session.add.call_args_list if isinstance(c.args[0], StateTransitionLog)]
@@ -102,7 +103,7 @@ async def test_invalid_transition_raises(service: StateMachineService) -> None:
     actor = FakeUser(role=Role.ADMIN)
 
     with pytest.raises(InvalidTransitionError):
-        await service.transition(doc_machine, doc, DocStatus.ARCHIVED, actor=actor)
+        await service.transition(doc_machine, doc, DocStatus.ARCHIVED, actor=cast(User, actor))
 
 
 async def test_role_restricted_transition_rejects_wrong_role(service: StateMachineService) -> None:
@@ -114,7 +115,7 @@ async def test_role_restricted_transition_rejects_wrong_role(service: StateMachi
     actor = FakeUser(role=TmpRole.OTHER)  # type: ignore[arg-type]
 
     with pytest.raises(InvalidTransitionError):
-        await service.transition(doc_machine, doc, DocStatus.ACTIVE, actor=actor)
+        await service.transition(doc_machine, doc, DocStatus.ACTIVE, actor=cast(User, actor))
 
 
 async def test_system_only_edge_rejects_human_actor(service: StateMachineService) -> None:
@@ -122,7 +123,7 @@ async def test_system_only_edge_rejects_human_actor(service: StateMachineService
     actor = FakeUser(role=Role.ADMIN)
 
     with pytest.raises(InvalidTransitionError):
-        await service.transition(doc_machine, doc, DocStatus.ARCHIVED, actor=actor)
+        await service.transition(doc_machine, doc, DocStatus.ARCHIVED, actor=cast(User, actor))
 
 
 async def test_system_transition_takes_system_edge(service: StateMachineService, session: MagicMock) -> None:

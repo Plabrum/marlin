@@ -10,10 +10,13 @@ Example:
 """
 
 import inspect
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 from typing import Any
 
+from litestar import Request
 from litestar.di import Provide
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 _registry: dict[str, Provide] = {}
 
@@ -31,3 +34,13 @@ def dep(name: str, *, sync_to_thread: bool = False) -> Callable:
 
 def get_dependencies() -> dict[str, Any]:
     return dict(_registry)
+
+
+@dep("transaction")
+async def provide_transaction(db_session: AsyncSession, request: Request) -> AsyncGenerator[AsyncSession]:
+    """Provide a database transaction with `app.user_id` set so RLS policies evaluate."""
+    async with db_session.begin():
+        if request.scope.get("user") is not None:
+            user_id = int(request.user.id)
+            await db_session.execute(text(f"SET LOCAL app.user_id = {user_id}"))
+        yield db_session
