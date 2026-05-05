@@ -12,13 +12,11 @@ from litestar.config.cors import CORSConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.template.config import TemplateConfig
 from litestar_saq import QueueConfig, SAQConfig, SAQPlugin
-from sqlalchemy.orm import DeclarativeBase
 
+from app.base.models import BaseDBModel
 from app.config import Config
 
-
-class BaseDBModel(DeclarativeBase):
-    """Placeholder declarative base. Domain models will subclass this."""
+__all__ = ["BaseDBModel", "create_app"]
 
 
 def create_app(config: Config) -> Litestar:

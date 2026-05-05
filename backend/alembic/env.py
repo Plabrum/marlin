@@ -2,12 +2,19 @@
 
 from logging.config import fileConfig
 
-from sqlalchemy import create_engine
+from alembic.autogenerate import comparators
+from alembic_utils.pg_policy import PGPolicy as PGPolicyType
+from alembic_utils.replaceable_entity import register_entities
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine import Connection
 
+# Import RLS operations so custom ops are registered with Alembic
+import app.base.rls_operations  # noqa: F401
 from alembic import context
+from app.base.models import BaseDBModel
+from app.base.rls_comparator import compare_rls
+from app.base.rls_mixins import RLS_POLICY_REGISTRY
 from app.config import config as app_config
-from app.factory import BaseDBModel
 
 config = context.config
 
@@ -16,6 +23,24 @@ if config.config_file_name is not None:
 
 target_metadata = BaseDBModel.metadata
 database_url = app_config.ADMIN_DB_URL
+
+
+# ── RLS policy registration ──────────────────────────────────────────────────
+def get_existing_policies():
+    """Filter RLS_POLICY_REGISTRY to only include policies for existing tables."""
+    try:
+        engine = create_engine(database_url)
+        inspector = inspect(engine)
+        existing_tables = set(inspector.get_table_names())
+        engine.dispose()
+    except Exception:
+        return RLS_POLICY_REGISTRY
+
+    return [p for p in RLS_POLICY_REGISTRY if p.on_entity.split(".")[-1] in existing_tables]
+
+
+register_entities(get_existing_policies(), entity_types=[PGPolicyType])
+comparators.dispatch_for("table")(compare_rls)
 
 
 def include_object(object, name, type_, reflected, compare_to):
