@@ -13,10 +13,12 @@ from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.template.config import TemplateConfig
 from litestar_saq import SAQConfig, SAQPlugin
 
+from app.actions.routes import action_router
 from app.base.models import BaseDBModel
 from app.base.schema_routes import schema_router
 from app.config import Config
 from app.queue.config import queue_config
+from app.utils.deps import get_dependencies
 
 __all__ = ["BaseDBModel", "create_app"]
 
@@ -63,10 +65,11 @@ def create_app(config: Config) -> Litestar:
     plugins: list[Any] = [sqlalchemy_plugin, saq_plugin, channels_plugin]
 
     return Litestar(
-        route_handlers=[schema_router],
+        route_handlers=[schema_router, action_router],
         plugins=plugins,
         cors_config=cors_config,
         template_config=template_config,
+        dependencies=get_dependencies(),
         on_startup=[_setup_task_queues],
         debug=config.IS_DEV,
     )
