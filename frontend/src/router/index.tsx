@@ -4,12 +4,32 @@ import {
   publicLayoutRoute,
   authenticatedLayoutRoute,
 } from "@/router/layout.routes";
-import { authRoute } from "@/router/public.routes";
-import { indexRoute } from "@/router/authenticated.routes";
+import { authRoute, magicLinkVerifyRoute } from "@/router/public.routes";
+import {
+  indexRoute,
+  surveysListRoute,
+  surveyRoute,
+  vesselsListRoute,
+  vesselRoute,
+  clientsListRoute,
+  clientRoute,
+  reportsRoute,
+  settingsRoute,
+} from "@/router/authenticated.routes";
 
 const routeTree = rootRoute.addChildren([
-  publicLayoutRoute.addChildren([authRoute]),
-  authenticatedLayoutRoute.addChildren([indexRoute]),
+  publicLayoutRoute.addChildren([authRoute, magicLinkVerifyRoute]),
+  authenticatedLayoutRoute.addChildren([
+    indexRoute,
+    surveysListRoute,
+    surveyRoute,
+    vesselsListRoute,
+    vesselRoute,
+    clientsListRoute,
+    clientRoute,
+    reportsRoute,
+    settingsRoute,
+  ]),
 ]);
 
 export const router = createRouter({

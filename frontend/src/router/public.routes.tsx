@@ -1,6 +1,7 @@
 import { createRoute } from "@tanstack/react-router";
 import { publicLayoutRoute } from "@/router/layout.routes";
 import { AuthPage } from "@/pages/auth-page";
+import { MagicLinkVerifyPage } from "@/pages/magic-link-verify-page";
 
 export const authRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
@@ -12,4 +13,13 @@ export const authRoute = createRoute({
       ? { reason: "session-expired" }
       : {},
   component: AuthPage,
+});
+
+export const magicLinkVerifyRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: "/auth/magic-link/verify",
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: String(search["token"] ?? ""),
+  }),
+  component: MagicLinkVerifyPage,
 });

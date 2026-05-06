@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from functools import wraps
@@ -110,7 +111,13 @@ async def dispatch_task(
         await fn(ctx, transaction=transaction, **kwargs)
     else:
 
+        async def _enqueue() -> None:
+            try:
+                await request.app.state.task_queues.get(queue).enqueue(task_name, **kwargs)
+            except Exception:
+                logging.getLogger(__name__).exception("Failed to enqueue task %s", task_name)
+
         def _listener(_session: Any) -> None:
-            asyncio.ensure_future(request.app.state.task_queues.get(queue).enqueue(task_name, **kwargs))
+            asyncio.ensure_future(_enqueue())
 
         event.listen(transaction.sync_session, "after_commit", _listener, once=True)

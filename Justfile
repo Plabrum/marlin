@@ -44,8 +44,16 @@ db-psql:
 
 # ─── Development ──────────────────────────────────────────────────────────────
 
-# Backend + SAQ worker
+# Full dev — backend (with embedded SAQ worker) + frontend
 dev:
+    #!/usr/bin/env bash
+    trap 'kill 0' EXIT
+    just dev-backend &
+    just dev-frontend &
+    wait
+
+# Backend + SAQ worker in separate process (no frontend)
+dev-backend-all:
     #!/usr/bin/env bash
     trap 'kill 0' EXIT
     just dev-backend &
@@ -60,6 +68,14 @@ dev-backend:
 dev-worker:
     cd backend && uv run litestar --app app.index:app workers run
 
+# Start Vite frontend dev server
+dev-frontend:
+    cd frontend && pnpm dev
+
+# Start Next.js landing page dev server
+dev-landing:
+    cd landing && pnpm dev
+
 # ─── Tests ────────────────────────────────────────────────────────────────────
 
 # Run backend tests
@@ -68,13 +84,52 @@ test:
 
 # ─── Code Quality ─────────────────────────────────────────────────────────────
 
+# Lint + format all code (backend + frontend + landing)
+lint: lint-backend lint-frontend lint-landing
+
 # Lint + format backend
-lint:
+lint-backend:
     cd backend && uv run ruff check --fix . && uv run ruff format .
 
+# Lint + format frontend
+lint-frontend:
+    cd frontend && pnpm lint:fix
+
+# Lint landing page
+lint-landing:
+    cd landing && pnpm lint
+
+# Type-check all code (backend + frontend + landing)
+check: check-backend check-frontend check-landing
+
 # Type-check backend
-check:
+check-backend:
     cd backend && uv run basedpyright
+
+# Type-check frontend
+check-frontend:
+    cd frontend && pnpm type-check
+
+# Type-check landing
+check-landing:
+    cd landing && pnpm type-check
+
+# ─── Build ────────────────────────────────────────────────────────────────────
+
+# Build all frontends (frontend + landing)
+build: build-frontend build-landing
+
+# Build frontend for production
+build-frontend:
+    cd frontend && pnpm build
+
+# Build frontend and open bundle size analyzer
+analyze-frontend:
+    cd frontend && ANALYZE=1 pnpm build
+
+# Build landing page for production
+build-landing:
+    cd landing && pnpm build
 
 # ─── Emails ───────────────────────────────────────────────────────────────────
 
@@ -88,9 +143,13 @@ build-emails:
 
 # ─── Codegen ──────────────────────────────────────────────────────────────────
 
-# Generate API client (requires backend running)
+# Generate API client for frontend (requires backend running)
 codegen:
     cd frontend && pnpm codegen
+
+# Generate API client for landing page (requires backend running)
+codegen-landing:
+    cd landing && pnpm codegen
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
 

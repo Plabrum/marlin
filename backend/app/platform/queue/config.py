@@ -135,7 +135,7 @@ def get_queue_config() -> list[QueueConfig]:
             before_process=cast(ReceivesContext, before_process),
             after_process=cast(ReceivesContext, after_process),
             concurrency=10,
-            shutdown_grace_period_s=30,
+            shutdown_grace_period_s=0 if config.IS_DEV else 30,
         )
     ]
 

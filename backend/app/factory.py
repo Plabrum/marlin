@@ -38,6 +38,8 @@ from app.utils.deps import get_dependencies
 from app.utils.discovery import discover_and_import
 from app.utils.sqids import Sqid, SqidSchemaPlugin, sqid_dec_hook, sqid_enc_hook, sqid_type_predicate
 
+# Trigger SQLAlchemy mapper registration across all model files
+discover_and_import(["models.py", "models/**/*.py"], base_path="app")
 # Trigger @dep registration across all deps.py files
 discover_and_import(["deps.py"], base_path="app")
 # Trigger Tool.__init_subclass__ registration across all domain tools.py files
