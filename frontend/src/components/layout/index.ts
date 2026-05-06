@@ -1,3 +1,4 @@
+export { ChildObjectList, ChildObjectRow } from "./child-object-list"
 export { DetailHeader } from "./detail-header"
 export { DetailSection } from "./detail-section"
 export { EmptyState } from "./empty-state"
