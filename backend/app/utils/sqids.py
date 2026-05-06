@@ -3,12 +3,15 @@ from __future__ import annotations
 from typing import Any
 
 import sqids as _sqids
+from litestar.openapi.spec import OpenAPIType, Schema
+from litestar.plugins import OpenAPISchemaPlugin
 from sqlalchemy import Integer, TypeDecorator
 
 __all__ = [
     "sqid_decode",
     "sqid_encode",
     "Sqid",
+    "SqidSchemaPlugin",
     "SqidType",
     "sqid_type_predicate",
     "sqid_enc_hook",
@@ -85,3 +88,16 @@ def sqid_dec_hook(type_: type, obj: Any) -> Sqid:
             return Sqid(obj)
         raise TypeError(f"Expected str or int for Sqid, got {type(obj).__name__}: {obj}")
     raise NotImplementedError(f"Encountered unknown type: {type_}")
+
+
+class SqidSchemaPlugin(OpenAPISchemaPlugin):
+    @staticmethod
+    def is_plugin_supported_type(value: object) -> bool:
+        return value is Sqid
+
+    def to_openapi_schema(self, field_definition: object, schema_creator: object) -> Schema:
+        return Schema(
+            type=OpenAPIType.STRING,
+            description="SQID-encoded identifier",
+            example="kmxpqdrv",
+        )

@@ -20,9 +20,9 @@ from app.comms.clients.email import LocalEmailClient
 from app.config import TestConfig
 from app.factory import create_app
 from app.llm.client import LocalLLMClient
-from app.plugins import SqidSchemaPlugin
 from app.users.models import User
 from app.users.queries import get_user_by_id
+from app.utils.sqids import SqidSchemaPlugin
 
 
 @pytest.fixture
