@@ -15,8 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useActionExecutor } from "@/hooks/use-action-executor";
-import { useActionFormRenderer } from "@/hooks/use-action-form-renderer";
+import { useActionExecutor } from "@/hooks/actions/use-action-executor";
+import { useActionFormRenderer } from "@/hooks/actions/use-action-form-renderer";
 import type {
   ActionDTO,
   ActionMutations,

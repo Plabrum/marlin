@@ -1,7 +1,7 @@
 /**
- * Trash-icon button + confirmation dialog for deleting a Gloria
- * conversation. Used by both the fullscreen surface and the dock's
- * thread-history dropdown — same UX in both places.
+ * Trash-icon button + confirmation dialog for deleting a conversation.
+ * Used by both the fullscreen surface and the dock's thread-history
+ * dropdown — same UX in both places.
  *
  * On confirm: calls `DELETE /llm/threads/{id}` (soft-delete on the
  * server), invalidates the threads list query so every visible row
@@ -27,7 +27,7 @@ import { getErrorMessage } from "@/lib/error-handler";
 import {
   getLlmThreadsListThreadsQueryKey,
   useLlmThreadsThreadIdDeleteThread,
-} from "@/lib/gloria/api";
+} from "@/lib/llm/api";
 
 interface DeleteThreadButtonProps {
   threadId: string;

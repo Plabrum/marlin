@@ -1,31 +1,14 @@
-/**
- * Gloria composer — single-line text input with Send button.
- *
- * Behavior:
- *   - Enter (no shift) submits.
- *   - Shift+Enter inserts a newline (currently single-line only; reserved
- *     for a future multi-line variant).
- *   - Esc blurs the input. Does NOT close the dock — the dock-level
- *     keyboard handler owns Cmd+Shift+G.
- *   - Up arrow on an empty composer recalls the last user message.
- *   - On `focusComposerPending` (set by Cmd+J), focuses and clears the flag.
- */
 import { Mic, Send } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 import { cn } from "@/lib/utils";
-import { consumeFocusComposer } from "@/hooks/use-gloria-dock-state";
 
 type Props = {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   disabled?: boolean;
-  /** Composer recalls this string when the user presses Up on an empty input. */
   lastUserMessage?: string;
-  /** When true, the input focuses on next render and the flag is cleared. */
-  focusComposerPending?: boolean;
-  /** Visual variant — fullscreen has bigger affordances than dock. */
   variant?: "dock" | "fullscreen";
   placeholder?: string;
 };
@@ -36,18 +19,10 @@ export function Composer({
   onSubmit,
   disabled,
   lastUserMessage,
-  focusComposerPending,
   variant = "dock",
-  placeholder = "Message Gloria…",
+  placeholder = "Send a message…",
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (focusComposerPending) {
-      inputRef.current?.focus();
-      consumeFocusComposer();
-    }
-  }, [focusComposerPending]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -66,16 +41,10 @@ export function Composer({
     }
   }
 
-  const trimmed = value.trim();
-  const canSend = trimmed.length > 0 && !disabled;
+  const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2",
-        variant === "fullscreen" && "gap-3 max-w-3xl mx-auto",
-      )}
-    >
+    <div className={cn("flex items-center gap-2", variant === "fullscreen" && "gap-3 max-w-3xl mx-auto")}>
       <div className="relative flex-1">
         <input
           ref={inputRef}
@@ -85,12 +54,10 @@ export function Composer({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          aria-label="Message Gloria"
+          aria-label="Send a message"
           className={cn(
             "w-full bg-secondary border-[1.5px] border-input rounded-full text-sm focus:border-ring outline-none transition-colors disabled:opacity-60",
-            variant === "dock"
-              ? "py-2.5 pl-4 pr-12"
-              : "py-3 pl-5 pr-14",
+            variant === "dock" ? "py-2.5 pl-4 pr-12" : "py-3 pl-5 pr-14",
           )}
         />
         <button
@@ -100,9 +67,7 @@ export function Composer({
           aria-label="Send"
           className={cn(
             "absolute top-1/2 -translate-y-1/2 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition-colors",
-            variant === "dock"
-              ? "right-1 w-[30px] h-[30px]"
-              : "right-1.5 w-[34px] h-[34px]",
+            variant === "dock" ? "right-1 w-[30px] h-[30px]" : "right-1.5 w-[34px] h-[34px]",
           )}
         >
           <Send className={variant === "dock" ? "w-3 h-3" : "w-3.5 h-3.5"} />

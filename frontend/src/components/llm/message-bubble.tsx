@@ -1,5 +1,5 @@
 /**
- * One message in the Gloria conversation.
+ * One message in the LLM conversation.
  *
  * Memoized on (id, content length, isInProgress) so token-by-token
  * streaming doesn't reflow earlier messages. The `Markdown` component
@@ -8,13 +8,13 @@
  */
 import { memo } from "react";
 
-import { GloriaOrb } from "@/components/ui/loading-orb";
+import { LlmOrb } from "@/components/ui/loading-orb";
 import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/lib/utils";
-import type { MessageSchema } from "@/lib/gloria/api";
+import type { MessageSchema } from "@/lib/llm/api";
 
-import { ToolPill } from "@/components/gloria/tool-pill";
-import type { ToolPill as ToolPillType } from "@/hooks/use-gloria-streaming";
+import { ToolPill } from "@/components/llm/tool-pill";
+import type { ToolPill as ToolPillType } from "@/hooks/llm/use-llm-streaming";
 
 type Props = {
   message: MessageSchema;
@@ -43,7 +43,7 @@ function MessageBubbleInner({ message, isInProgress, toolPills, expanded }: Prop
     >
       {isAssistant && (
         <div className="shrink-0">
-          <GloriaOrb size={32} />
+          <LlmOrb size={32} />
         </div>
       )}
       <div className="flex flex-col gap-2 max-w-[75%] min-w-0">
@@ -71,7 +71,7 @@ function MessageBubbleInner({ message, isInProgress, toolPills, expanded }: Prop
               ) : isInProgress ? (
                 <span
                   className="inline-flex items-center gap-1.5"
-                  aria-label="Gloria is typing"
+                  aria-label="Assistant is typing"
                 >
                   <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0ms]" />
                   <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:150ms]" />

@@ -16,6 +16,7 @@ from litestar.middleware.session.base import ONE_DAY_IN_SECONDS
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.security.session_auth import SessionAuth
 from litestar.stores.base import Store
+from litestar.stores.memory import MemoryStore
 from litestar.stores.redis import RedisStore
 from litestar.template.config import TemplateConfig
 from litestar_saq import SAQConfig, SAQPlugin
@@ -114,7 +115,10 @@ def create_app(
         async with session_factory() as db:
             return await get_user_by_id(db, user_id)
 
-    stores: dict[str, Store] = {"sessions": RedisStore.with_client(url=config.REDIS_URL)}
+    stores: dict[str, Store] = {
+        "sessions": RedisStore.with_client(url=config.REDIS_URL),
+        "viewers": MemoryStore(),
+    }
     if stores_overrides:
         stores.update(stores_overrides)
 

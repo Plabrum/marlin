@@ -20,7 +20,6 @@ export const PHOTO_ONLY_ACCEPT: readonly string[] = [
   "image/webp",
 ];
 
-/** 50 MB — survey photo bursts and multi-page inspection PDFs run larger than
- * Cuida's clinical attachments. Mirror the backend `MAX_DOCUMENT_SIZE_BYTES`
- * when the documents API lands. */
+/** 50 MB — survey photo bursts and multi-page inspection PDFs. Mirror the
+ * backend `MAX_DOCUMENT_SIZE_BYTES` when the documents API lands. */
 export const MAX_SIZE_BYTES = 50 * 1024 * 1024;

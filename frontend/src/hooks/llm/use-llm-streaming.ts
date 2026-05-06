@@ -1,5 +1,5 @@
 /**
- * SSE consumer for Gloria's agent loop.
+ * SSE consumer for the LLM agent loop.
  *
  * Consumes the SSE stream from the Sloopquest LLM endpoints (TBD):
  *   POST /llm/threads/stream                       (create thread + first turn)
@@ -26,11 +26,10 @@ import {
   getLlmThreadsThreadIdMessagesGetMessagesQueryOptions,
   llmThreadsThreadIdMessagesGetMessages,
   type MessageSchema,
-} from "@/lib/gloria/api";
+} from "@/lib/llm/api";
 
-import { markStreamCompleted } from "@/hooks/use-gloria-dock-state";
 
-export type GloriaStreamingStatus =
+export type LlmStreamingStatus =
   | "idle"
   | "streaming"
   | "tool_running"
@@ -130,7 +129,7 @@ function nextLocalId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
-  return `gloria-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `llm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function parseFrames(buffer: string): {
@@ -173,22 +172,22 @@ function parseFrames(buffer: string): {
   return { events, remainder: normalized.slice(cursor) };
 }
 
-export type UseGloriaStreamingApi = {
+export type UseLlmStreamingApi = {
   inProgressMessage: InProgressMessage | null;
-  status: GloriaStreamingStatus;
+  status: LlmStreamingStatus;
   error: string | null;
   send: (content: string, opts?: SendOpts) => Promise<SendResult | null>;
   cancel: () => void;
 };
 
-export function useGloriaStreaming(
+export function useLlmStreaming(
   threadId: string | null,
   onThreadCreated?: (id: string) => void,
-): UseGloriaStreamingApi {
+): UseLlmStreamingApi {
   const queryClient = useQueryClient();
   const [inProgressMessage, setInProgressMessage] =
     useState<InProgressMessage | null>(null);
-  const [status, setStatus] = useState<GloriaStreamingStatus>("idle");
+  const [status, setStatus] = useState<LlmStreamingStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const threadIdRef = useRef(threadId);
@@ -346,7 +345,6 @@ export function useGloriaStreaming(
               for (const key of event.invalidate_queries ?? []) {
                 await queryClient.invalidateQueries({ queryKey: [key] });
               }
-              markStreamCompleted();
             } else if (event.event === "error") {
               sawError = true;
               setError(event.message);

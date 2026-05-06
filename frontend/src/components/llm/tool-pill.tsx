@@ -11,7 +11,7 @@ import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-import type { ToolPill as ToolPillType, ToolPillStatus } from "@/hooks/use-gloria-streaming";
+import type { ToolPill as ToolPillType, ToolPillStatus } from "@/hooks/llm/use-llm-streaming";
 
 const STATUS_TONE: Record<ToolPillStatus, string> = {
   running: "bg-muted text-muted-foreground border-border",

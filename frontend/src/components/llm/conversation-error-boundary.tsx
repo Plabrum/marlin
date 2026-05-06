@@ -1,5 +1,5 @@
 /**
- * Local error boundary for the Gloria conversation tree.
+ * Local error boundary for the LLM conversation tree.
  *
  * Prevents conversation-level failures (most commonly a 404 on the
  * thread-messages query when the persisted thread has been removed,
@@ -7,14 +7,14 @@
  * boundary and replacing the entire page with a generic error UI.
  *
  * On a 404 we auto-clear `activeThreadId` so the next render falls
- * back to GloriaConversationNew (fresh-conversation surface) — the
+ * back to LlmConversationNew (fresh-conversation surface) — the
  * stale pointer was the root cause of the page crash, and recovering
  * inside the dock is the right UX.
  */
 import type { AxiosError } from "axios";
 import { Component, type ReactNode } from "react";
 
-import { setActiveThreadId } from "@/hooks/use-gloria-dock-state";
+import { setActiveThreadId } from "@/hooks/llm/use-llm-dock-state";
 
 type Props = {
   threadId: string | null;

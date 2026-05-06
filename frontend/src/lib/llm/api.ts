@@ -1,12 +1,11 @@
 /**
- * Local stand-in for the Sloopquest LLM thread/messages endpoints.
+ * Stand-in for the Sloopquest LLM thread/messages endpoints.
  *
- * The Cuida port (SLQ-32) ships the chat UI ahead of the backend
- * surface. These types and TanStack Query hooks mirror the Cuida
- * Orval-generated shape so the components compile and render; once the
- * backend defines `/api/llm/threads/*` (and Orval is configured to
- * generate against it), this file is replaced by `@/openapi/llm/llm`
- * imports — the call sites won't need to change.
+ * These types and TanStack Query hooks mirror the expected Orval-generated
+ * shape so the components compile and render; once the backend defines
+ * `/api/llm/threads/*` (and Orval is configured to generate against it),
+ * this file is replaced by `@/openapi/llm/llm` imports — the call sites
+ * won't need to change.
  */
 import {
   queryOptions,
