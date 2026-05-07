@@ -40,6 +40,14 @@ class BaseBillingClient(ABC):
         """Create a Connect onboarding link. Returns the URL."""
 
     @abstractmethod
+    async def retrieve_account(self, account_id: str) -> dict:
+        """Retrieve a Connect account. Returns the raw Stripe account object as a dict."""
+
+    @abstractmethod
+    async def update_account(self, account_id: str, fields: dict) -> dict:
+        """Update fields on a Connect account. Returns the updated Stripe account object as a dict."""
+
+    @abstractmethod
     async def create_payment_link(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
     ) -> str:
@@ -79,6 +87,28 @@ class LocalBillingClient(BaseBillingClient):
         url = f"https://connect.stripe.com/setup/local/{account_id}"
         logger.info("LOCAL BILLING: create_account_link account=%s → %s", account_id, url)
         return url
+
+    async def retrieve_account(self, account_id: str) -> dict:
+        logger.info("LOCAL BILLING: retrieve_account account=%s", account_id)
+        return {
+            "id": account_id,
+            "charges_enabled": True,
+            "payouts_enabled": True,
+            "requirements": {
+                "currently_due": [],
+                "eventually_due": [],
+                "pending_verification": [],
+            },
+            "future_requirements": {
+                "currently_due": [],
+                "eventually_due": [],
+                "pending_verification": [],
+            },
+        }
+
+    async def update_account(self, account_id: str, fields: dict) -> dict:
+        logger.info("LOCAL BILLING: update_account account=%s fields=%r", account_id, fields)
+        return {"id": account_id, **fields}
 
     async def create_payment_link(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
@@ -154,6 +184,14 @@ class StripeBillingClient(BaseBillingClient):
             type="account_onboarding",
         )
         return link.url
+
+    async def retrieve_account(self, account_id: str) -> dict:
+        account = await stripe.Account.retrieve_async(account_id)
+        return account.to_dict()
+
+    async def update_account(self, account_id: str, fields: dict) -> dict:
+        account = await stripe.Account.modify_async(account_id, **fields)
+        return account.to_dict()
 
     async def create_payment_link(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str

@@ -43,6 +43,14 @@ class BillingService:
             refresh_url=refresh_url,
         )
 
+    async def retrieve_connected_account(self, stripe_account_id: str) -> dict:
+        """Retrieve the full Stripe account object."""
+        return await self._client.retrieve_account(account_id=stripe_account_id)
+
+    async def update_connected_account(self, stripe_account_id: str, fields: dict) -> dict:
+        """Update fields on a Connect account. `fields` is passed through to Stripe."""
+        return await self._client.update_account(account_id=stripe_account_id, fields=fields)
+
     async def create_payment_link(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
     ) -> str:

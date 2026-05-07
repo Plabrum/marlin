@@ -26,6 +26,7 @@ from app.config import Config
 from app.demo.routes import demo_router
 from app.domain.clients.routes import client_router
 from app.domain.invoices.routes import invoice_router
+from app.domain.organizations.routes import organization_router
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
 from app.domain.surveys.routes import survey_router, survey_template_router
@@ -182,6 +183,7 @@ def create_app(
             report_router,
             subscription_router,
             user_router,
+            organization_router,
         ],
         plugins=plugins,
         on_app_init=[session_auth.on_app_init],
