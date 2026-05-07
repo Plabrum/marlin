@@ -15,6 +15,7 @@ import { SubscriptionsPage } from "@/pages/subscriptions/subscriptions-page";
 import { SurveyTemplatesListPage } from "@/pages/survey-templates/survey-templates-list-page";
 import { SurveyTemplateDetailPage } from "@/pages/survey-templates/survey-template-detail-page";
 import { SettingsPage } from "@/pages/settings/settings-page";
+import { BillingPage } from "@/pages/settings/billing-page";
 
 export const indexRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
@@ -128,4 +129,18 @@ export const settingsRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/settings",
   component: SettingsPage,
+});
+
+export const billingRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/settings/billing",
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { onboarding?: "complete" | "refresh" } => {
+    const value = search["onboarding"];
+    return value === "complete" || value === "refresh"
+      ? { onboarding: value }
+      : {};
+  },
+  component: BillingPage,
 });
