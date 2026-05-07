@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { CheckCircle2, CreditCard, Landmark } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,11 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { getErrorMessage } from "@/lib/error-handler";
 import {
   describeRequirement,
   useConnectRequirements,
-  useCreateConnectAccount,
   type ConnectAccountRequirements,
 } from "@/lib/connect";
 import { useListSubscriptionSuspense } from "@/openapi/subscription/subscription";
@@ -128,10 +126,7 @@ function SubscriptionSummary() {
   );
 }
 
-function NoConnectAccountCard({ onStart, isPending }: {
-  onStart: () => void;
-  isPending: boolean;
-}) {
+function NoConnectAccountCard() {
   return (
     <Card>
       <CardHeader>
@@ -145,8 +140,8 @@ function NoConnectAccountCard({ onStart, isPending }: {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Button onClick={onStart} disabled={isPending}>
-          {isPending ? "Starting…" : "Set up payouts"}
+        <Button asChild>
+          <Link to="/settings/billing/connect/onboarding">Set up payouts</Link>
         </Button>
       </CardContent>
     </Card>
@@ -155,12 +150,8 @@ function NoConnectAccountCard({ onStart, isPending }: {
 
 function IncompleteConnectCard({
   requirements,
-  onContinue,
-  isPending,
 }: {
   requirements: ConnectAccountRequirements;
-  onContinue: () => void;
-  isPending: boolean;
 }) {
   const outstanding = [
     ...requirements.currently_due,
@@ -187,8 +178,8 @@ function IncompleteConnectCard({
             ))}
           </ul>
         )}
-        <Button onClick={onContinue} disabled={isPending}>
-          {isPending ? "Loading…" : "Continue setup"}
+        <Button asChild>
+          <Link to="/settings/billing/connect/onboarding">Continue setup</Link>
         </Button>
       </CardContent>
     </Card>
@@ -213,34 +204,16 @@ function ActiveConnectCard() {
 
 function ConnectStatusSection() {
   const { data: requirements } = useConnectRequirements();
-  const createAccount = useCreateConnectAccount();
-
-  const handleStart = () => {
-    createAccount.mutate(undefined, {
-      onError: (err) => toast.error(getErrorMessage(err)),
-    });
-  };
 
   if (!requirements) {
-    return (
-      <NoConnectAccountCard
-        onStart={handleStart}
-        isPending={createAccount.isPending}
-      />
-    );
+    return <NoConnectAccountCard />;
   }
 
   if (requirements.charges_enabled && requirements.payouts_enabled) {
     return <ActiveConnectCard />;
   }
 
-  return (
-    <IncompleteConnectCard
-      requirements={requirements}
-      onContinue={handleStart}
-      isPending={createAccount.isPending}
-    />
-  );
+  return <IncompleteConnectCard requirements={requirements} />;
 }
 
 export function BillingPage() {

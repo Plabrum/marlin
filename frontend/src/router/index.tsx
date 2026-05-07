@@ -22,6 +22,7 @@ import {
   surveyTemplateRoute,
   settingsRoute,
   billingRoute,
+  connectOnboardingRoute,
 } from "@/router/authenticated.routes";
 
 const routeTree = rootRoute.addChildren([
@@ -43,6 +44,7 @@ const routeTree = rootRoute.addChildren([
     surveyTemplateRoute,
     settingsRoute,
     billingRoute,
+    connectOnboardingRoute,
   ]),
 ]);
 

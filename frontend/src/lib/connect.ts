@@ -60,6 +60,106 @@ export function useCreateConnectAccount() {
   });
 }
 
+export interface ConnectAddressInput {
+  line1: string | null;
+  line2: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  country: string | null;
+}
+
+export interface ConnectDOBInput {
+  day: number;
+  month: number;
+  year: number;
+}
+
+export interface ConnectIndividualInput {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  address: ConnectAddressInput | null;
+  dob: ConnectDOBInput | null;
+  ssn_last_4: string | null;
+}
+
+export interface ConnectCompanyInput {
+  name: string | null;
+  phone: string | null;
+  address: ConnectAddressInput | null;
+}
+
+export interface ConnectBusinessProfileInput {
+  mcc: string | null;
+  url: string | null;
+  product_description: string | null;
+}
+
+export interface UpdateConnectAccountPayload {
+  business_type: "individual" | "company" | null;
+  individual: ConnectIndividualInput | null;
+  company: ConnectCompanyInput | null;
+  business_profile: ConnectBusinessProfileInput | null;
+}
+
+export function useUpdateConnectAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateConnectAccountPayload) =>
+      customInstance<ConnectAccountResponse>({
+        url: "/organizations/me/connect/account",
+        method: "PATCH",
+        data: payload,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectRequirementsQueryKey });
+    },
+  });
+}
+
+export interface AcceptTosPayload {
+  ip: string;
+  user_agent: string;
+}
+
+export function useAcceptConnectTos() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AcceptTosPayload) =>
+      customInstance<ConnectAccountResponse>({
+        url: "/organizations/me/connect/account/tos-acceptance",
+        method: "POST",
+        data: payload,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectRequirementsQueryKey });
+    },
+  });
+}
+
+export interface ExternalAccountResponse {
+  last4: string;
+  bank_name: string | null;
+  routing_number: string | null;
+}
+
+export function useAttachExternalAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (token: string) =>
+      customInstance<ExternalAccountResponse>({
+        url: "/organizations/me/connect/account/external-accounts",
+        method: "POST",
+        data: { token },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: connectRequirementsQueryKey });
+    },
+  });
+}
+
 const REQUIREMENT_LABELS: Record<string, string> = {
   "external_account": "Bank account required",
   "individual.verification.document": "Identity document required",

@@ -16,6 +16,7 @@ import { SurveyTemplatesListPage } from "@/pages/survey-templates/survey-templat
 import { SurveyTemplateDetailPage } from "@/pages/survey-templates/survey-template-detail-page";
 import { SettingsPage } from "@/pages/settings/settings-page";
 import { BillingPage } from "@/pages/settings/billing-page";
+import { ConnectOnboardingPage } from "@/pages/settings/connect-onboarding-page";
 
 export const indexRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
@@ -143,4 +144,10 @@ export const billingRoute = createRoute({
       : {};
   },
   component: BillingPage,
+});
+
+export const connectOnboardingRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/settings/billing/connect/onboarding",
+  component: ConnectOnboardingPage,
 });
