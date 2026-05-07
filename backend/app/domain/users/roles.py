@@ -2,6 +2,6 @@ from enum import StrEnum, auto
 
 
 class Role(StrEnum):
+    SUPERADMIN = auto()
     ADMIN = auto()
-    SURVEYOR = auto()
-    CLIENT = auto()
+    MEMBER = auto()

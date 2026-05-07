@@ -1,18 +1,49 @@
 import { Suspense } from "react";
 import { useParams } from "@tanstack/react-router";
 import { PageTopBar } from "@/components/layout/page-topbar";
+import { KeyValueGrid } from "@/components/layout/key-value-grid";
+import { ActionsMenu } from "@/components/actions-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useClientsIdDetailHandlerSuspense } from "@/openapi/client/client";
+import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
 
 function ClientDetailContent() {
   const { clientId } = useParams({ from: "/_authenticated/clients/$clientId" });
+  const { data } = useClientsIdDetailHandlerSuspense(clientId);
+  const { data: actionsData, refetch: refetchActions } =
+    useActionsActionGroupObjectIdListObjectActions("client_actions", clientId);
 
   return (
     <PageTopBar
-      title="Client"
+      title={data.display_name}
       breadcrumbSegments={[{ label: "Clients", href: "/clients" }]}
+      actions={
+        <ActionsMenu
+          actions={actionsData?.actions ?? []}
+          actionGroup="client_actions"
+          objectId={clientId}
+          objectData={data}
+          onActionComplete={() => refetchActions()}
+        />
+      }
     >
       <div className="p-6">
-        <p className="text-sm text-muted-foreground">Client ID: {clientId}</p>
+        <KeyValueGrid
+          items={[
+            { label: "Name", value: data.display_name },
+            { label: "Type", value: data.client_type },
+            { label: "Email", value: data.email ?? "—" },
+            { label: "Phone", value: data.phone ?? "—" },
+            { label: "First Name", value: data.first_name ?? "—" },
+            { label: "Last Name", value: data.last_name ?? "—" },
+            { label: "Company", value: data.company_name ?? "—" },
+            { label: "Brokerage", value: data.brokerage_name ?? "—" },
+            { label: "Agent", value: data.agent_name ?? "—" },
+            { label: "License #", value: data.license_number ?? "—" },
+            { label: "Institution", value: data.institution_name ?? "—" },
+            { label: "Loan Officer", value: data.loan_officer_name ?? "—" },
+          ]}
+        />
       </div>
     </PageTopBar>
   );

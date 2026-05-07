@@ -8,6 +8,12 @@ import { VesselDetailPage } from "@/pages/vessels/vessel-detail-page";
 import { ClientsListPage } from "@/pages/clients/clients-list-page";
 import { ClientDetailPage } from "@/pages/clients/client-detail-page";
 import { ReportsPage } from "@/pages/reports/reports-page";
+import { ReportDetailPage } from "@/pages/reports/report-detail-page";
+import { InvoicesListPage } from "@/pages/invoices/invoices-list-page";
+import { InvoiceDetailPage } from "@/pages/invoices/invoice-detail-page";
+import { SubscriptionsPage } from "@/pages/subscriptions/subscriptions-page";
+import { SurveyTemplatesListPage } from "@/pages/survey-templates/survey-templates-list-page";
+import { SurveyTemplateDetailPage } from "@/pages/survey-templates/survey-template-detail-page";
 import { SettingsPage } from "@/pages/settings/settings-page";
 
 export const indexRoute = createRoute({
@@ -68,6 +74,54 @@ export const reportsRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/reports",
   component: ReportsPage,
+});
+
+export const reportRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/reports/$reportId",
+  params: {
+    parse: (p) => ({ reportId: p.reportId }),
+    stringify: (p) => ({ reportId: p.reportId }),
+  },
+  component: ReportDetailPage,
+});
+
+export const invoicesListRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/invoices",
+  component: InvoicesListPage,
+});
+
+export const invoiceRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/invoices/$invoiceId",
+  params: {
+    parse: (p) => ({ invoiceId: p.invoiceId }),
+    stringify: (p) => ({ invoiceId: p.invoiceId }),
+  },
+  component: InvoiceDetailPage,
+});
+
+export const subscriptionsRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/subscriptions",
+  component: SubscriptionsPage,
+});
+
+export const surveyTemplatesListRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/survey-templates",
+  component: SurveyTemplatesListPage,
+});
+
+export const surveyTemplateRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/survey-templates/$templateId",
+  params: {
+    parse: (p) => ({ templateId: p.templateId }),
+    stringify: (p) => ({ templateId: p.templateId }),
+  },
+  component: SurveyTemplateDetailPage,
 });
 
 export const settingsRoute = createRoute({

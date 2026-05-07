@@ -1,8 +1,30 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 import sqlalchemy as sa
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from app.utils.sqids import Sqid, SqidType
+
+
+class TimestampMixin:
+    """Adds deleted_at soft-delete column with helpers. Mirrors Cuida's TimestampMixin."""
+
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True),
+        default=None,
+        index=True,
+    )
+
+    def soft_delete(self) -> None:
+        self.deleted_at = datetime.now(tz=UTC)
+
+    def restore(self) -> None:
+        self.deleted_at = None
+
+    @property
+    def is_deleted(self) -> bool:
+        return self.deleted_at is not None
 
 
 class BaseDBModel(DeclarativeBase):
@@ -19,7 +41,7 @@ class BaseDBModel(DeclarativeBase):
     def get_all_models(cls) -> set[type["BaseDBModel"]]:
         return cls._model_registry
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[Sqid] = mapped_column(SqidType, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
         server_default=sa.func.now(),

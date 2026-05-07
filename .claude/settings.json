@@ -5,14 +5,6 @@
     "PYTHONPATH": "/Users/phil/repos/sloopquest/backend",
     "NODE_ENV": "development"
   },
-  "enabledPlugins": {
-    "linear@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "vercel@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "terraform@claude-plugins-official": true
-  },
   "hooks": {
     "Stop": [
       {
@@ -50,5 +42,14 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "linear@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "terraform@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
   }
 }

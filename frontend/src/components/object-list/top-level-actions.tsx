@@ -1,20 +1,10 @@
+import { Suspense } from "react";
 import { ObjectActions } from "@/components/object-detail/object-actions";
-import type {
-  ActionDTO,
-  ActionGroupType,
-  ActionMutations,
-} from "@/lib/actions/types";
+import { useActionsActionGroupListActionsSuspense } from "@/openapi/actions/actions";
+import type { ActionDTO, ActionGroupType } from "@/lib/actions/types";
 
-interface TopLevelActionsProps extends ActionMutations {
+interface TopLevelActionsProps {
   actionGroup: ActionGroupType;
-  /**
-   * Suspense query hook returning the available top-level actions for the
-   * group. Wire this up using the orval-generated
-   * `useActionsActionGroupListActionsSuspense` after `pnpm codegen`.
-   */
-  useListActions: (actionGroup: ActionGroupType) => {
-    data: { actions: ActionDTO[] };
-  };
   onInvalidate?: () => void;
   onActionComplete?: (action: ActionDTO, response: unknown) => void;
   /** When true, all visible buttons use the primary (default) variant. */
@@ -27,36 +17,27 @@ interface TopLevelActionsProps extends ActionMutations {
   formContext?: Record<string, unknown>;
 }
 
-/**
- * Fetches and renders the top-level action set for an action group via
- * the list_actions endpoint (no object context).
- */
-export function TopLevelActions({
-  actionGroup,
-  useListActions,
-  executeGroupActionMutation,
-  executeObjectActionMutation,
-  onInvalidate,
-  onActionComplete,
-  allPrimary,
-  maxVisible,
-  trigger,
-  formContext,
-}: TopLevelActionsProps) {
-  const { data } = useListActions(actionGroup);
+function TopLevelActionsInner(props: TopLevelActionsProps) {
+  const { data } = useActionsActionGroupListActionsSuspense(props.actionGroup);
 
   return (
     <ObjectActions
       actions={data.actions}
-      actionGroup={actionGroup}
-      executeGroupActionMutation={executeGroupActionMutation}
-      executeObjectActionMutation={executeObjectActionMutation}
-      onInvalidate={onInvalidate}
-      onActionComplete={onActionComplete}
-      allPrimary={allPrimary}
-      maxVisible={maxVisible}
-      trigger={trigger}
-      formContext={formContext}
+      actionGroup={props.actionGroup}
+      onInvalidate={props.onInvalidate}
+      onActionComplete={props.onActionComplete}
+      allPrimary={props.allPrimary}
+      maxVisible={props.maxVisible}
+      trigger={props.trigger}
+      formContext={props.formContext}
     />
+  );
+}
+
+export function TopLevelActions(props: TopLevelActionsProps) {
+  return (
+    <Suspense>
+      <TopLevelActionsInner {...props} />
+    </Suspense>
   );
 }

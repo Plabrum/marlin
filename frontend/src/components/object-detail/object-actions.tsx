@@ -19,7 +19,6 @@ import { useActionExecutor } from "@/hooks/actions/use-action-executor";
 import { useActionFormRenderer } from "@/hooks/actions/use-action-form-renderer";
 import type {
   ActionDTO,
-  ActionMutations,
   ObjectActionData,
   TopLevelActionData,
 } from "@/lib/actions/types";
@@ -36,8 +35,7 @@ const ACTION_ICONS: Record<
   download: Download,
 };
 
-type ObjectActionsProps = (ObjectActionData | TopLevelActionData) &
-  ActionMutations & {
+type ObjectActionsProps = (ObjectActionData | TopLevelActionData) & {
     /** External edit-mode state (controlled by URL params). */
     editMode?: {
       isOpen: boolean;
@@ -74,8 +72,6 @@ export function ObjectActions(props: ObjectActionsProps) {
     actionGroup,
     objectId,
     renderActionForm: formRenderer,
-    executeGroupActionMutation: props.executeGroupActionMutation,
-    executeObjectActionMutation: props.executeObjectActionMutation,
     formContext: !isObjectAction ? props.formContext : undefined,
     onInvalidate:
       isObjectAction && props.onRefetch

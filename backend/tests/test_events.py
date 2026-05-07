@@ -25,6 +25,7 @@ from app.platform.events.schemas import (
     make_field_changes,
 )
 from app.platform.events.service import emit_event
+from app.utils.sqids import Sqid
 
 
 @pytest.fixture(autouse=True)
@@ -205,7 +206,7 @@ async def test_async_consumer_dispatches_via_handler(session: MagicMock) -> None
         event_type=EventType.CREATED,
         event_data=None,
     )
-    event.id = 99
+    event.id = Sqid(99)
 
     await trigger_consumers(session, event, obj, dispatch_async=fake_dispatch)
     assert dispatched == [(consumer_key(slow_consumer), 99)]

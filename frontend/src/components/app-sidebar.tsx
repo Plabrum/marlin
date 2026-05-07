@@ -3,8 +3,10 @@ import type { LucideIcon } from "lucide-react";
 import {
   Anchor,
   ClipboardList,
+  CreditCard,
   FileText,
   LayoutDashboard,
+  Receipt,
   Sailboat,
   Settings,
   Users,
@@ -34,6 +36,9 @@ const NAV_ITEMS: NavItem[] = [
   { title: "Vessels", url: "/vessels", icon: Sailboat },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Reports", url: "/reports", icon: FileText },
+  { title: "Invoices", url: "/invoices", icon: Receipt },
+  { title: "Subscriptions", url: "/subscriptions", icon: CreditCard },
+  { title: "Survey Templates", url: "/survey-templates", icon: FileText },
 ];
 
 function NavLink({ item }: { item: NavItem }) {

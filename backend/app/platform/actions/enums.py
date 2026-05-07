@@ -5,6 +5,13 @@ class ActionGroupType(StrEnum):
     """Types of action groups. Add domain action groups here as they are implemented."""
 
     TEST_ACTIONS = auto()
+    VESSEL_ACTIONS = auto()
+    CLIENT_ACTIONS = auto()
+    SURVEY_ACTIONS = auto()
+    SURVEY_TEMPLATE_ACTIONS = auto()
+    INVOICE_ACTIONS = auto()
+    REPORT_ACTIONS = auto()
+    SUBSCRIPTION_ACTIONS = auto()
 
 
 class ActionResultType(StrEnum):

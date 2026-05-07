@@ -9,22 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useActionExecutor } from "@/hooks/actions/use-action-executor";
 import { useActionFormRenderer } from "@/hooks/actions/use-action-form-renderer";
-import type {
-  ActionDTO,
-  ActionGroupType,
-  ActionMutations,
-} from "@/lib/actions/types";
+import type { ActionDTO, ActionGroupType } from "@/lib/actions/types";
 
-interface ActionsMenuProps extends ActionMutations {
+interface ActionsMenuProps {
   actions: ActionDTO[];
   actionGroup: ActionGroupType;
   objectId?: string;
   onActionComplete?: () => void;
-  /**
-   * Object data passed through to form renderers for pre-populating edit
-   * forms. unknown because the registry dispatches by string key — each
-   * dialog narrows internally.
-   */
   objectData?: unknown;
 }
 
@@ -34,8 +25,6 @@ export function ActionsMenu({
   objectId,
   onActionComplete,
   objectData,
-  executeGroupActionMutation,
-  executeObjectActionMutation,
 }: ActionsMenuProps) {
   const formRenderer = useActionFormRenderer(objectData);
 
@@ -43,8 +32,6 @@ export function ActionsMenu({
     actionGroup,
     objectId,
     renderActionForm: formRenderer,
-    executeGroupActionMutation,
-    executeObjectActionMutation,
     onSuccess: () => {
       onActionComplete?.();
     },

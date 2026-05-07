@@ -16,6 +16,17 @@ class Organization(BaseDBModel):
     __tablename__ = "organizations"
 
     name: Mapped[str] = mapped_column(sa.Text)
+    phone: Mapped[str | None] = mapped_column(sa.Text)
+    email: Mapped[str | None] = mapped_column(sa.Text)
+    website: Mapped[str | None] = mapped_column(sa.Text)
+    address_id: Mapped[int | None] = mapped_column(
+        sa.ForeignKey("addresses.id", ondelete="SET NULL"),
+        index=True,
+    )
+    nams_member_number: Mapped[str | None] = mapped_column(sa.Text)
+    sams_member_number: Mapped[str | None] = mapped_column(sa.Text)
+    signature_block: Mapped[str | None] = mapped_column(sa.Text)
+    report_footer: Mapped[str | None] = mapped_column(sa.Text)
 
 
 class User(BaseDBModel):
@@ -31,7 +42,7 @@ class User(BaseDBModel):
     email: Mapped[str] = mapped_column(sa.Text)
     email_verified: Mapped[bool] = mapped_column(default=False)
     phone: Mapped[str | None] = mapped_column(sa.Text)
-    role: Mapped[str] = mapped_column(sa.Text, server_default=Role.CLIENT)
+    role: Mapped[str] = mapped_column(sa.Text, server_default=Role.MEMBER)
 
     organization: Mapped[Organization] = relationship("Organization", foreign_keys="User.organization_id", lazy="raise")
 

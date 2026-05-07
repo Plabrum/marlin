@@ -42,6 +42,10 @@ db-clean:
 db-psql:
     psql postgresql://postgres:postgres@localhost:5432/sloopquest
 
+# Wipe and repopulate the demo organization with fixture data
+fixtures:
+    cd backend && uv run python -m app.demo.tasks
+
 # ─── Development ──────────────────────────────────────────────────────────────
 
 # Full dev — backend (with embedded SAQ worker) + frontend

@@ -253,7 +253,7 @@ function generateFormComponent(
 
     if (f.component === "FormSelect" && f.enumRef) {
       props.push(
-        `options={Object.values(${f.enumRef}).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\\b\\w/g, c => c.toUpperCase()) }))}`,
+        `options={(Object.values(${f.enumRef}) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\\b\\w/g, c => c.toUpperCase()) }))}`,
       );
     }
 
@@ -299,11 +299,11 @@ function generateFormsFile(
 
   const typeImportLine =
     typeImports.size > 0
-      ? `import type { ${[...typeImports].sort().join(", ")} } from "@/openapi/sloopquestAPI.schemas";`
+      ? `import type { ${[...typeImports].sort().join(", ")} } from "@/openapi/litestarAPI.schemas";`
       : "";
   const valueImportLine =
     valueImports.size > 0
-      ? `import { ${[...valueImports].sort().join(", ")} } from "@/openapi/sloopquestAPI.schemas";`
+      ? `import { ${[...valueImports].sort().join(", ")} } from "@/openapi/litestarAPI.schemas";`
       : "";
 
   const formComponents = actions

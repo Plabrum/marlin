@@ -127,8 +127,16 @@ function inferColumn(
   if (isHidden(key, prop, spec)) return null;
 
   const header = columnLabels[key] ?? humanizeHeader(key);
+  const { schema } = unwrapNullable(prop);
 
-  // Explicit type override from CRUD metadata (e.g. "duration")
+  // Resolve enum ref once — used by both the type override path and auto-detect
+  let enumRef: string | undefined;
+  if (schema.$ref) {
+    const resolved = resolveRef(spec, schema.$ref);
+    if (resolved.enum) enumRef = refName(schema.$ref);
+  }
+
+  // Explicit type override from CRUD metadata (e.g. "duration", "status")
   if (columnTypes[key]) {
     return {
       key,
@@ -136,27 +144,22 @@ function inferColumn(
       header,
       sortable: sortable.has(key),
       filterable: filterable.has(key),
+      enumRef,
     };
   }
 
-  const { schema } = unwrapNullable(prop);
-
   // Enum: $ref to a schema with enum values
-  if (schema.$ref) {
-    const resolved = resolveRef(spec, schema.$ref);
-    if (resolved.enum) {
-      // Status-like columns get StatusBadge rendering; others get plain text
-      const STATUS_KEYS = new Set(["state", "status", "outcome"]);
-      const displayType = STATUS_KEYS.has(key) ? "status" : "enum";
-      return {
-        key,
-        displayType,
-        header,
-        sortable: sortable.has(key),
-        filterable: filterable.has(key),
-        enumRef: refName(schema.$ref),
-      };
-    }
+  if (enumRef) {
+    const STATE_KEYS = new Set(["state", "status", "outcome"]);
+    const displayType = STATE_KEYS.has(key) ? "status" : "enum";
+    return {
+      key,
+      displayType,
+      header,
+      sortable: sortable.has(key),
+      filterable: filterable.has(key),
+      enumRef,
+    };
   }
 
   // Date
@@ -229,9 +232,9 @@ function generateColumnFile(
     new Set(columns.filter((c) => c.enumRef).map((c) => c.enumRef!)),
   );
 
-  const typeImport = `import type { ${itemSchemaName} } from "@/openapi/sloopquestAPI.schemas";`;
+  const typeImport = `import type { ${itemSchemaName} } from "@/openapi/litestarAPI.schemas";`;
   const valueImports = enumImports.length > 0
-    ? `import { ${enumImports.join(", ")} } from "@/openapi/sloopquestAPI.schemas";`
+    ? `import { ${enumImports.join(", ")} } from "@/openapi/litestarAPI.schemas";`
     : "";
 
   const builderChain = columns
@@ -273,7 +276,8 @@ ${typeImport}
 ${valueImports}
 
 export const ${varName} = createColumnBuilder<${itemSchemaName}>()
-${builderChain};
+${builderChain}
+  .build();
 ${sortableConst}${filterableConst}`;
 }
 

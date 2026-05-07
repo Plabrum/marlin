@@ -23,8 +23,15 @@ from litestar_saq import SAQConfig, SAQPlugin
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import Config
+from app.demo.routes import demo_router
+from app.domain.clients.routes import client_router
+from app.domain.invoices.routes import invoice_router
+from app.domain.reports.routes import report_router
+from app.domain.subscriptions.routes import subscription_router
+from app.domain.surveys.routes import survey_router, survey_template_router
 from app.domain.users.models import User
 from app.domain.users.queries import get_user_by_id
+from app.domain.vessels.routes import vessel_router
 from app.platform.actions.routes import action_router
 from app.platform.auth.routes import auth_router
 from app.platform.base.models import BaseDBModel
@@ -44,6 +51,8 @@ discover_and_import(["models.py", "models/**/*.py"], base_path="app")
 discover_and_import(["deps.py"], base_path="app")
 # Trigger Tool.__init_subclass__ registration across all domain tools.py files
 discover_and_import(["tools.py"], base_path="app")
+# Trigger action group registration across all domain action files
+discover_and_import(["actions.py"], base_path="app/domain")
 
 __all__ = ["BaseDBModel", "create_app"]
 
@@ -154,6 +163,7 @@ def create_app(
         route_handlers=[
             schema_router,
             auth_router,
+            demo_router,
             action_router,
             comms_webhook_router,
             thread_router,
@@ -161,6 +171,13 @@ def create_app(
             media_router,
             document_router,
             local_files_router,
+            vessel_router,
+            client_router,
+            survey_router,
+            survey_template_router,
+            invoice_router,
+            report_router,
+            subscription_router,
         ],
         plugins=plugins,
         on_app_init=[session_auth.on_app_init],

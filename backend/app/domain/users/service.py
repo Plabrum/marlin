@@ -26,7 +26,7 @@ class UserService:
         user = await create_user(self.db, name=name, email=email, organization_id=organization_id)
 
         if org_was_created:
-            user.role = Role.ADMIN
+            user.role = Role.ADMIN  # first user of a new org gets surveyor-level access
             await self.db.flush()
 
         return user, True

@@ -7,6 +7,7 @@ from alembic_utils.pg_policy import PGPolicy as PGPolicyType
 from alembic_utils.replaceable_entity import register_entities
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine import Connection
+from sqlalchemy.types import TypeDecorator
 
 # Import RLS operations so custom ops are registered with Alembic
 import app.platform.base.rls_operations  # noqa: F401
@@ -53,6 +54,23 @@ def include_object(object, name, type_, reflected, compare_to):
     return True
 
 
+def render_item(type_: str, obj: object, autogen_context: object) -> str | bool:
+    """Tell Alembic how to render custom TypeDecorators in migration files."""
+    if type_ == "type" and isinstance(obj, TypeDecorator):
+        class_name = obj.__class__.__name__
+        if class_name == "SqidType":
+            autogen_context.imports.add("from app.utils.sqids import SqidType")  # type: ignore[union-attr]
+            return "SqidType()"
+        if class_name == "TextEnum":
+            autogen_context.imports.add("from app.utils.textenum import TextEnum")  # type: ignore[union-attr]
+            enum_cls = obj.enum_class  # type: ignore[attr-defined]
+            module = enum_cls.__module__
+            name = enum_cls.__qualname__
+            autogen_context.imports.add(f"from {module} import {name}")  # type: ignore[union-attr]
+            return f"TextEnum({name})"
+    return False
+
+
 def run_migrations_offline() -> None:
     context.configure(
         url=database_url,
@@ -60,6 +78,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         include_object=include_object,
+        render_item=render_item,  # type: ignore[arg-type]
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -70,6 +89,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         include_object=include_object,
+        render_item=render_item,  # type: ignore[arg-type]
     )
     with context.begin_transaction():
         context.run_migrations()

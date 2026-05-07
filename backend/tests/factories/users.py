@@ -18,6 +18,14 @@ class OrgFactory(BaseFactory):
     __model__ = Organization
 
     name = Use(fake.company)
+    phone = None
+    email = None
+    website = None
+    address_id = None
+    nams_member_number = None
+    sams_member_number = None
+    signature_block = None
+    report_footer = None
     created_at = Use(fake.date_time_between, start_date="-1y", end_date="now", tzinfo=UTC)
     updated_at = Use(lambda: datetime.now(tz=UTC))
 

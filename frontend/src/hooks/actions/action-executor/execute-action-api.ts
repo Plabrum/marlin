@@ -1,9 +1,13 @@
 import type {
   ActionDTO,
   ActionExecutionResponse,
-  ActionGroupType,
   ActionMutations,
 } from "@/lib/actions/types";
+import type {
+  ActionsActionGroupExecuteActionBody,
+  ActionsActionGroupObjectIdExecuteObjectActionBody,
+  ActionGroupType,
+} from "@/openapi/litestarAPI.schemas";
 import type { ActionBodyUnion } from "@/lib/actions/registry";
 
 type ExecuteActionApiParams = ActionMutations & {
@@ -25,15 +29,15 @@ export async function executeActionApi({
     actionBody || ({ action: action.action, data: {} } as const);
 
   if (objectId) {
-    return (await executeObjectActionMutation.mutateAsync({
+    return await executeObjectActionMutation.mutateAsync({
       actionGroup,
       objectId,
-      data: requestBody as ActionBodyUnion,
-    })) as ActionExecutionResponse;
+      data: requestBody as ActionsActionGroupObjectIdExecuteObjectActionBody,
+    });
   } else {
-    return (await executeGroupActionMutation.mutateAsync({
+    return await executeGroupActionMutation.mutateAsync({
       actionGroup,
-      data: requestBody as ActionBodyUnion,
-    })) as ActionExecutionResponse;
+      data: requestBody as ActionsActionGroupExecuteActionBody,
+    });
   }
 }

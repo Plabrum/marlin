@@ -1,11 +1,8 @@
-/**
- * Action system types. Mirrors the schema the backend exposes via
- * `/schema/openapi.json` — once orval codegen has produced the real
- * `@/openapi/sloopquestAPI.schemas` types, these can be replaced with
- * re-exports if exact alignment is desired.
- */
-
-export type ActionGroupType = string;
+export type { ActionGroupType } from "@/openapi/litestarAPI.schemas";
+import type {
+  ActionsActionGroupExecuteActionBody,
+  ActionsActionGroupObjectIdExecuteObjectActionBody,
+} from "@/openapi/litestarAPI.schemas";
 
 export interface ActionDTO {
   action: string;
@@ -36,7 +33,7 @@ export interface ActionExecutionResponse {
 /** Object-level actions — performed on a specific object instance. */
 export interface ObjectActionData {
   data: { id: string | number; actions?: ActionDTO[] } & Record<string, unknown>;
-  actionGroup: ActionGroupType;
+  actionGroup: import("@/openapi/litestarAPI.schemas").ActionGroupType;
   onRefetch?: () => void;
   onActionComplete?: (action: ActionDTO, response: unknown) => void;
 }
@@ -44,28 +41,27 @@ export interface ObjectActionData {
 /** Top-level actions — not tied to a specific object (e.g. "Create ..."). */
 export interface TopLevelActionData {
   actions?: ActionDTO[];
-  actionGroup: ActionGroupType;
+  actionGroup: import("@/openapi/litestarAPI.schemas").ActionGroupType;
   onInvalidate?: () => void;
   onActionComplete?: (action: ActionDTO, response: unknown) => void;
 }
 
 /**
- * The mutation hooks the executor needs. Wire these up at the page or
- * provider level using the orval-generated hooks (see
- * `@/openapi/actions/actions` after `pnpm codegen`).
+ * Mutation hook interfaces matching the orval-generated hooks exactly.
+ * Used by execute-action-api.ts — mutations are created inside useActionExecutor.
  */
 export interface ActionMutations {
   executeGroupActionMutation: {
     mutateAsync: (params: {
-      actionGroup: ActionGroupType;
-      data: { action: string; data: Record<string, unknown> };
-    }) => Promise<unknown>;
+      actionGroup: import("@/openapi/litestarAPI.schemas").ActionGroupType;
+      data: ActionsActionGroupExecuteActionBody;
+    }) => Promise<ActionExecutionResponse>;
   };
   executeObjectActionMutation: {
     mutateAsync: (params: {
-      actionGroup: ActionGroupType;
+      actionGroup: import("@/openapi/litestarAPI.schemas").ActionGroupType;
       objectId: string;
-      data: { action: string; data: Record<string, unknown> };
-    }) => Promise<unknown>;
+      data: ActionsActionGroupObjectIdExecuteObjectActionBody;
+    }) => Promise<ActionExecutionResponse>;
   };
 }

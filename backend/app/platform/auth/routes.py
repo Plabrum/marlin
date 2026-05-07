@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from litestar import Request, Router, get, post
 from litestar.exceptions import PermissionDeniedException
 from litestar.middleware.rate_limit import RateLimitConfig
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import config
 from app.domain.users.models import User
 from app.platform.auth.guards import requires_session
 from app.platform.auth.service import AuthService
@@ -13,6 +16,10 @@ from app.platform.auth.service import AuthService
 logger = logging.getLogger(__name__)
 
 _rate_limit = RateLimitConfig(rate_limit=("minute", 3))
+
+_DEMO_ORG_ID = 0
+_DEMO_EMAIL_DOMAIN = "sloopquest.com"
+_DEMO_EMAIL_PREFIX = "demo"
 
 
 @dataclass
@@ -32,9 +39,23 @@ class MeResponse:
 @post("/magic-link/request", tags=["auth"], middleware=[_rate_limit.middleware])
 async def request_magic_link(
     data: MagicLinkRequestBody,
+    request: Request,
     auth_service: AuthService,
+    db_session: AsyncSession,
 ) -> dict[str, str]:
-    """Request a magic link for the given email. Always returns success."""
+    """Request a magic link. In dev, demo@sloopquest.com addresses log in instantly."""
+    email = data.email.strip().lower()
+    local, _, domain = email.partition("@")
+
+    if config.IS_DEV and domain == _DEMO_EMAIL_DOMAIN and local.startswith(_DEMO_EMAIL_PREFIX):
+        user = (
+            await db_session.execute(select(User).where(User.email == email, User.organization_id == _DEMO_ORG_ID))
+        ).scalar_one_or_none()
+        if user is not None:
+            request.set_session({"user_id": int(user.id), "last_activity": time.time()})
+            logger.info("Demo login for %s", email)
+            return {"message": "Authenticated", "redirect": "/"}
+
     try:
         await auth_service.request_magic_link(data.email)
     except Exception:

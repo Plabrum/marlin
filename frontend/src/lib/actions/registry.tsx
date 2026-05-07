@@ -1,14 +1,12 @@
+import type {
+  ActionsActionGroupExecuteActionBody,
+  ActionsActionGroupObjectIdExecuteObjectActionBody,
+} from "@/openapi/litestarAPI.schemas";
 import { generatedRegistry } from "@/openapi/actions/registry.gen";
 
-/**
- * Discriminated union of all action bodies the backend accepts. As
- * specific actions are added, replace the placeholder member with their
- * concrete types so dispatch is type-safe at the dialog level.
- */
-export type ActionBodyUnion = {
-  action: string;
-  data: Record<string, unknown>;
-};
+export type ActionBodyUnion =
+  | ActionsActionGroupExecuteActionBody
+  | ActionsActionGroupObjectIdExecuteObjectActionBody;
 
 export type ActionType = ActionBodyUnion["action"];
 
@@ -33,10 +31,16 @@ export type ActionRegistry = Partial<{
   [K in ActionType]: ActionRegistryEntry<ActionDataTypeMap[K]>;
 }>;
 
+import { CreateInvoiceForm } from "./overrides/create-invoice-form";
+
 /**
  * Hand-written forms that take precedence over generated ones.
  */
-const overrides: Record<string, ActionRegistryEntry> = {};
+const overrides: Record<string, ActionRegistryEntry> = {
+  invoice_actions__create: {
+    render: (params) => <CreateInvoiceForm {...params} />,
+  },
+};
 
 export const actionRegistry: ActionRegistry = {
   ...generatedRegistry,

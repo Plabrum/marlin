@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -591,6 +592,58 @@ export function createTypedForm<TFieldValues extends FieldValues>() {
     );
   }
 
+  function FormCombobox<N extends Name<Path<TFieldValues>>>(
+    props: BaseFieldProps<TFieldValues, N> & {
+      /** Async function called on mount to load options. */
+      queryFn: () => Promise<ComboboxOption[]>;
+    },
+  ) {
+    const { name, label, placeholder, required, className, description, id, queryFn } = props;
+    const { control } = useFormContext<TFieldValues>();
+    const htmlId = id ?? String(name);
+
+    const [options, setOptions] = React.useState<ComboboxOption[]>([]);
+
+    React.useEffect(() => {
+      let cancelled = false;
+      queryFn().then((results) => {
+        if (!cancelled) setOptions(results);
+      });
+      return () => { cancelled = true; };
+    // queryFn identity is stable per render — run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return (
+      <div className={className}>
+        {label && (
+          <Label htmlFor={htmlId}>
+            {label} {required ? "*" : null}
+          </Label>
+        )}
+        <Controller
+          name={name}
+          control={control}
+          rules={{ required: requiredMessage(required) }}
+          render={({ field }) => (
+            <div className="mt-1">
+              <Combobox
+                value={(field.value as string) ?? ""}
+                onChange={field.onChange}
+                suggestions={options}
+                placeholder={placeholder ?? "Select..."}
+              />
+            </div>
+          )}
+        />
+        {description ? (
+          <p className="text-muted-foreground mt-1 text-xs">{description}</p>
+        ) : null}
+        <FieldError name={String(name)} />
+      </div>
+    );
+  }
+
   function FormModal(props: {
     isOpen: boolean;
     onClose: () => void;
@@ -679,6 +732,7 @@ export function createTypedForm<TFieldValues extends FieldValues>() {
     FormDatetime,
     FormTime,
     FormCheckbox,
+    FormCombobox,
     FormCustom,
     FormModal,
   };

@@ -21,6 +21,7 @@ from app.platform.base.filters import TextFilter, apply_filter
 from app.platform.base.models import BaseDBModel
 from app.platform.base.schema_routes import schema_router
 from app.platform.base.search import SearchMixin
+from app.utils.sqids import Sqid
 
 
 class _Vessel(BaseDBModel, SearchMixin):
@@ -55,7 +56,7 @@ def _to_detail(v: _Vessel, _user: User) -> VesselDetail:
 
 def _make_stub_user() -> User:
     user = User(name="stub", email="stub@example.test", organization_id=42, role=Role.ADMIN)
-    user.id = 1
+    user.id = Sqid(1)
     return user
 
 

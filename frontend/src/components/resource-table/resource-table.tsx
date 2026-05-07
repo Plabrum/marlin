@@ -1,5 +1,12 @@
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type RowData,
+} from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -17,6 +24,14 @@ import type {
 import { ResourceTableFilters } from "./resource-table-filters";
 import { ResourceTablePagination } from "./resource-table-pagination";
 import { ResourceTableSearch } from "./resource-table-search";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    className?: string;
+    hideOnMobile?: boolean;
+  }
+}
 
 function SortableHeader<T>({
   column,
@@ -85,7 +100,34 @@ export function ResourceTable<T extends { id: string | number }>({
   classNames,
 }: ResourceTableProps<T>) {
   const totalPages = Math.max(1, Math.ceil(data.total / pageSize));
-  const expansionColSpan = columns.length;
+
+  const tanStackColumns = useMemo<ColumnDef<T>[]>(
+    () =>
+      columns.map((col) => ({
+        id: col.key,
+        header: () => (
+          <SortableHeader column={col} sorts={sorts} onSortsChange={onSortsChange} />
+        ),
+        cell: ({ row }) => col.render(row.original),
+        enableSorting: col.sortable ?? false,
+        meta: { className: col.className, hideOnMobile: col.hideOnMobile },
+      })),
+    [columns, sorts, onSortsChange],
+  );
+
+  const table = useReactTable({
+    data: data.items,
+    columns: tanStackColumns,
+    pageCount: Math.ceil(data.total / pageSize),
+    state: {
+      pagination: { pageIndex: page - 1, pageSize },
+    },
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+    autoResetPageIndex: false,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <div className="w-full space-y-4">
@@ -128,70 +170,70 @@ export function ResourceTable<T extends { id: string | number }>({
       >
         <Table>
           <TableHeader className={cn("", classNames?.header)}>
-            <TableRow className="border-0 hover:bg-transparent [&>th]:bg-sidebar-accent [&>th:first-child]:rounded-l-lg [&>th:last-child]:rounded-r-lg">
-              {columns.map((col) => (
-                <TableHead
-                  key={col.key}
-                  className={cn(
-                    "text-sidebar-accent-foreground",
-                    col.className,
-                    col.hideOnMobile && "hidden md:table-cell",
-                  )}
-                >
-                  <SortableHeader
-                    column={col}
-                    sorts={sorts}
-                    onSortsChange={onSortsChange}
-                  />
-                </TableHead>
-              ))}
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className="border-0 hover:bg-transparent [&>th]:bg-sidebar-accent [&>th:first-child]:rounded-l-lg [&>th:last-child]:rounded-r-lg"
+              >
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      "text-sidebar-accent-foreground",
+                      header.column.columnDef.meta?.className,
+                      header.column.columnDef.meta?.hideOnMobile && "hidden md:table-cell",
+                    )}
+                  >
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
 
           <TableBody>
-            {data.items.length === 0 ? (
+            {table.getRowModel().rows.length === 0 ? (
               <TableRow className="border-0 hover:bg-transparent">
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-32 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-32 text-center">
                   {emptyState ?? (
                     <span className="text-muted-foreground">No results.</span>
                   )}
                 </TableCell>
               </TableRow>
             ) : (
-              data.items.map((item) => {
+              table.getRowModel().rows.map((row) => {
+                const item = row.original;
                 const isExpanded =
                   expandedId != null && String(item.id) === String(expandedId);
                 return (
-                  <Fragment key={item.id}>
+                  <Fragment key={row.id}>
                     <TableRow
                       onClick={onRowClick ? () => onRowClick(item) : undefined}
                       className={cn(
                         "border-0 transition-colors even:bg-primary/[0.05]",
                         classNames?.row,
                         onRowClick && "cursor-pointer hover:bg-primary/[0.1]",
-                        highlightId != null && String(item.id) === String(highlightId) &&
+                        highlightId != null &&
+                          String(item.id) === String(highlightId) &&
                           "bg-primary/15 ring-1 ring-primary/30 ring-inset rounded-lg",
                         isExpanded && "bg-primary/[0.08]",
                       )}
                     >
-                      {columns.map((col) => (
+                      {row.getVisibleCells().map((cell) => (
                         <TableCell
-                          key={col.key}
+                          key={cell.id}
                           className={cn(
-                            col.className,
-                            col.hideOnMobile && "hidden md:table-cell",
+                            cell.column.columnDef.meta?.className,
+                            cell.column.columnDef.meta?.hideOnMobile && "hidden md:table-cell",
                           )}
                         >
-                          {col.render(item)}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
                     </TableRow>
                     {isExpanded && renderRowExpansion && (
                       <TableRow className="border-0 bg-primary/[0.04] hover:bg-primary/[0.04]">
-                        <TableCell colSpan={expansionColSpan} className="p-0">
+                        <TableCell colSpan={columns.length} className="p-0">
                           {renderRowExpansion(item)}
                         </TableCell>
                       </TableRow>

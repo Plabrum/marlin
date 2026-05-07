@@ -14,6 +14,12 @@ import {
   clientsListRoute,
   clientRoute,
   reportsRoute,
+  reportRoute,
+  invoicesListRoute,
+  invoiceRoute,
+  subscriptionsRoute,
+  surveyTemplatesListRoute,
+  surveyTemplateRoute,
   settingsRoute,
 } from "@/router/authenticated.routes";
 
@@ -28,6 +34,12 @@ const routeTree = rootRoute.addChildren([
     clientsListRoute,
     clientRoute,
     reportsRoute,
+    reportRoute,
+    invoicesListRoute,
+    invoiceRoute,
+    subscriptionsRoute,
+    surveyTemplatesListRoute,
+    surveyTemplateRoute,
     settingsRoute,
   ]),
 ]);

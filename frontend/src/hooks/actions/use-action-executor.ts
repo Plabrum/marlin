@@ -3,6 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error-handler";
+import {
+  useActionsActionGroupExecuteAction,
+  useActionsActionGroupObjectIdExecuteObjectAction,
+} from "@/openapi/actions/actions";
 import { executeActionApi } from "./action-executor/execute-action-api";
 import { handleActionResult } from "./action-executor/handle-action-result";
 import { handleQueryInvalidation } from "./action-executor/handle-query-invalidation";
@@ -10,7 +14,6 @@ import type {
   ActionDTO,
   ActionExecutionResponse,
   ActionGroupType,
-  ActionMutations,
 } from "@/lib/actions/types";
 import type { ActionBodyUnion } from "@/lib/actions/registry";
 
@@ -31,7 +34,7 @@ export type ActionFormRenderer = (props: {
   actionLabel: string;
 }) => React.ReactNode | null;
 
-export type ActionExecutorOptions = ActionMutations & {
+export type ActionExecutorOptions = {
   actionGroup: ActionGroupType;
   objectId?: string;
   onSuccess?: (action: ActionDTO, response: ActionExecutionResponse) => void;
@@ -53,11 +56,11 @@ export function useActionExecutor({
   renderActionForm,
   onInvalidate,
   formContext,
-  executeGroupActionMutation,
-  executeObjectActionMutation,
 }: ActionExecutorOptions) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const executeGroupActionMutation = useActionsActionGroupExecuteAction();
+  const executeObjectActionMutation = useActionsActionGroupObjectIdExecuteObjectAction();
   const [state, setState] = useState<ActionExecutorState>({
     isExecuting: false,
     pendingAction: null,
@@ -76,8 +79,7 @@ export function useActionExecutor({
       let finalBody = actionBody;
       if (formContext) {
         const existingData = finalBody
-          ? (finalBody as { action: string; data: Record<string, unknown> })
-              .data
+          ? (finalBody as { action: string; data: Record<string, unknown> }).data
           : {};
         finalBody = {
           action: finalBody
