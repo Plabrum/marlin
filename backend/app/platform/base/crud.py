@@ -16,6 +16,8 @@ from app.platform.base.models import BaseDBModel
 from app.platform.base.registry import BaseRegistry
 from app.platform.base.schemas import ListRequest, PagedResponse
 from app.platform.base.search import SearchMixin
+from app.platform.data.schemas import DataSchemaResponse, FieldSchema, TimeSeriesDataRequest, TimeSeriesDataResponse
+from app.platform.data.service import FieldConfig, query_time_series_data
 from app.utils.sqids import Sqid
 
 # Populated by make_crud_controller — exposed via GET /schema/crud-metadata for codegen.
@@ -72,6 +74,10 @@ class CRUDConfig[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct]:
     # Optional hook to modify the base query per-request (e.g. role-based scoping).
     # Signature: (query, user) -> query
     base_query_modifier: Callable[[Any, "User"], Any] | None = None
+
+    # Time-series data endpoints — omit to skip generating POST /data and GET /data/schema.
+    data_fields: list[FieldConfig] = field(default_factory=list)
+    data_timestamp_field: str = "created_at"
 
 
 def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
@@ -196,6 +202,40 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
     }
     if config.expose_detail:
         class_attrs["detail_handler"] = detail_handler
+
+    if config.data_fields:
+        _data_fields = config.data_fields
+        _data_timestamp_field = config.data_timestamp_field
+
+        @post("/data", guards=guards, status_code=200, operation_id=f"data_{model_name}")
+        async def data_handler(
+            self,
+            data: TimeSeriesDataRequest,
+            user: User,
+            transaction: AsyncSession,
+        ) -> TimeSeriesDataResponse:
+            return await query_time_series_data(
+                transaction, model, _data_fields, data, user.organization_id, _data_timestamp_field
+            )
+
+        @get("/data/schema", guards=guards, operation_id=f"data_schema_{model_name}")
+        async def data_schema_handler(self, user: User) -> DataSchemaResponse:
+            return DataSchemaResponse(
+                fields=[
+                    FieldSchema(
+                        name=f.name,
+                        label=f.label,
+                        field_type=f.field_type,
+                        aggregatable=f.aggregatable,
+                        filterable=f.filterable,
+                    )
+                    for f in _data_fields
+                ],
+                timestamp_field=_data_timestamp_field,
+            )
+
+        class_attrs["data_handler"] = data_handler
+        class_attrs["data_schema_handler"] = data_schema_handler
     controller_cls = type(
         f"{model_name}CRUDController",
         (Controller,),

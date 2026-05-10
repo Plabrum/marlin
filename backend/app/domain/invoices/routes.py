@@ -7,6 +7,8 @@ from app.domain.invoices.models import Invoice, InvoiceLineItem
 from app.domain.invoices.schemas import InvoiceDetail, InvoiceLineItemSchema, InvoiceListItem
 from app.domain.users.models import User
 from app.platform.base.crud import CRUDConfig, make_crud_controller
+from app.platform.data.enums import FieldType
+from app.platform.data.service import FieldConfig
 
 
 def _to_line_item(item: InvoiceLineItem) -> InvoiceLineItemSchema:
@@ -62,6 +64,15 @@ _config = CRUDConfig(
     filterable_columns={"state", "survey_id", "client_id", "issued_at", "due_at", "created_at"},
     sortable_columns={"invoice_number", "issued_at", "due_at", "total_cents", "created_at"},
     label_field="invoice_number",
+    data_fields=[
+        FieldConfig("total_cents", "Total", FieldType.cents),
+        FieldConfig("subtotal_cents", "Subtotal", FieldType.cents),
+        FieldConfig("tax_cents", "Tax", FieldType.cents),
+        FieldConfig("state", "Status", FieldType.enum),
+        FieldConfig("issued_at", "Issued", FieldType.datetime, aggregatable=False, filterable=True),
+        FieldConfig("due_at", "Due", FieldType.datetime, aggregatable=False, filterable=True),
+        FieldConfig("created_at", "Created", FieldType.datetime, aggregatable=False),
+    ],
 )
 
 _controller = make_crud_controller("/invoices", _config)

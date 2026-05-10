@@ -6,6 +6,8 @@ from app.domain.reports.models import Report
 from app.domain.reports.schemas import ReportDetail, ReportListItem
 from app.domain.users.models import User
 from app.platform.base.crud import CRUDConfig, make_crud_controller
+from app.platform.data.enums import FieldType
+from app.platform.data.service import FieldConfig
 
 
 def _to_list_item(report: Report, user: User) -> ReportListItem:
@@ -42,6 +44,13 @@ _config = CRUDConfig(
     filterable_columns={"state", "survey_id", "created_at"},
     sortable_columns={"title", "created_at"},
     label_field="title",
+    data_fields=[
+        FieldConfig("market_value_cents", "Market Value", FieldType.cents),
+        FieldConfig("replacement_value_cents", "Replacement Value", FieldType.cents),
+        FieldConfig("state", "Status", FieldType.enum),
+        FieldConfig("released_at", "Released", FieldType.datetime, aggregatable=False, filterable=True),
+        FieldConfig("created_at", "Created", FieldType.datetime, aggregatable=False),
+    ],
 )
 
 _controller = make_crud_controller("/reports", _config)

@@ -12,6 +12,8 @@ from app.domain.surveys.schemas import (
 )
 from app.domain.users.models import User
 from app.platform.base.crud import CRUDConfig, make_crud_controller
+from app.platform.data.enums import FieldType
+from app.platform.data.service import FieldConfig
 from app.platform.form_dsl.schema import FormDefinition
 
 
@@ -42,6 +44,10 @@ _survey_config = CRUDConfig(
     filterable_columns={"state", "vessel_id", "assigned_surveyor_id", "created_at"},
     sortable_columns={"created_at"},
     label_field="state",
+    data_fields=[
+        FieldConfig("state", "Status", FieldType.enum),
+        FieldConfig("created_at", "Created", FieldType.datetime, aggregatable=False),
+    ],
 )
 
 _survey_controller = make_crud_controller("/surveys", _survey_config)

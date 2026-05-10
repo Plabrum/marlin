@@ -44,6 +44,9 @@ class Config:
     # ─── Email templates ──────────────────────────────────────────────────────
     EMAIL_TEMPLATES_DIR: str = "email_templates/out/emails-react"
 
+    # ─── PDF templates ────────────────────────────────────────────────────────
+    PDF_TEMPLATES_DIR: str = "pdf_templates/out/pdfs"
+
     # ─── SES ──────────────────────────────────────────────────────────────────
     SES_REGION: str = os.getenv("SES_REGION", os.getenv("AWS_REGION", "us-east-1"))
     SES_CONFIGURATION_SET: str = os.getenv("SES_CONFIGURATION_SET", "")

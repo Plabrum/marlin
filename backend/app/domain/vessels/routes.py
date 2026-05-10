@@ -7,6 +7,8 @@ from app.domain.users.models import User
 from app.domain.vessels.models import Engine, Vessel
 from app.domain.vessels.schemas import EngineSchema, VesselDetail, VesselListItem
 from app.platform.base.crud import CRUDConfig, make_crud_controller
+from app.platform.data.enums import FieldType
+from app.platform.data.service import FieldConfig
 
 
 def _to_engine(engine: Engine) -> EngineSchema:
@@ -71,6 +73,16 @@ _config = CRUDConfig(
     filterable_columns={"name", "vessel_type", "propulsion_type", "hull_material", "year_built", "created_at"},
     sortable_columns={"name", "year_built", "created_at"},
     label_field="name",
+    data_fields=[
+        FieldConfig("vessel_type", "Vessel Type", FieldType.enum),
+        FieldConfig("propulsion_type", "Propulsion Type", FieldType.enum),
+        FieldConfig("hull_material", "Hull Material", FieldType.enum),
+        FieldConfig("year_built", "Year Built", FieldType.int, filterable=True),
+        FieldConfig("loa_ft", "Length Overall (ft)", FieldType.float),
+        FieldConfig("beam_ft", "Beam (ft)", FieldType.float),
+        FieldConfig("draft_ft", "Draft (ft)", FieldType.float),
+        FieldConfig("created_at", "Created", FieldType.datetime, aggregatable=False),
+    ],
 )
 
 _controller = make_crud_controller("/vessels", _config)
