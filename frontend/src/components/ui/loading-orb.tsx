@@ -106,7 +106,7 @@ export function LoadingOrb({
                 borderRadius: "50%",
                 opacity: 0.9,
                 background:
-                  "radial-gradient(circle at 40% 40%, var(--primary) 0%, var(--primary) 70%, transparent 100%)",
+                  "radial-gradient(circle at 40% 40%, var(--chart-1) 0%, var(--chart-1) 70%, transparent 100%)",
                 animation: "orb-rotate-1 5s ease-in-out infinite",
                 transformOrigin: "center center",
               }}
@@ -121,7 +121,7 @@ export function LoadingOrb({
                 borderRadius: "50%",
                 opacity: 0.6,
                 background:
-                  "radial-gradient(circle at 60% 35%, var(--muted-foreground) 0%, var(--muted-foreground) 70%, transparent 100%)",
+                  "radial-gradient(circle at 60% 35%, var(--chart-2) 0%, var(--chart-2) 70%, transparent 100%)",
                 animation: "orb-rotate-2 7s ease-in-out infinite",
                 transformOrigin: "center center",
               }}
@@ -136,7 +136,7 @@ export function LoadingOrb({
                 borderRadius: "50%",
                 opacity: 0.5,
                 background:
-                  "radial-gradient(circle at 45% 55%, var(--accent-foreground) 0%, var(--accent-foreground) 70%, transparent 100%)",
+                  "radial-gradient(circle at 45% 55%, var(--chart-4) 0%, var(--chart-4) 70%, transparent 100%)",
                 animation: "orb-rotate-3 9s ease-in-out infinite",
                 transformOrigin: "center center",
               }}
@@ -151,7 +151,7 @@ export function LoadingOrb({
                 borderRadius: "50%",
                 opacity: 0.6,
                 background:
-                  "radial-gradient(circle at 50% 50%, var(--muted-foreground) 0%, var(--muted-foreground) 70%, transparent 100%)",
+                  "radial-gradient(circle at 50% 50%, var(--chart-3) 0%, var(--chart-3) 70%, transparent 100%)",
                 animation: "orb-rotate-4 6s ease-in-out infinite",
                 transformOrigin: "center center",
               }}
@@ -166,7 +166,7 @@ export function LoadingOrb({
                 borderRadius: "50%",
                 opacity: 0.7,
                 background:
-                  "radial-gradient(circle at 40% 40%, var(--primary) 0%, var(--primary) 70%, transparent 100%)",
+                  "radial-gradient(circle at 40% 40%, var(--chart-5) 0%, var(--chart-5) 70%, transparent 100%)",
                 animation: "orb-rotate-5 4s ease-in-out infinite",
                 transformOrigin: "center center",
               }}

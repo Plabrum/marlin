@@ -8,7 +8,6 @@ import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litesta
 
 import { Composer } from "@/components/llm/composer";
 import { MessageBubble } from "@/components/llm/message-bubble";
-import { QuickPrompts } from "@/components/llm/quick-prompts";
 import {
   useLlmStreaming,
   type InProgressMessage,
@@ -95,7 +94,6 @@ function LlmConversationInner({ threadId, onThreadCreated, expanded }: LlmConver
             variant={expanded ? "fullscreen" : "dock"}
           />
         }
-        quickPrompts={<QuickPrompts onPick={(prompt) => setComposerValue(prompt)} />}
         expanded={expanded}
       />
     );
@@ -162,7 +160,6 @@ function LlmConversationNew({ onThreadCreated, expanded }: LlmConversationProps)
             variant={expanded ? "fullscreen" : "dock"}
           />
         }
-        quickPrompts={<QuickPrompts onPick={(prompt) => setComposerValue(prompt)} />}
         expanded={expanded}
       />
     );
@@ -230,11 +227,9 @@ function ConversationLayout({
 
 function EmptyState({
   composer,
-  quickPrompts,
   expanded,
 }: {
   composer: React.ReactNode;
-  quickPrompts: React.ReactNode;
   expanded?: boolean;
 }) {
   return (
@@ -247,7 +242,6 @@ function EmptyState({
             <p className="text-sm text-muted-foreground">What's on your mind today?</p>
           </>
         )}
-        {quickPrompts}
       </div>
       <div
         className={cn(
