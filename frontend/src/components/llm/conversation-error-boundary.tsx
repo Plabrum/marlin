@@ -14,12 +14,11 @@
 import type { AxiosError } from "axios";
 import { Component, type ReactNode } from "react";
 
-import { setActiveThreadId } from "@/hooks/llm/use-llm-dock-state";
-
 type Props = {
   threadId: string | null;
   fallback: ReactNode;
   children: ReactNode;
+  onThreadNotFound?: () => void;
 };
 
 type State = { error: unknown };
@@ -50,7 +49,7 @@ export class ConversationErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: unknown): void {
     if (isThreadMessages404(error) && this.props.threadId !== null) {
-      setActiveThreadId(null);
+      this.props.onThreadNotFound?.();
       this.setState({ error: null });
     }
   }

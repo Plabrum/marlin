@@ -45,10 +45,10 @@ class _EchoTool(SloopTool):
         return str(args.message)
 
 
-async def _echo_executor(name: str, inputs: dict) -> str:
+async def _echo_executor(name: str, inputs: dict) -> tuple[str, bool]:
     if name == "_test_echo":
-        return str(inputs.get("message", ""))
-    return f"Unknown tool: {name}"
+        return str(inputs.get("message", "")), False
+    return f"Unknown tool: {name}", True
 
 
 async def _aiter(*items: str) -> AsyncIterator[str]:
@@ -171,10 +171,17 @@ async def test_anthropic_loop_bails_after_max_iterations() -> None:
     assert "could not be completed" in out
 
 
-@pytest.mark.parametrize("name,expected", [("_test_echo", "ahoy"), ("unknown", "Unknown tool: unknown")])
-async def test_echo_executor(name: str, expected: str) -> None:
-    out = await _echo_executor(name, {"message": "ahoy"})
-    assert out == expected
+@pytest.mark.parametrize(
+    "name,expected,is_err",
+    [
+        ("_test_echo", "ahoy", False),
+        ("unknown", "Unknown tool: unknown", True),
+    ],
+)
+async def test_echo_executor(name: str, expected: str, is_err: bool) -> None:
+    result, is_error = await _echo_executor(name, {"message": "ahoy"})
+    assert result == expected
+    assert is_error == is_err
 
 
 async def test_serialize_tool_result_str() -> None:

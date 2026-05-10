@@ -11,7 +11,7 @@ import { memo } from "react";
 import { LlmOrb } from "@/components/ui/loading-orb";
 import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/lib/utils";
-import type { MessageSchema } from "@/lib/llm/api";
+import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litestarAPI.schemas";
 
 import { ToolPill } from "@/components/llm/tool-pill";
 import type { ToolPill as ToolPillType } from "@/hooks/llm/use-llm-streaming";

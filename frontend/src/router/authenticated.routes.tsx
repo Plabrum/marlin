@@ -14,6 +14,7 @@ import { InvoiceDetailPage } from "@/pages/invoices/invoice-detail-page";
 import { SubscriptionsPage } from "@/pages/subscriptions/subscriptions-page";
 import { SurveyTemplatesListPage } from "@/pages/survey-templates/survey-templates-list-page";
 import { SurveyTemplateDetailPage } from "@/pages/survey-templates/survey-template-detail-page";
+import { SearchPage } from "@/pages/search/search-page";
 import { SettingsPage } from "@/pages/settings/settings-page";
 import { BillingPage } from "@/pages/settings/billing-page";
 import { ConnectOnboardingPage } from "@/pages/settings/connect-onboarding-page";
@@ -24,9 +25,21 @@ export const indexRoute = createRoute({
   component: DashboardPage,
 });
 
+export const searchRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/search",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
+  component: SearchPage,
+});
+
 export const surveysListRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/surveys",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   component: SurveysListPage,
 });
 
@@ -43,6 +56,9 @@ export const surveyRoute = createRoute({
 export const vesselsListRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/vessels",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   component: VesselsListPage,
 });
 
@@ -59,6 +75,9 @@ export const vesselRoute = createRoute({
 export const clientsListRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/clients",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   component: ClientsListPage,
 });
 

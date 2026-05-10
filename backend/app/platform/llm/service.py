@@ -16,19 +16,10 @@ from app.platform.llm.executor import build_tool_executor
 from app.platform.llm.models import LLMMessage, LLMThread
 from app.platform.llm.queries import create_message, create_thread, get_messages_by_thread, get_thread_by_id
 from app.platform.llm.registry import get_tool_definitions
+from app.platform.llm.schemas import MessageCompleteEvent, SseEvent, SseMessageSchema, TokenEvent
 from app.utils.sqids import Sqid
 
 logger = logging.getLogger(__name__)
-
-
-def _msg_to_dict(msg: LLMMessage) -> dict:
-    return {
-        "id": str(msg.id),
-        "thread_id": str(Sqid(msg.thread_id)),
-        "role": msg.role,
-        "content": msg.content,
-        "created_at": msg.created_at.isoformat(),
-    }
 
 
 def _build_system_prompt(context: dict | None = None) -> str:
@@ -132,7 +123,7 @@ class LLMService:
         context: dict | None = None,
         threadable_type: str | None = None,
         threadable_id: int | None = None,
-    ) -> AsyncGenerator[tuple[str, dict]]:
+    ) -> AsyncGenerator[SseEvent]:
         invalidate_keys: list[str] = []
         thread = await create_thread(
             self.transaction,
@@ -150,27 +141,30 @@ class LLMService:
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread.id, role=role, content=json_content)
 
-        async for event_name, event_data in self.llm_client.stream(
+        async for ev in self.llm_client.stream(
             [{"role": "user", "content": content}],
             system=system,
             tools=tools,
             tool_executor=executor,
             persist_tool_message=persist_tool_message,
         ):
-            yield (event_name, event_data)
-            if event_name == "token":
-                full_text += event_data.get("delta", "")
+            yield ev
+            if isinstance(ev, TokenEvent):
+                full_text += ev.delta
 
         assistant_msg = await create_message(
             self.transaction, thread_id=thread.id, role=MessageRole.ASSISTANT, content=full_text
         )
-        yield (
-            "message_complete",
-            {
-                "thread_id": str(thread.id),
-                "message": _msg_to_dict(assistant_msg),
-                "invalidate_queries": invalidate_keys,
-            },
+        yield MessageCompleteEvent(
+            thread_id=str(Sqid(thread.id)),
+            message=SseMessageSchema(
+                id=str(assistant_msg.id),
+                thread_id=str(Sqid(assistant_msg.thread_id)),
+                role=assistant_msg.role,
+                content=assistant_msg.content,
+                created_at=assistant_msg.created_at.isoformat(),
+            ),
+            invalidate_queries=invalidate_keys,
         )
 
     async def stream_send_message(
@@ -180,7 +174,7 @@ class LLMService:
         user: User,
         *,
         context: dict | None = None,
-    ) -> AsyncGenerator[tuple[str, dict]]:
+    ) -> AsyncGenerator[SseEvent]:
         thread = await get_thread_by_id(self.transaction, thread_id)
         if thread is None:
             raise NotFoundException("Thread not found")
@@ -199,25 +193,28 @@ class LLMService:
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread_id, role=role, content=json_content)
 
-        async for event_name, event_data in self.llm_client.stream(
+        async for ev in self.llm_client.stream(
             llm_messages,
             system=system,
             tools=tools,
             tool_executor=executor,
             persist_tool_message=persist_tool_message,
         ):
-            yield (event_name, event_data)
-            if event_name == "token":
-                full_text += event_data.get("delta", "")
+            yield ev
+            if isinstance(ev, TokenEvent):
+                full_text += ev.delta
 
         assistant_msg = await create_message(
             self.transaction, thread_id=thread_id, role=MessageRole.ASSISTANT, content=full_text
         )
-        yield (
-            "message_complete",
-            {
-                "thread_id": str(thread.id),
-                "message": _msg_to_dict(assistant_msg),
-                "invalidate_queries": invalidate_keys,
-            },
+        yield MessageCompleteEvent(
+            thread_id=str(Sqid(thread.id)),
+            message=SseMessageSchema(
+                id=str(assistant_msg.id),
+                thread_id=str(Sqid(assistant_msg.thread_id)),
+                role=assistant_msg.role,
+                content=assistant_msg.content,
+                created_at=assistant_msg.created_at.isoformat(),
+            ),
+            invalidate_queries=invalidate_keys,
         )

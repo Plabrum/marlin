@@ -3,10 +3,8 @@ import { Suspense, useCallback, useState } from "react";
 import { LlmOrb } from "@/components/ui/loading-orb";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  useLlmThreadsThreadIdMessagesGetMessagesSuspense,
-  type MessageSchema,
-} from "@/lib/llm/api";
+import { useLlmThreadsThreadIdMessagesGetThreadMessagesHandlerSuspense } from "@/openapi/llm/llm";
+import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litestarAPI.schemas";
 
 import { Composer } from "@/components/llm/composer";
 import { MessageBubble } from "@/components/llm/message-bubble";
@@ -65,7 +63,7 @@ function LlmConversationInner({ threadId, onThreadCreated, expanded }: LlmConver
     throw new Error("LlmConversationInner mounted with null threadId");
   }
 
-  const { data } = useLlmThreadsThreadIdMessagesGetMessagesSuspense(threadId);
+  const { data } = useLlmThreadsThreadIdMessagesGetThreadMessagesHandlerSuspense(threadId);
   const fetchedMessages = data.messages;
   const isStreaming = status === "streaming" || status === "tool_running";
 

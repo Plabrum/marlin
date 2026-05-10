@@ -73,3 +73,48 @@ class ToolDefinition(Struct):
     name: str
     description: str
     input_schema: InputSchema
+
+
+# --- SSE event schemas ---
+
+
+class TokenEvent(Struct):
+    event: str = "token"
+    delta: str = ""
+
+
+class ToolCallEvent(Struct):
+    id: str
+    name: str
+    input: dict
+    event: str = "tool_call"
+
+
+class ToolResultEvent(Struct):
+    tool_use_id: str
+    is_error: bool
+    event: str = "tool_result"
+
+
+class SseMessageSchema(Struct):
+    id: str
+    thread_id: str
+    role: str
+    content: str
+    created_at: str  # ISO-8601 string
+
+
+class MessageCompleteEvent(Struct):
+    thread_id: str
+    message: SseMessageSchema
+    invalidate_queries: list[str]
+    event: str = "message_complete"
+
+
+class ErrorEvent(Struct):
+    message: str
+    code: str = "error"
+    event: str = "error"
+
+
+SseEvent = TokenEvent | ToolCallEvent | ToolResultEvent | MessageCompleteEvent | ErrorEvent

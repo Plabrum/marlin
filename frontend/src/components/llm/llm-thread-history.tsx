@@ -3,12 +3,8 @@ import { Suspense } from "react";
 import { DeleteThreadButton } from "@/components/llm/delete-thread-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  useLlmThreadsListThreadsSuspense,
-  type ThreadSummarySchema,
-} from "@/lib/llm/api";
-
-const THREAD_LIST_LIMIT = 20;
+import { useLlmThreadsListThreadsHandlerSuspense } from "@/openapi/llm/llm";
+import type { ThreadSummarySchema } from "@/openapi/litestarAPI.schemas";
 
 const RTF = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 const TIME_BUCKETS: ReadonlyArray<[string, number]> = [
@@ -89,7 +85,7 @@ function LlmThreadHistoryInner({
   activeThreadId: string | null;
   onSelect: (id: string | null) => void;
 }) {
-  const { data } = useLlmThreadsListThreadsSuspense({ limit: THREAD_LIST_LIMIT });
+  const { data } = useLlmThreadsListThreadsHandlerSuspense();
   const threads = data.threads;
 
   if (threads.length === 0) {

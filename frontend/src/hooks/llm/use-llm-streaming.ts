@@ -1,14 +1,18 @@
 /**
  * SSE consumer for the LLM agent loop.
  *
- * Consumes the SSE stream from the Sloopquest LLM endpoints (TBD):
+ * Consumes the SSE stream from the Sloopquest LLM endpoints:
  *   POST /llm/threads/stream                       (create thread + first turn)
  *   POST /llm/threads/{thread_id}/messages/stream  (append + reply)
  *
+ * SSE event types below are manually maintained — OpenAPI does not describe
+ * SSE bodies. Keep in sync with the backend SseEvent union in
+ * backend/app/platform/llm/schemas.py.
+ *
  * Event protocol:
  *   token            { delta: string }
- *   tool_call        { name: string; input: object }
- *   tool_result      { result: string; is_error: boolean }
+ *   tool_call        { id: string; name: string; input: object }
+ *   tool_result      { tool_use_id: string; is_error: boolean }
  *   message_complete { message: MessageSchema; invalidate_queries: string[] }
  *   error            { code: string; message: string }
  *
@@ -22,11 +26,11 @@ import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/error-handler";
 import {
-  getLlmThreadsListThreadsQueryKey,
-  getLlmThreadsThreadIdMessagesGetMessagesQueryOptions,
-  llmThreadsThreadIdMessagesGetMessages,
-  type MessageSchema,
-} from "@/lib/llm/api";
+  getLlmThreadsListThreadsHandlerQueryKey,
+  getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey,
+  llmThreadsThreadIdMessagesGetThreadMessagesHandler,
+} from "@/openapi/llm/llm";
+import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litestarAPI.schemas";
 
 
 export type LlmStreamingStatus =
@@ -66,13 +70,14 @@ export type SendResult = {
 type StreamTokenEvent = { event: "token"; delta: string };
 type StreamToolCallEvent = {
   event: "tool_call";
+  id: string;
   name: string;
   input: Record<string, unknown>;
 };
 type StreamToolResultEvent = {
   event: "tool_result";
-  result: string;
-  is_error?: boolean;
+  tool_use_id: string;
+  is_error: boolean;
 };
 type StreamMessageCompleteEvent = {
   event: "message_complete";
@@ -103,17 +108,17 @@ async function pollForThreadMessages(
   queryClient: ReturnType<typeof useQueryClient>,
   threadId: string,
 ): Promise<void> {
-  const queryOptions =
-    getLlmThreadsThreadIdMessagesGetMessagesQueryOptions(threadId);
+  const queryKey =
+    getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey(threadId);
   const deadline = Date.now() + 2000;
   const intervals = [25, 50, 100, 200, 400];
   let attempt = 0;
   while (Date.now() < deadline) {
     try {
       await queryClient.fetchQuery({
-        ...queryOptions,
+        queryKey,
         queryFn: ({ signal }) =>
-          llmThreadsThreadIdMessagesGetMessages(threadId, undefined, signal),
+          llmThreadsThreadIdMessagesGetThreadMessagesHandler(threadId, undefined, signal),
         staleTime: 0,
       });
       return;
@@ -301,7 +306,7 @@ export function useLlmStreaming(
                       toolPills: [
                         ...prev.toolPills,
                         {
-                          id: nextLocalId(),
+                          id: event.id,
                           name: event.name,
                           input: event.input,
                           status: "running",
@@ -311,17 +316,16 @@ export function useLlmStreaming(
                   : prev,
               );
             } else if (event.event === "tool_result") {
-              const isErr = event.is_error === true;
               setInProgressMessage((prev) => {
                 if (!prev) return prev;
                 const idx = prev.toolPills.findIndex(
-                  (p) => p.status === "running",
+                  (p) => p.id === event.tool_use_id,
                 );
                 if (idx === -1) return prev;
                 const next = prev.toolPills.slice();
                 next[idx] = {
                   ...next[idx],
-                  status: isErr ? "error" : "ok",
+                  status: event.is_error ? "error" : "ok",
                 };
                 return { ...prev, toolPills: next };
               });
@@ -334,13 +338,13 @@ export function useLlmStreaming(
               if (!isCreate) {
                 await queryClient.invalidateQueries({
                   queryKey:
-                    getLlmThreadsThreadIdMessagesGetMessagesQueryOptions(
+                    getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey(
                       event.message.thread_id,
-                    ).queryKey,
+                    ),
                 });
               }
               await queryClient.invalidateQueries({
-                queryKey: getLlmThreadsListThreadsQueryKey(),
+                queryKey: getLlmThreadsListThreadsHandlerQueryKey(),
               });
               for (const key of event.invalidate_queries ?? []) {
                 await queryClient.invalidateQueries({ queryKey: [key] });

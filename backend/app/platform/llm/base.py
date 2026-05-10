@@ -24,11 +24,11 @@ class ToolRegistry:
     def definitions(self) -> list[ToolDefinition]:
         return [t.definition for t in self._tools.values()]
 
-    async def execute(self, name: str, inputs: dict) -> str:
+    async def execute(self, name: str, inputs: dict) -> tuple[str, bool]:
         tool = self._tools.get(name)
         if tool is None:
-            return f"Unknown tool: {name}"
-        return await tool.execute(inputs)
+            return f"Unknown tool: {name}", True
+        return await tool.execute(inputs), False
 
     def __len__(self) -> int:
         return len(self._tools)

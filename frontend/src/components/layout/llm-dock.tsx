@@ -11,7 +11,7 @@ import {
 import { LlmOrb } from "@/components/ui/loading-orb";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useLlmThreadsListThreadsSuspense } from "@/lib/llm/api";
+import { useLlmThreadsListThreadsHandlerSuspense } from "@/openapi/llm/llm";
 
 import { ConversationErrorBoundary } from "@/components/llm/conversation-error-boundary";
 import { LlmConversation } from "@/components/llm/llm-conversation";
@@ -20,10 +20,9 @@ import { LlmMinimizedIcon } from "@/components/layout/llm-minimized-icon";
 import { useLlmDockState } from "@/hooks/llm/use-llm-dock-state";
 
 const DOCK_WIDTH = 400;
-const THREAD_LIST_LIMIT = 20;
 
 function ActiveThreadSubtitleInner({ threadId }: { threadId: string }) {
-  const { data } = useLlmThreadsListThreadsSuspense({ limit: THREAD_LIST_LIMIT });
+  const { data } = useLlmThreadsListThreadsHandlerSuspense();
   const match = data.threads.find((t) => t.id === threadId);
   return (
     <span className="truncate text-xs text-muted-foreground">
@@ -118,6 +117,7 @@ export function LlmDock() {
 
             <ConversationErrorBoundary
               threadId={dock.activeThreadId}
+              onThreadNotFound={() => dock.setActiveThreadId(null)}
               fallback={
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center text-sm text-muted-foreground">
                   <p>That conversation isn't available anymore.</p>

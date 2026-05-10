@@ -25,9 +25,9 @@ import {
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error-handler";
 import {
-  getLlmThreadsListThreadsQueryKey,
-  useLlmThreadsThreadIdDeleteThread,
-} from "@/lib/llm/api";
+  getLlmThreadsListThreadsHandlerQueryKey,
+  useLlmThreadsThreadIdDeleteThreadHandler,
+} from "@/openapi/llm/llm";
 
 interface DeleteThreadButtonProps {
   threadId: string;
@@ -51,14 +51,14 @@ export function DeleteThreadButton({
 }: DeleteThreadButtonProps) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
-  const deleteMutation = useLlmThreadsThreadIdDeleteThread({
+  const deleteMutation = useLlmThreadsThreadIdDeleteThreadHandler({
     mutation: {
       onSuccess: () => {
         // Query key includes the params object; matching only on the
         // base path drops every variant of the list query so dock + page
         // refetch in lockstep.
         queryClient.invalidateQueries({
-          queryKey: getLlmThreadsListThreadsQueryKey().slice(0, 1),
+          queryKey: getLlmThreadsListThreadsHandlerQueryKey().slice(0, 1),
         });
         toast.success("Conversation deleted");
         setOpen(false);

@@ -3,6 +3,7 @@ import { Outlet } from "@tanstack/react-router";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuthMeMeSuspense } from "@/openapi/auth/auth";
+import { LlmDock } from "@/components/layout/llm-dock";
 
 function AuthenticatedLayoutContent() {
   const { data: user } = useAuthMeMeSuspense();
@@ -19,11 +20,14 @@ function AuthenticatedLayoutContent() {
     >
       <AppSidebar user={user} />
       <SidebarInset className="min-w-0">
-        <main className="flex min-w-0 flex-1 flex-col">
-          <Suspense>
-            <Outlet />
-          </Suspense>
-        </main>
+        <div className="flex flex-1">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Suspense>
+              <Outlet />
+            </Suspense>
+          </div>
+          <LlmDock />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

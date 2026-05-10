@@ -10,11 +10,18 @@ import msgspec
 
 from app.config import config
 from app.platform.llm.enums import MessageRole
-from app.platform.llm.schemas import ToolDefinition
+from app.platform.llm.schemas import (
+    ErrorEvent,
+    SseEvent,
+    TokenEvent,
+    ToolCallEvent,
+    ToolDefinition,
+    ToolResultEvent,
+)
 
 logger = logging.getLogger(__name__)
 
-ToolExecutorFn = Callable[[str, dict], Awaitable[str]]
+ToolExecutorFn = Callable[[str, dict], Awaitable[tuple[str, bool]]]
 PersistToolMessageFn = Callable[[MessageRole, str], Awaitable[None]]
 
 
@@ -39,7 +46,7 @@ class BaseLLMClient(ABC):
         tools: list[ToolDefinition] | None = None,
         tool_executor: ToolExecutorFn | None = None,
         persist_tool_message: PersistToolMessageFn | None = None,
-    ) -> AsyncGenerator[tuple[str, dict]]: ...
+    ) -> AsyncGenerator[SseEvent]: ...
 
 
 class LocalLLMClient(BaseLLMClient):
@@ -63,9 +70,9 @@ class LocalLLMClient(BaseLLMClient):
         tools: list[ToolDefinition] | None = None,
         tool_executor: ToolExecutorFn | None = None,
         persist_tool_message: PersistToolMessageFn | None = None,
-    ) -> AsyncGenerator[tuple[str, dict]]:
+    ) -> AsyncGenerator[SseEvent]:
         logger.info("[dev] LLM stream called — returning stub response")
-        yield ("token", {"delta": "[dev mode: LLM disabled]"})
+        yield TokenEvent(delta="[dev mode: LLM disabled]")
 
 
 class AnthropicLLMClient(BaseLLMClient):
@@ -85,17 +92,17 @@ class AnthropicLLMClient(BaseLLMClient):
         persist_tool_message: PersistToolMessageFn | None = None,
     ) -> str:
         text_parts: list[str] = []
-        async for event_name, event_data in self.stream(
+        async for ev in self.stream(
             messages,
             system=system,
             tools=tools,
             tool_executor=tool_executor,
             persist_tool_message=persist_tool_message,
         ):
-            if event_name == "token":
-                text_parts.append(event_data["delta"])
-            elif event_name == "error":
-                return event_data.get("message", "I wasn't able to complete that request.")
+            if isinstance(ev, TokenEvent):
+                text_parts.append(ev.delta)
+            elif isinstance(ev, ErrorEvent):
+                return ev.message
         return "".join(text_parts)
 
     async def stream(  # type: ignore[override]
@@ -106,7 +113,7 @@ class AnthropicLLMClient(BaseLLMClient):
         tools: list[ToolDefinition] | None = None,
         tool_executor: ToolExecutorFn | None = None,
         persist_tool_message: PersistToolMessageFn | None = None,
-    ) -> AsyncGenerator[tuple[str, dict]]:
+    ) -> AsyncGenerator[SseEvent]:
         msgs = list(messages)
         max_iterations = 10
 
@@ -129,11 +136,11 @@ class AnthropicLLMClient(BaseLLMClient):
             try:
                 async with self._client.messages.stream(**kwargs) as stream_ctx:
                     async for text in stream_ctx.text_stream:
-                        yield ("token", {"delta": text})
+                        yield TokenEvent(delta=text)
                     final = await stream_ctx.get_final_message()
             except anthropic.APIError as exc:
                 logger.exception("Anthropic API error during stream")
-                yield ("error", {"message": str(exc)})
+                yield ErrorEvent(message=str(exc))
                 return
 
             if final.stop_reason == "tool_use" and tool_executor is not None:
@@ -146,9 +153,9 @@ class AnthropicLLMClient(BaseLLMClient):
                 tool_results = []
                 for block in final.content:
                     if block.type == "tool_use":
-                        yield ("tool_call", {"name": block.name, "id": block.id})
-                        result = await tool_executor(block.name, block.input)
-                        yield ("tool_result", {"tool_use_id": block.id, "content": result})
+                        yield ToolCallEvent(id=block.id, name=block.name, input=block.input)
+                        result, is_error = await tool_executor(block.name, block.input)
+                        yield ToolResultEvent(tool_use_id=block.id, is_error=is_error)
                         tool_results.append(
                             {
                                 "type": "tool_result",
@@ -167,4 +174,4 @@ class AnthropicLLMClient(BaseLLMClient):
             return
 
         logger.warning("LLM streaming loop hit max_iterations=%d", max_iterations)
-        yield ("error", {"message": "Request could not be completed."})
+        yield ErrorEvent(message="Request could not be completed.")

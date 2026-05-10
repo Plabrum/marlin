@@ -1,25 +1,14 @@
-"""Generic SSE byte formatting — no LLM imports."""
-
-import json
 from collections.abc import AsyncGenerator
-from datetime import datetime
 
+import msgspec
 from litestar.response import Stream
 
-from app.utils.sqids import Sqid
+from app.platform.llm.schemas import SseEvent
 
 
-def _json_default(obj: object) -> object:
-    if isinstance(obj, Sqid):
-        return str(obj)
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError(f"Not JSON serializable: {type(obj)!r}")
-
-
-def format_frame(event: str, data: dict) -> bytes:
-    encoded = json.dumps(data, default=_json_default)
-    return f"event: {event}\r\ndata: {encoded}\r\n\r\n".encode()
+def format_frame(ev: SseEvent) -> bytes:
+    encoded = msgspec.json.encode(ev).decode()
+    return f"event: {ev.event}\r\ndata: {encoded}\r\n\r\n".encode()
 
 
 def stream_response(gen: AsyncGenerator[bytes]) -> Stream:

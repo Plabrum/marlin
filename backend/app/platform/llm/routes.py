@@ -83,12 +83,12 @@ async def stream_create_thread_handler(
     service = LLMService(transaction, llm_client)
 
     async def gen() -> AsyncGenerator[bytes]:
-        async for event_name, event_data in service.stream_create_thread(
+        async for ev in service.stream_create_thread(
             data.content,
             user=user,
             context=data.context,
         ):
-            yield format_frame(event_name, event_data)
+            yield format_frame(ev)
 
     return stream_response(gen())
 
@@ -104,13 +104,13 @@ async def stream_send_message_handler(
     service = LLMService(transaction, llm_client)
 
     async def gen() -> AsyncGenerator[bytes]:
-        async for event_name, event_data in service.stream_send_message(
+        async for ev in service.stream_send_message(
             int(thread_id),
             data.content,
             user=user,
             context=data.context,
         ):
-            yield format_frame(event_name, event_data)
+            yield format_frame(ev)
 
     return stream_response(gen())
 
