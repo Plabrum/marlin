@@ -9,7 +9,6 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.users.models import User
-from app.platform.actions.registry import ActionRegistry
 from app.platform.auth.guards import requires_session
 from app.platform.base.filters import apply_filter, apply_sorts
 from app.platform.base.models import BaseDBModel
@@ -109,7 +108,6 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         data: ListRequest,
         user: User,
         transaction: AsyncSession,
-        action_registry: ActionRegistry,
     ) -> PagedResponse:
         # Clamp limit and offset
         limit = max(1, min(data.limit, 200))
@@ -175,7 +173,6 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         id: Sqid,
         user: User,
         transaction: AsyncSession,
-        action_registry: ActionRegistry,
     ) -> Struct:
         detail_conditions = [model.id == id, org_id_col == user.organization_id]
         if deleted_at_col is not None:

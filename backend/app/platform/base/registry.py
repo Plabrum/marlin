@@ -1,22 +1,17 @@
 from abc import ABC
-from typing import Any, ClassVar, Self
+from typing import ClassVar, Self
 
 
 class BaseRegistry[T, V](ABC):
     _instance: ClassVar[Self | None] = None
     _registry: dict[T, V]
-    dependencies: dict[str, Any]
 
-    def __new__(cls: type[Self], **dependencies: Any) -> Self:
+    def __new__(cls: type[Self]) -> Self:
         if cls._instance is None:
             inst = super().__new__(cls)
             if not hasattr(inst, "_registry"):
                 inst._registry = {}  # type: ignore[assignment]
-            inst.dependencies = {}
             cls._instance = inst
-
-        if dependencies:
-            cls._instance.dependencies.update(dependencies)
 
         return cls._instance
 

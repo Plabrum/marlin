@@ -82,24 +82,14 @@ async def test_trigger_executes_action() -> None:
     group, archive_action = _make_action_group(FakeModel)
 
     deps = _make_deps()
-    group.action_registry.dependencies.update(
-        user=deps.user,
-        request=deps.request,
-        transaction=deps.transaction,
-        config=deps.config,
-        task_queues=deps.task_queues,
-        sm_service=deps.sm_service,
-    )
-
     obj = FakeModel(id=42)
     group.get_object = AsyncMock(return_value=obj)  # type: ignore[method-assign]
 
-    # Build the discriminated-union struct for ArchiveAction
     build_action_union(group.action_registry)
     struct_cls = next(s for s, a in group.action_registry._struct_to_action.items() if a is archive_action)
     data = struct_cls(data=ArchiveData(reason="dup"))
 
-    result = await group.trigger(data=data, object_id=Sqid(42))
+    result = await group.trigger(data=data, deps=deps, object_id=Sqid(42))
 
     assert obj.archived is True
     assert result.message == "archived: dup"
@@ -109,15 +99,6 @@ async def test_is_available_false_blocks_execution() -> None:
     group, archive_action = _make_action_group(FakeModel, allow=False)
 
     deps = _make_deps()
-    group.action_registry.dependencies.update(
-        user=deps.user,
-        request=deps.request,
-        transaction=deps.transaction,
-        config=deps.config,
-        task_queues=deps.task_queues,
-        sm_service=deps.sm_service,
-    )
-
     obj = FakeModel(id=42)
     group.get_object = AsyncMock(return_value=obj)  # type: ignore[method-assign]
 
@@ -126,7 +107,7 @@ async def test_is_available_false_blocks_execution() -> None:
     data = struct_cls(data=ArchiveData(reason="nope"))
 
     with pytest.raises(PermissionDeniedException):
-        await group.trigger(data=data, object_id=Sqid(42))
+        await group.trigger(data=data, deps=deps, object_id=Sqid(42))
 
     assert obj.archived is False
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Self
 
 from app.platform.actions.enums import ActionGroupType
 from app.platform.base.registry import BaseRegistry
@@ -13,8 +13,8 @@ class ActionRegistry(
     _flat_registry: dict[str, type["BaseAction"]]
     _struct_to_action: dict[type, type["BaseAction"]]
 
-    def __new__(cls: type[Self], **dependencies: Any) -> Self:
-        inst = super().__new__(cls, **dependencies)
+    def __new__(cls: type[Self]) -> Self:
+        inst = super().__new__(cls)
         if not hasattr(inst, "_flat_registry"):
             inst._flat_registry = {}
         if not hasattr(inst, "_struct_to_action"):

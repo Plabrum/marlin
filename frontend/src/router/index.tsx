@@ -4,7 +4,7 @@ import {
   publicLayoutRoute,
   authenticatedLayoutRoute,
 } from "@/router/layout.routes";
-import { authRoute, magicLinkVerifyRoute } from "@/router/public.routes";
+import { authRoute, magicLinkVerifyRoute, galleryRoute } from "@/router/public.routes";
 import {
   indexRoute,
   surveysListRoute,
@@ -25,8 +25,10 @@ import {
   connectOnboardingRoute,
 } from "@/router/authenticated.routes";
 
+const devRoutes = galleryRoute ? [galleryRoute] : [];
+
 const routeTree = rootRoute.addChildren([
-  publicLayoutRoute.addChildren([authRoute, magicLinkVerifyRoute]),
+  publicLayoutRoute.addChildren([authRoute, magicLinkVerifyRoute, ...devRoutes]),
   authenticatedLayoutRoute.addChildren([
     indexRoute,
     surveysListRoute,

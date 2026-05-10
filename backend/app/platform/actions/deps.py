@@ -29,15 +29,20 @@ class ActionDeps:
 
 
 @dep("action_registry", sync_to_thread=False)
-def provide_action_registry(
+def provide_action_registry() -> ActionRegistry:
+    return ActionRegistry()
+
+
+@dep("action_deps", sync_to_thread=False)
+def provide_action_deps(
     db_session: AsyncSession,
     request: Request,
     user: User,
     billing_service: BillingService,
     organization: Organization,
-) -> ActionRegistry:
+) -> ActionDeps:
     task_queues = request.app.state.task_queues
-    return ActionRegistry(
+    return ActionDeps(
         transaction=db_session,
         config=config,
         request=request,

@@ -1,5 +1,6 @@
 from litestar import Router, get, post
 
+from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType
 from app.platform.actions.registry import ActionRegistry
 from app.platform.actions.schemas import (
@@ -20,10 +21,11 @@ discover_and_import(["actions.py", "actions/**/*.py"], base_path="app")
 async def list_actions(
     action_group: ActionGroupType,
     action_registry: ActionRegistry,
+    action_deps: ActionDeps,
 ) -> ActionListResponse:
     """List available top-level actions for a group (no object context)."""
     action_group_instance = action_registry.get_class(action_group)
-    available_actions = action_group_instance.get_available_actions(None)
+    available_actions = action_group_instance.get_available_actions(action_deps)
 
     return ActionListResponse(actions=available_actions)
 
@@ -33,11 +35,12 @@ async def list_object_actions(
     action_group: ActionGroupType,
     object_id: Sqid,
     action_registry: ActionRegistry,
+    action_deps: ActionDeps,
 ) -> ActionListResponse:
     """List available actions for a specific object within a group."""
     action_group_instance = action_registry.get_class(action_group)
-    object = await action_group_instance.get_object(object_id)
-    available_actions = action_group_instance.get_available_actions(object)
+    object = await action_group_instance.get_object(object_id, action_deps.transaction)
+    available_actions = action_group_instance.get_available_actions(action_deps, object)
 
     return ActionListResponse(actions=available_actions)
 
@@ -54,11 +57,13 @@ async def execute_action(
     action_group: ActionGroupType,
     data: Action,  # type: ignore [valid-type]
     action_registry: ActionRegistry,
+    action_deps: ActionDeps,
 ) -> ActionExecutionResponse:
     action_group_instance = action_registry.get_class(action_group)
     return await action_group_instance.trigger(
-        object_id=None,
         data=data,
+        deps=action_deps,
+        object_id=None,
     )
 
 
@@ -68,11 +73,13 @@ async def execute_object_action(
     object_id: Sqid,
     data: Action,  # type: ignore [valid-type]
     action_registry: ActionRegistry,
+    action_deps: ActionDeps,
 ) -> ActionExecutionResponse:
     action_group_instance = action_registry.get_class(action_group)
     return await action_group_instance.trigger(
-        object_id=object_id,
         data=data,
+        deps=action_deps,
+        object_id=object_id,
     )
 
 

@@ -2,6 +2,7 @@ import { createRoute } from "@tanstack/react-router";
 import { publicLayoutRoute } from "@/router/layout.routes";
 import { AuthPage } from "@/pages/auth-page";
 import { MagicLinkVerifyPage } from "@/pages/magic-link-verify-page";
+import { GalleryPage } from "@/pages/gallery-page";
 
 export const authRoute = createRoute({
   getParentRoute: () => publicLayoutRoute,
@@ -23,3 +24,11 @@ export const magicLinkVerifyRoute = createRoute({
   }),
   component: MagicLinkVerifyPage,
 });
+
+export const galleryRoute = import.meta.env.DEV
+  ? createRoute({
+      getParentRoute: () => publicLayoutRoute,
+      path: "/gallery",
+      component: GalleryPage,
+    })
+  : null;

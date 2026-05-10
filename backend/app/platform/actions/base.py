@@ -160,7 +160,7 @@ class ActionGroup:
             raise NotFoundException(detail=f"Action {action_key} not found")
         return self.actions[action_key]
 
-    async def get_object(self, object_id: Sqid) -> BaseDBModel | None:
+    async def get_object(self, object_id: Sqid, transaction: AsyncSession) -> BaseDBModel | None:
         """Get object by ID using the action group's model type.
 
         Returns `None` when the row is not visible (id absent or hidden by RLS).
@@ -170,8 +170,6 @@ class ActionGroup:
         if self.model_type is None:
             raise Exception("This action group has no associated model type")
 
-        transaction = self.action_registry.dependencies["transaction"]
-
         result = await transaction.execute(
             select(self.model_type).where(self.model_type.id == object_id).options(*self.load_options)
         )
@@ -180,18 +178,17 @@ class ActionGroup:
     async def trigger(
         self,
         data: Any,  # Discriminated union instance
+        deps: ActionDeps,
         object_id: Sqid | None = None,
     ) -> ActionExecutionResponse:
         """Execute an action with proper dependency injection."""
         action_class: type[BaseAction] = self.action_registry._struct_to_action[type(data)]
-        transaction = self.action_registry.dependencies["transaction"]
-
-        deps = ActionDeps(**self.action_registry.dependencies)
+        transaction = deps.transaction
 
         action_data = getattr(data, "data", data)
 
         if issubclass(action_class, BaseObjectAction):
-            obj = await self.get_object(object_id=object_id) if object_id else None
+            obj = await self.get_object(object_id=object_id, transaction=transaction) if object_id else None
             if obj is None:
                 raise NotFoundException(detail=f"Object action {action_class.__name__} requires object_id")
             # `is_available` is the single source of truth for both UI visibility
@@ -227,9 +224,9 @@ class ActionGroup:
 
     def get_available_actions(
         self,
+        deps: ActionDeps,
         obj: BaseDBModel | None = None,
     ) -> list[ActionDTO]:
-        deps = ActionDeps(**self.action_registry.dependencies)
 
         available: list[tuple[str, type[BaseAction]]] = []
         if obj is not None:

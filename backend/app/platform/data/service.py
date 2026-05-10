@@ -205,7 +205,7 @@ async def query_time_series_data(
             select(
                 time_bucket_expr.label("time_bucket"),
                 field_col.label("category_value"),
-                func.count().label("cnt"),
+                func.count().label("count"),
             )
             .select_from(model)
             .where(*base_conditions)
@@ -219,7 +219,7 @@ async def query_time_series_data(
             select(
                 time_series.c.time_bucket,
                 agg_sub.c.category_value,
-                func.coalesce(agg_sub.c.cnt, 0).label("cnt"),
+                func.coalesce(agg_sub.c.count, 0).label("count"),
             )
             .select_from(time_series)
             .outerjoin(agg_sub, time_series.c.time_bucket == agg_sub.c.time_bucket)
@@ -234,7 +234,7 @@ async def query_time_series_data(
             if bucket not in bucket_map:
                 bucket_map[bucket] = {}
             if row.category_value is not None:
-                bucket_map[bucket][str(row.category_value)] = row.cnt
+                bucket_map[bucket][str(row.category_value)] = row._mapping["count"]
 
         points = [
             CategoricalDataPoint(

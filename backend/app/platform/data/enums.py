@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum, StrEnum
 
 
 class FieldType(StrEnum):
@@ -11,12 +11,12 @@ class FieldType(StrEnum):
     bool = "bool"
 
 
-class AggregationType(StrEnum):
+class AggregationType(Enum):
     sum = "sum"
     avg = "avg"
     max = "max"
     min = "min"
-    count = "count"  # type: ignore[assignment]
+    count = "count"
 
 
 class Granularity(StrEnum):
