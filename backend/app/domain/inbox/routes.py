@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from litestar import Router
+from sqlalchemy.orm import joinedload, undefer
 
 from app.domain.inbox.schemas import (
     AttachmentRef,
@@ -45,17 +46,15 @@ def _to_attachments(raw: dict | None) -> list[AttachmentRef]:
 
 
 def _to_thread_list_item(t: EmailThread, _u: User) -> ThreadListItem:
-    # Latest activity / unread count / preview are computed lazily by the
-    # mapper's caller; the CRUD controller doesn't expose per-row session
-    # access yet, so we fall back to thread metadata only and let the frontend
-    # request /messages?email_thread_id=… for actual content.
+    msg = t.latest_message
     return ThreadListItem(
         id=t.id,
         subject=t.subject,
-        latest_from=None,
-        latest_snippet=None,
-        latest_activity_at=t.updated_at,
-        unread_count=0,
+        latest_from=(msg.from_name or msg.from_email) if msg else None,
+        latest_snippet=_snippet(msg.body_text) if msg else None,
+        latest_activity_at=msg.created_at if msg else t.updated_at,
+        latest_direction=msg.direction if msg else None,
+        unread_count=t.unread_count or 0,
         archived_at=t.archived_at,
         client_id=t.client_id,
         survey_id=t.survey_id,
@@ -63,13 +62,14 @@ def _to_thread_list_item(t: EmailThread, _u: User) -> ThreadListItem:
 
 
 def _to_thread_detail(t: EmailThread, _u: User) -> ThreadDetail:
+    msg = t.latest_message
     return ThreadDetail(
         id=t.id,
         subject=t.subject,
-        latest_from=None,
-        latest_snippet=None,
-        latest_activity_at=t.updated_at,
-        unread_count=0,
+        latest_from=(msg.from_name or msg.from_email) if msg else None,
+        latest_snippet=_snippet(msg.body_text) if msg else None,
+        latest_activity_at=msg.created_at if msg else t.updated_at,
+        unread_count=t.unread_count or 0,
         archived_at=t.archived_at,
         client_id=t.client_id,
         survey_id=t.survey_id,
@@ -112,16 +112,24 @@ def _to_message_detail(m: Message, _u: User) -> MessageDetail:
     )
 
 
+_thread_load_options = [
+    joinedload(EmailThread.latest_message),
+    undefer(EmailThread.unread_count),
+]
+
+
 _thread_config = CRUDConfig(
     model=EmailThread,
     scope="user",
     to_list_item=_to_thread_list_item,
     to_detail=_to_thread_detail,
-    label_field="subject",
-    filterable_columns={"client_id", "survey_id", "archived_at"},
+    list_load_options=_thread_load_options,
+    detail_load_options=_thread_load_options,
+    filterable_columns={"client_id", "survey_id", "archived_at", "has_unread_inbound", "has_outbound"},
     sortable_columns={"created_at", "updated_at"},
     default_sort="updated_at",
 )
+
 
 _message_config = CRUDConfig(
     model=Message,
@@ -134,9 +142,11 @@ _message_config = CRUDConfig(
 )
 
 
+_email_thread_controller = make_crud_controller("", _thread_config)
+
 email_thread_router = Router(
     path="/email-threads",
-    route_handlers=[make_crud_controller("", _thread_config)],
+    route_handlers=[_email_thread_controller],
     tags=["inbox"],
 )
 message_router = Router(

@@ -18,6 +18,8 @@ class BaseFactory[T: BaseDBModel](SQLAlchemyFactory[T]):
     __set_association_proxy__ = False
     __set_primary_key__ = False  # Let PostgreSQL sequences assign IDs
 
+    deleted_at = None
+
     @classmethod
     async def create_async(cls, session: AsyncSession, **kwargs: Any) -> T:  # type: ignore[override]
         instance = cls.build(**kwargs)

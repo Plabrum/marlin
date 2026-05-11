@@ -159,7 +159,6 @@ async def query_time_series_data(
     interval = _series_interval(granularity)
 
     org_id_col = getattr(model, "organization_id")
-    deleted_at_col = getattr(model, "deleted_at", None)
     timestamp_col = getattr(model, timestamp_field)
     field_col = getattr(model, field_cfg.name)
 
@@ -175,8 +174,6 @@ async def query_time_series_data(
             timestamp_col <= end,
         )
     )
-    if deleted_at_col is not None:
-        count_q = count_q.where(deleted_at_col.is_(None))
     for f in request.filters:
         count_q = apply_filter(count_q, model, f, filterable_cols)
     total = (await session.execute(count_q)).scalar_one()
@@ -197,8 +194,6 @@ async def query_time_series_data(
         timestamp_col >= start,
         timestamp_col <= end,
     ]
-    if deleted_at_col is not None:
-        base_conditions.append(deleted_at_col.is_(None))
 
     if _is_categorical(field_cfg.field_type):
         agg_q = (

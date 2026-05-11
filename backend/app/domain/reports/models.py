@@ -7,7 +7,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.reports.enums import ReportState
-from app.platform.base.models import TimestampMixin
 from app.platform.base.search import SearchMixin
 from app.platform.state_machine.models import StateMachineMixin
 from app.utils.sqids import Sqid, SqidType
@@ -15,7 +14,6 @@ from app.utils.sqids import Sqid, SqidType
 
 class Report(
     SearchMixin,
-    TimestampMixin,
     StateMachineMixin(state_enum=ReportState, initial_state=ReportState.draft),
 ):
     trgm_columns = ["title"]

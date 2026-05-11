@@ -8,6 +8,7 @@ import { authRoute, magicLinkVerifyRoute, galleryRoute } from "@/router/public.r
 import {
   indexRoute,
   searchRoute,
+  inboxRoute,
   surveysListRoute,
   surveyRoute,
   vesselsListRoute,
@@ -33,6 +34,7 @@ const routeTree = rootRoute.addChildren([
   authenticatedLayoutRoute.addChildren([
     indexRoute,
     searchRoute,
+    inboxRoute,
     surveysListRoute,
     surveyRoute,
     vesselsListRoute,

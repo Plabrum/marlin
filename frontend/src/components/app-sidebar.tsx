@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Anchor,
   ClipboardList,
+  Inbox,
   LayoutDashboard,
   Sailboat,
   Search,
@@ -32,6 +33,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Search", url: "/search", icon: Search },
+  { title: "Inbox", url: "/inbox", icon: Inbox },
   { title: "Surveys", url: "/surveys", icon: ClipboardList },
   { title: "Vessels", url: "/vessels", icon: Sailboat },
   { title: "Clients", url: "/clients", icon: Users },

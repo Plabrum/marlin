@@ -16,13 +16,13 @@ from app.domain.vessels.enums import (
     RiggingType,
     VesselType,
 )
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.base.search import SearchMixin
 from app.utils.sqids import Sqid, SqidType
 from app.utils.textenum import TextEnum
 
 
-class Vessel(SearchMixin, TimestampMixin, BaseDBModel):
+class Vessel(SearchMixin, BaseDBModel):
     trgm_columns = ["name", "hin", "model"]
     search_label_field = "name"
     search_entity_type = "vessel"

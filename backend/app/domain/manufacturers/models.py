@@ -3,11 +3,11 @@ from __future__ import annotations
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.base.search import SearchMixin
 
 
-class Manufacturer(SearchMixin, TimestampMixin, BaseDBModel):
+class Manufacturer(SearchMixin, BaseDBModel):
     trgm_columns = ["name", "country"]
     search_label_field = "name"
     search_entity_type = "manufacturer"

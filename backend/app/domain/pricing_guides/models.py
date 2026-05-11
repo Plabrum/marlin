@@ -7,12 +7,12 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.pricing_guides.enums import PricingType
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.utils.sqids import Sqid, SqidType
 from app.utils.textenum import TextEnum
 
 
-class PricingGuide(TimestampMixin, BaseDBModel):
+class PricingGuide(BaseDBModel):
     __tablename__ = "pricing_guides"
 
     organization_id: Mapped[int] = mapped_column(

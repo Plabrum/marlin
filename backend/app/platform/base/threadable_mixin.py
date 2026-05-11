@@ -53,8 +53,6 @@ class ThreadableMixin:
 
         unread_count = 0
         for message in self.thread.messages:
-            if message.deleted_at is not None:
-                continue
             if last_read_at is None or message.created_at > last_read_at:
                 unread_count += 1
 

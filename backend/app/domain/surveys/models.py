@@ -8,13 +8,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.surveys.enums import SurveyState
 from app.domain.vessels.models import Vessel
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.base.search import SearchMixin
 from app.platform.state_machine.models import StateMachineMixin
 from app.utils.sqids import Sqid, SqidType
 
 
-class SurveyTemplate(SearchMixin, TimestampMixin, BaseDBModel):
+class SurveyTemplate(SearchMixin, BaseDBModel):
     trgm_columns = ["name"]
     search_label_field = "name"
     search_entity_type = "survey_template"
@@ -33,7 +33,6 @@ class SurveyTemplate(SearchMixin, TimestampMixin, BaseDBModel):
 
 
 class Survey(
-    TimestampMixin,
     StateMachineMixin(state_enum=SurveyState, initial_state=SurveyState.inquiry),
 ):
     __tablename__ = "surveys"

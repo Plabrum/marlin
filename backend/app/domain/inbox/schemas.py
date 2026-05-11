@@ -20,6 +20,7 @@ class ThreadListItem(BaseSchema):
     latest_from: str | None
     latest_snippet: str | None
     latest_activity_at: datetime
+    latest_direction: MessageDirection | None
     unread_count: int
     archived_at: datetime | None
     client_id: Sqid | None

@@ -40,6 +40,7 @@ from app.platform.auth.routes import auth_router
 from app.platform.base.models import BaseDBModel
 from app.platform.base.schema_routes import schema_router
 from app.platform.base.search_routes import search_router
+from app.platform.base.soft_delete import install_soft_delete_filter
 from app.platform.billing import billing_webhook_router, connect_router
 from app.platform.comms.webhook_routes import comms_webhook_router
 from app.platform.dashboard.routes import dashboard_router
@@ -60,6 +61,8 @@ discover_and_import(["deps.py"], base_path="app")
 discover_and_import(["tools.py"], base_path="app")
 # Trigger action group registration across all domain action files
 discover_and_import(["actions.py"], base_path="app/domain")
+
+install_soft_delete_filter()
 
 __all__ = ["BaseDBModel", "create_app"]
 

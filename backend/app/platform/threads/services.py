@@ -93,14 +93,7 @@ async def get_unread_count(
     result = await session.execute(last_read_stmt)
     last_read_at = result.scalar_one_or_none()
 
-    query = (
-        select(func.count())
-        .select_from(Message)
-        .where(
-            Message.thread_id == thread_id,
-            Message.deleted_at.is_(None),
-        )
-    )
+    query = select(func.count()).select_from(Message).where(Message.thread_id == thread_id)
     if last_read_at:
         query = query.where(Message.created_at > last_read_at)
 
@@ -136,7 +129,6 @@ async def get_batch_unread_counts(
         .outerjoin(
             Message,
             (Message.thread_id == Thread.id)
-            & (Message.deleted_at.is_(None))
             & ((max_read_subq.c.last_read_at.is_(None)) | (Message.created_at > max_read_subq.c.last_read_at)),
         )
         .where(

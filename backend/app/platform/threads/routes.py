@@ -107,7 +107,6 @@ async def list_messages(
                 Thread.threadable_id == threadable_id,
             ),
         )
-        .where(Message.deleted_at.is_(None))
         .order_by(Message.created_at.asc())
         .offset(offset)
         .limit(limit)

@@ -1,6 +1,6 @@
 """Thread models — polymorphic threads with messages and read tracking."""
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 import sqlalchemy as sa
@@ -66,14 +66,9 @@ class Message(BaseDBModel):
 
     content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 
-    deleted_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), nullable=True)
-
     thread: Mapped["Thread"] = relationship("Thread", back_populates="messages")
 
     __table_args__ = (sa.Index("ix_messages_thread_created", "thread_id", "created_at"),)
-
-    def soft_delete(self) -> None:
-        self.deleted_at = datetime.now(tz=UTC)
 
 
 class ThreadReadStatus(BaseDBModel):

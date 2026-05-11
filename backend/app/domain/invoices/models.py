@@ -7,7 +7,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.invoices.enums import InvoiceState
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.base.search import SearchMixin
 from app.platform.state_machine.models import StateMachineMixin
 from app.utils.sqids import Sqid, SqidType
@@ -15,7 +15,6 @@ from app.utils.sqids import Sqid, SqidType
 
 class Invoice(
     SearchMixin,
-    TimestampMixin,
     StateMachineMixin(state_enum=InvoiceState, initial_state=InvoiceState.draft),
     BaseDBModel,
 ):

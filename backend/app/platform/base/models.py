@@ -2,33 +2,14 @@ from datetime import UTC, datetime
 from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.utils.sqids import Sqid, SqidType
 
 
-class TimestampMixin:
-    """Adds deleted_at soft-delete column with helpers. Mirrors Cuida's TimestampMixin."""
-
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        sa.DateTime(timezone=True),
-        default=None,
-        index=True,
-    )
-
-    def soft_delete(self) -> None:
-        self.deleted_at = datetime.now(tz=UTC)
-
-    def restore(self) -> None:
-        self.deleted_at = None
-
-    @property
-    def is_deleted(self) -> bool:
-        return self.deleted_at is not None
-
-
 class BaseDBModel(DeclarativeBase):
-    """Declarative base — provides id and audit columns plus a model registry."""
+    """Declarative base — provides id, audit, and soft-delete columns plus a model registry."""
 
     _model_registry: set[type["BaseDBModel"]] = set()
 
@@ -53,6 +34,26 @@ class BaseDBModel(DeclarativeBase):
         onupdate=sa.func.now(),
         nullable=False,
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        sa.DateTime(timezone=True),
+        default=None,
+        index=True,
+    )
+
+    def soft_delete(self) -> None:
+        self.deleted_at = datetime.now(tz=UTC)
+
+    def restore(self) -> None:
+        self.deleted_at = None
+
+    @hybrid_property
+    def is_deleted(self) -> bool:
+        return self.deleted_at is not None
+
+    @is_deleted.inplace.expression
+    @classmethod
+    def _is_deleted_expression(cls) -> sa.ColumnElement[bool]:
+        return cls.deleted_at.is_not(None)
 
     def to_dict(self) -> dict[str, Any]:
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}

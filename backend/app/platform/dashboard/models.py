@@ -7,14 +7,14 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.base.rls_mixins import UserScopedMixin
 from app.platform.dashboard.enums import WidgetType
 from app.utils.sqids import Sqid, SqidType
 from app.utils.textenum import TextEnum
 
 
-class Dashboard(UserScopedMixin, TimestampMixin, BaseDBModel):
+class Dashboard(UserScopedMixin, BaseDBModel):
     __tablename__ = "dashboards"
 
     user_id: Mapped[Sqid] = mapped_column(
@@ -33,7 +33,7 @@ class Dashboard(UserScopedMixin, TimestampMixin, BaseDBModel):
     )
 
 
-class Widget(UserScopedMixin, TimestampMixin, BaseDBModel):
+class Widget(UserScopedMixin, BaseDBModel):
     __tablename__ = "widgets"
 
     dashboard_id: Mapped[Sqid] = mapped_column(

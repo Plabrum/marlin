@@ -7,13 +7,12 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.quotes.enums import QuoteState
-from app.platform.base.models import BaseDBModel, TimestampMixin
+from app.platform.base.models import BaseDBModel
 from app.platform.state_machine.models import StateMachineMixin
 from app.utils.sqids import Sqid, SqidType
 
 
 class Quote(
-    TimestampMixin,
     StateMachineMixin(state_enum=QuoteState, initial_state=QuoteState.draft),
 ):
     __tablename__ = "quotes"

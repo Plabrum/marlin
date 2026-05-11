@@ -1,6 +1,7 @@
 import { createRoute } from "@tanstack/react-router";
 import { authenticatedLayoutRoute } from "@/router/layout.routes";
 import { DashboardPage } from "@/pages/dashboard-page";
+import { InboxPage } from "@/pages/inbox/inbox-page";
 import { SurveysListPage } from "@/pages/surveys/surveys-list-page";
 import { SurveyDetailPage } from "@/pages/surveys/survey-detail-page";
 import { VesselsListPage } from "@/pages/vessels/vessels-list-page";
@@ -33,6 +34,23 @@ export const searchRoute = createRoute({
     tab: typeof search.tab === "string" ? search.tab : "global",
   }),
   component: SearchPage,
+});
+
+export type InboxView = "all" | "unread" | "sent" | "archived";
+
+export const inboxRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/inbox",
+  validateSearch: (search: Record<string, unknown>): { view?: InboxView; thread?: string } => {
+    const rawView = search.view;
+    const view: InboxView | undefined =
+      rawView === "unread" || rawView === "sent" || rawView === "archived" || rawView === "all"
+        ? rawView
+        : undefined;
+    const thread = typeof search.thread === "string" ? search.thread : undefined;
+    return { view, thread };
+  },
+  component: InboxPage,
 });
 
 export const surveysListRoute = createRoute({

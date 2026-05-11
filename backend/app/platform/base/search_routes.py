@@ -73,11 +73,6 @@ async def search(
         if org_id_col is not None:
             where_clauses.append(org_id_col == user.organization_id)
 
-        # Soft-delete filter
-        deleted_at_col = getattr(model_cls, "deleted_at", None)
-        if deleted_at_col is not None:
-            where_clauses.append(deleted_at_col.is_(None))
-
         search_clause = model_cls.search_filter(term)
         if search_clause is None:
             continue

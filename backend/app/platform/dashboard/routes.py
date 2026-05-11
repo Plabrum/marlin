@@ -53,7 +53,7 @@ async def get_dashboard_handler(user: User, transaction: AsyncSession) -> Dashbo
         await transaction.flush()
         widgets: list[Widget] = []
     else:
-        widgets = [w for w in dashboard.widgets if w.deleted_at is None]
+        widgets = list(dashboard.widgets)
     return _to_read(dashboard, widgets)
 
 

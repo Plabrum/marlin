@@ -21,6 +21,9 @@ from app.domain.surveys.enums import SurveyState
 from app.domain.users.models import Organization
 from app.domain.users.roles import Role
 from app.domain.vessels.enums import FuelType, HullMaterial, PropulsionType, VesselType
+from app.platform.comms.enums import MessageDirection, MessageState
+from app.platform.comms.models.email_threads import EmailThread
+from app.platform.comms.models.messages import Message
 from app.platform.dashboard.enums import ResourceType, WidgetColor, WidgetType
 from app.platform.dashboard.models import Dashboard, Widget
 from app.platform.data.enums import AggregationType, Granularity, TimeRange
@@ -408,6 +411,172 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         session.add(w)
     await session.flush()
     logger.info("Created dashboard with %d starter widgets", len(starter_widgets))
+
+    # ── 11. Email threads + messages ──────────────────────────────────────────
+    inquiry_survey = next(s for s, st in zip(surveys, _SURVEY_STATES) if st == SurveyState.inquiry)
+    scheduled_survey = next(s for s, st in zip(surveys, _SURVEY_STATES) if st == SurveyState.scheduled)
+    delivered_survey = next(s for s, st in zip(surveys, _SURVEY_STATES) if st == SurveyState.delivered)
+    whitfield = clients[0]
+    insurance = clients[2]
+
+    thread_a = EmailThread(
+        user_id=admin.id,
+        subject="Pre-purchase survey inquiry — 1985 Catalina 30",
+        survey_id=inquiry_survey.id,
+    )
+    thread_b = EmailThread(
+        user_id=admin.id,
+        subject="Scheduling haul-out next Tuesday",
+        client_id=whitfield.id,
+        survey_id=scheduled_survey.id,
+    )
+    thread_c = EmailThread(
+        user_id=admin.id,
+        subject="Re: Survey Report — quick question on engine hours",
+        client_id=whitfield.id,
+        survey_id=delivered_survey.id,
+    )
+    thread_d = EmailThread(
+        user_id=admin.id,
+        subject="Updated binder requirements",
+        client_id=insurance.id,
+    )
+    thread_e = EmailThread(
+        user_id=admin.id,
+        subject="2024 sea trial — closed out",
+        archived_at=now - timedelta(days=120),
+    )
+    session.add_all([thread_a, thread_b, thread_c, thread_d, thread_e])
+    await session.flush()
+
+    def _inbound(thread: EmailThread, *, s3_key: str, **kw: object) -> Message:
+        base: dict[str, object] = dict(
+            user_id=admin.id,
+            email_thread_id=thread.id,
+            direction=MessageDirection.IN,
+            state=MessageState.RECEIVED,
+            to_emails=[admin.email],
+            s3_key=s3_key,
+            s3_bucket="sloopquest-demo-inbound",
+            spf_pass=True,
+            dkim_pass=True,
+        )
+        base.update(kw)
+        return Message(**base)  # type: ignore[arg-type]
+
+    def _outbound(thread: EmailThread, **kw: object) -> Message:
+        base: dict[str, object] = dict(
+            user_id=admin.id,
+            email_thread_id=thread.id,
+            direction=MessageDirection.OUT,
+            state=MessageState.SENT,
+            from_email=admin.email,
+            from_name=admin.name,
+        )
+        base.update(kw)
+        return Message(**base)  # type: ignore[arg-type]
+
+    a1 = _inbound(
+        thread_a,
+        s3_key="demo-a-1",
+        subject=thread_a.subject,
+        body_text=(
+            "Hi — I'm under contract on a 1985 Catalina 30 berthed in Annapolis and need a "
+            "pre-purchase survey before the financing deadline next month. What's your earliest availability?"
+        ),
+        from_email="mark.peterson@example.com",
+        from_name="Mark Peterson",
+    )
+
+    b1 = _inbound(
+        thread_b,
+        s3_key="demo-b-1",
+        subject=thread_b.subject,
+        body_text=(
+            "Confirming you're set for the haul-out at Bert Jabin's next Tuesday at 9am. "
+            "Anything you need from us beforehand?"
+        ),
+        from_email="james.whitfield@example.com",
+        from_name="James Whitfield",
+        read_at=now - timedelta(days=2),
+    )
+    b2 = _outbound(
+        thread_b,
+        subject=f"Re: {thread_b.subject}",
+        body_text=(
+            "All set — please have the yard pull her on stands by 8:30 and I'll be there at 9 with the moisture meter."
+        ),
+        to_emails=["james.whitfield@example.com"],
+    )
+    b3 = _inbound(
+        thread_b,
+        s3_key="demo-b-3",
+        subject=f"Re: {thread_b.subject}",
+        body_text="Sounds good, see you then.",
+        from_email="james.whitfield@example.com",
+        from_name="James Whitfield",
+        read_at=now - timedelta(days=1),
+    )
+
+    c1 = _outbound(
+        thread_c,
+        subject="Survey Report attached",
+        body_text="Hi James and Sarah — final survey report attached. Let me know if any questions come up.",
+        to_emails=["james.whitfield@example.com"],
+    )
+    c2 = _inbound(
+        thread_c,
+        s3_key="demo-c-2",
+        subject="Re: Survey Report attached",
+        body_text=(
+            "Thanks Alex. Quick question — page 12 lists engine hours as 'approx 1,200.' "
+            "Is that owner-reported or measured? Our lender is asking."
+        ),
+        from_email="james.whitfield@example.com",
+        from_name="James Whitfield",
+    )
+
+    d1 = _outbound(
+        thread_d,
+        subject=thread_d.subject,
+        body_text=(
+            "Hi — wanted to confirm the binder language we discussed last week. "
+            "Could you send the latest template when you have a minute?"
+        ),
+        to_emails=["claims@bluewatermarine.example.com"],
+    )
+
+    e1 = _inbound(
+        thread_e,
+        s3_key="demo-e-1",
+        subject=thread_e.subject,
+        body_text="Thanks for the survey last fall. All resolved with insurance, closing this loop.",
+        from_email="archive.client@example.com",
+        from_name="Past Client",
+        read_at=now - timedelta(days=125),
+        archived_at=now - timedelta(days=120),
+    )
+
+    timeline = [
+        (a1, now - timedelta(hours=3)),
+        (b1, now - timedelta(days=3)),
+        (b2, now - timedelta(days=3, hours=-2)),
+        (b3, now - timedelta(days=2)),
+        (c1, now - timedelta(days=5)),
+        (c2, now - timedelta(hours=20)),
+        (d1, now - timedelta(days=1)),
+        (e1, now - timedelta(days=130)),
+    ]
+    for msg, ts in timeline:
+        session.add(msg)
+        msg.created_at = ts
+        if msg.direction == MessageDirection.IN:
+            msg.received_at = ts
+            msg.processed_at = ts
+        else:
+            msg.sent_at = ts
+    await session.flush()
+    logger.info("Created 5 email threads with %d messages", len(timeline))
 
     logger.info("Demo seed complete — org=%s", org.name)
     return org

@@ -101,7 +101,6 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
     else:
         scope_col = getattr(model, "organization_id")
         scope_value_attr = "organization_id"
-    deleted_at_col = getattr(model, "deleted_at", None)
     default_sort_col = getattr(model, config.default_sort or "created_at")
 
     # Infer concrete return types from callable annotations for OpenAPI generation.
@@ -122,10 +121,7 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         limit = max(1, min(data.limit, 200))
         offset = max(0, data.offset)
 
-        # Base query: scope-filtered, soft-delete if supported
         conditions = [scope_col == getattr(user, scope_value_attr)]
-        if deleted_at_col is not None:
-            conditions.append(deleted_at_col.is_(None))
         base = select(model).where(*conditions)
 
         # Role-based query scoping
@@ -184,8 +180,6 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         transaction: AsyncSession,
     ) -> Struct:
         detail_conditions = [model.id == id, scope_col == getattr(user, scope_value_attr)]
-        if deleted_at_col is not None:
-            detail_conditions.append(deleted_at_col.is_(None))
         query = select(model).where(*detail_conditions)
         if config.base_query_modifier is not None:
             query = config.base_query_modifier(query, user)
