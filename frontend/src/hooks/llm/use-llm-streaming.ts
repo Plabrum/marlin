@@ -25,6 +25,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { getErrorMessage } from "@/lib/error-handler";
+import { useThreadableFromRoute } from "@/lib/llm/threadable";
 import {
   getLlmThreadsListThreadsHandlerQueryKey,
   getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey,
@@ -199,6 +200,9 @@ export function useLlmStreaming(
   threadIdRef.current = threadId;
   const onThreadCreatedRef = useRef(onThreadCreated);
   onThreadCreatedRef.current = onThreadCreated;
+  const threadable = useThreadableFromRoute();
+  const threadableRef = useRef(threadable);
+  threadableRef.current = threadable;
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
@@ -243,6 +247,14 @@ export function useLlmStreaming(
       };
       const ctx = { current_page: currentPage, ...(opts.context ?? {}) };
       body.context = ctx;
+
+      if (isCreate) {
+        const ref = threadableRef.current;
+        if (ref) {
+          body.threadable_type = ref.threadable_type;
+          body.threadable_id = ref.threadable_id;
+        }
+      }
 
       let result: SendResult | null = null;
       let sawError = false;

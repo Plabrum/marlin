@@ -10,7 +10,10 @@ Threads are polymorphically linkable to a domain object via
 
 from __future__ import annotations
 
+from typing import Any
+
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.platform.base.models import BaseDBModel
@@ -45,4 +48,27 @@ class LLMMessage(BaseDBModel):
     role: Mapped[MessageRole] = mapped_column(TextEnum(MessageRole), nullable=False)
     content: Mapped[str] = mapped_column(sa.Text, nullable=False)
 
-    thread: Mapped[LLMThread] = relationship("LLMThread", back_populates="messages")
+    thread: Mapped[LLMThread] = relationship("LLMThread", back_populates="messages", lazy="raise")
+    tool_calls: Mapped[list[LLMToolCall]] = relationship(
+        "LLMToolCall",
+        back_populates="message",
+        cascade="all, delete-orphan",
+        order_by="LLMToolCall.id",
+        lazy="noload",
+    )
+
+
+class LLMToolCall(BaseDBModel):
+    __tablename__ = "llm_tool_calls"
+
+    message_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("llm_messages.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    tool_use_id: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    name: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    input: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default=sa.text("'{}'::jsonb"))
+    is_error: Mapped[bool] = mapped_column(sa.Boolean, nullable=False, server_default=sa.text("false"))
+
+    message: Mapped[LLMMessage] = relationship("LLMMessage", back_populates="tool_calls", lazy="raise")

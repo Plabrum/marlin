@@ -69,6 +69,7 @@ export const surveyRoute = createRoute({
     parse: (p) => ({ surveyId: p.surveyId }),
     stringify: (p) => ({ surveyId: p.surveyId }),
   },
+  staticData: { threadable: { type: "survey", paramKey: "surveyId" } },
   component: SurveyDetailPage,
 });
 
@@ -88,6 +89,7 @@ export const vesselRoute = createRoute({
     parse: (p) => ({ vesselId: p.vesselId }),
     stringify: (p) => ({ vesselId: p.vesselId }),
   },
+  staticData: { threadable: { type: "vessel", paramKey: "vesselId" } },
   component: VesselDetailPage,
 });
 
@@ -107,6 +109,7 @@ export const clientRoute = createRoute({
     parse: (p) => ({ clientId: p.clientId }),
     stringify: (p) => ({ clientId: p.clientId }),
   },
+  staticData: { threadable: { type: "client", paramKey: "clientId" } },
   component: ClientDetailPage,
 });
 
@@ -123,6 +126,7 @@ export const reportRoute = createRoute({
     parse: (p) => ({ reportId: p.reportId }),
     stringify: (p) => ({ reportId: p.reportId }),
   },
+  staticData: { threadable: { type: "report", paramKey: "reportId" } },
   component: ReportDetailPage,
 });
 
@@ -139,6 +143,7 @@ export const invoiceRoute = createRoute({
     parse: (p) => ({ invoiceId: p.invoiceId }),
     stringify: (p) => ({ invoiceId: p.invoiceId }),
   },
+  staticData: { threadable: { type: "invoice", paramKey: "invoiceId" } },
   component: InvoiceDetailPage,
 });
 
@@ -161,6 +166,7 @@ export const surveyTemplateRoute = createRoute({
     parse: (p) => ({ templateId: p.templateId }),
     stringify: (p) => ({ templateId: p.templateId }),
   },
+  staticData: { threadable: { type: "survey_template", paramKey: "templateId" } },
   component: SurveyTemplateDetailPage,
 });
 

@@ -17,6 +17,7 @@ from app.platform.llm.schemas import (
     SendMessageBody,
     ThreadListPage,
     ThreadSummarySchema,
+    ToolCallRecord,
 )
 from app.platform.llm.service import LLMService
 from app.platform.streaming.sse import format_frame, stream_response
@@ -57,6 +58,10 @@ async def get_thread_messages_handler(
                 role=msg.role,
                 content=msg.content,
                 created_at=msg.created_at,
+                tool_calls=[
+                    ToolCallRecord(id=tc.tool_use_id, name=tc.name, input=tc.input, is_error=tc.is_error)
+                    for tc in msg.tool_calls
+                ],
             )
             for msg in messages
         ],

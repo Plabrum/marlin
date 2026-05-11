@@ -14,9 +14,23 @@ from app.platform.llm.client import BaseLLMClient
 from app.platform.llm.enums import MessageRole
 from app.platform.llm.executor import build_tool_executor
 from app.platform.llm.models import LLMMessage, LLMThread
-from app.platform.llm.queries import create_message, create_thread, get_messages_by_thread, get_thread_by_id
+from app.platform.llm.queries import (
+    create_message,
+    create_thread,
+    create_tool_call,
+    get_messages_by_thread,
+    get_thread_by_id,
+)
 from app.platform.llm.registry import get_tool_definitions
-from app.platform.llm.schemas import ErrorEvent, MessageCompleteEvent, SseEvent, SseMessageSchema, TokenEvent
+from app.platform.llm.schemas import (
+    ErrorEvent,
+    MessageCompleteEvent,
+    SseEvent,
+    SseMessageSchema,
+    TokenEvent,
+    ToolCallEvent,
+    ToolResultEvent,
+)
 from app.utils.sqids import Sqid
 
 logger = logging.getLogger(__name__)
@@ -38,10 +52,21 @@ class LLMService:
         self.llm_client = llm_client
 
     def _build_llm_messages(self, history: list[LLMMessage]) -> list[dict]:
+        text_keys = {"type", "text"}
+        tool_use_keys = {"type", "id", "name", "input"}
+
+        def _clean_block(block: dict) -> dict:
+            if block.get("type") == "text":
+                return {k: v for k, v in block.items() if k in text_keys}
+            if block.get("type") == "tool_use":
+                return {k: v for k, v in block.items() if k in tool_use_keys}
+            return block
+
         llm_messages: list[dict] = []
         for msg in history:
             if msg.role == MessageRole.ASSISTANT_TOOL:
-                llm_messages.append({"role": "assistant", "content": json.loads(msg.content)})
+                raw = json.loads(msg.content)
+                llm_messages.append({"role": "assistant", "content": [_clean_block(b) for b in raw]})
             elif msg.role == MessageRole.TOOL_RESULT:
                 llm_messages.append({"role": "user", "content": json.loads(msg.content)})
             else:
@@ -141,6 +166,7 @@ class LLMService:
         system = _build_system_prompt(context)
         tools = get_tool_definitions() or None
         full_text = ""
+        tool_calls_this_turn: list[dict] = []
 
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread.id, role=role, content=json_content)
@@ -157,10 +183,25 @@ class LLMService:
                 yield ev
                 if isinstance(ev, TokenEvent):
                     full_text += ev.delta
+                elif isinstance(ev, ToolCallEvent):
+                    tool_calls_this_turn.append({"id": ev.id, "name": ev.name, "input": ev.input, "is_error": False})
+                elif isinstance(ev, ToolResultEvent):
+                    for tc in tool_calls_this_turn:
+                        if tc["id"] == ev.tool_use_id:
+                            tc["is_error"] = ev.is_error
 
             assistant_msg = await create_message(
                 self.transaction, thread_id=thread.id, role=MessageRole.ASSISTANT, content=full_text
             )
+            for tc in tool_calls_this_turn:
+                await create_tool_call(
+                    self.transaction,
+                    message_id=int(assistant_msg.id),
+                    tool_use_id=tc["id"],
+                    name=tc["name"],
+                    input=tc["input"],
+                    is_error=tc["is_error"],
+                )
             await self.transaction.commit()
             yield MessageCompleteEvent(
                 thread_id=str(Sqid(thread.id)),
@@ -202,6 +243,7 @@ class LLMService:
         system = _build_system_prompt(context)
         tools = get_tool_definitions() or None
         full_text = ""
+        tool_calls_this_turn: list[dict] = []
 
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread_id, role=role, content=json_content)
@@ -218,10 +260,25 @@ class LLMService:
                 yield ev
                 if isinstance(ev, TokenEvent):
                     full_text += ev.delta
+                elif isinstance(ev, ToolCallEvent):
+                    tool_calls_this_turn.append({"id": ev.id, "name": ev.name, "input": ev.input, "is_error": False})
+                elif isinstance(ev, ToolResultEvent):
+                    for tc in tool_calls_this_turn:
+                        if tc["id"] == ev.tool_use_id:
+                            tc["is_error"] = ev.is_error
 
             assistant_msg = await create_message(
                 self.transaction, thread_id=thread_id, role=MessageRole.ASSISTANT, content=full_text
             )
+            for tc in tool_calls_this_turn:
+                await create_tool_call(
+                    self.transaction,
+                    message_id=int(assistant_msg.id),
+                    tool_use_id=tc["id"],
+                    name=tc["name"],
+                    input=tc["input"],
+                    is_error=tc["is_error"],
+                )
             await self.transaction.commit()
             yield MessageCompleteEvent(
                 thread_id=str(Sqid(thread.id)),

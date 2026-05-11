@@ -2,9 +2,10 @@ from datetime import datetime
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.platform.llm.enums import MessageRole
-from app.platform.llm.models import LLMMessage, LLMThread
+from app.platform.llm.models import LLMMessage, LLMThread, LLMToolCall
 
 
 async def get_thread_by_id(db: AsyncSession, thread_id: int) -> LLMThread | None:
@@ -28,10 +29,15 @@ async def get_messages_after(
     limit: int = 50,
 ) -> tuple[list[LLMMessage], bool]:
     """Cursor-based message fetch (excludes internal tool-use/tool-result rows)."""
-    base = select(LLMMessage).where(
-        LLMMessage.thread_id == thread_id,
-        LLMMessage.role.not_in(_INTERNAL_ROLES),
+    base = (
+        select(LLMMessage)
+        .where(
+            LLMMessage.thread_id == thread_id,
+            LLMMessage.role.not_in(_INTERNAL_ROLES),
+        )
+        .options(selectinload(LLMMessage.tool_calls))
     )
+
     if after_id is not None:
         q = base.where(LLMMessage.id > after_id).order_by(LLMMessage.id.asc()).limit(limit + 1)
     else:
@@ -71,6 +77,27 @@ async def create_message(db: AsyncSession, thread_id: int, role: MessageRole, co
     db.add(message)
     await db.flush()
     return message
+
+
+async def create_tool_call(
+    db: AsyncSession,
+    *,
+    message_id: int,
+    tool_use_id: str,
+    name: str,
+    input: dict,
+    is_error: bool = False,
+) -> LLMToolCall:
+    tool_call = LLMToolCall(
+        message_id=message_id,
+        tool_use_id=tool_use_id,
+        name=name,
+        input=input,
+        is_error=is_error,
+    )
+    db.add(tool_call)
+    await db.flush()
+    return tool_call
 
 
 async def list_threads_by_user(

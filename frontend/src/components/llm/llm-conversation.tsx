@@ -105,7 +105,17 @@ function LlmConversationInner({ threadId, onThreadCreated, expanded }: LlmConver
       messages={
         <>
           {messagesForRender.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} expanded={expanded} />
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              expanded={expanded}
+              toolPills={msg.tool_calls?.map((tc) => ({
+                id: tc.id,
+                name: tc.name,
+                input: tc.input,
+                status: tc.is_error ? "error" : "ok",
+              }))}
+            />
           ))}
           {inProgressMessage && (
             <MessageBubble

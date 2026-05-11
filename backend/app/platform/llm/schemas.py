@@ -8,12 +8,20 @@ from app.platform.base.schemas import BaseSchema
 from app.utils.sqids import Sqid
 
 
+class ToolCallRecord(BaseSchema):
+    id: str
+    name: str
+    input: dict
+    is_error: bool = False
+
+
 class MessageSchema(BaseSchema):
     id: Sqid
     thread_id: Sqid
     role: str
     content: str
     created_at: datetime
+    tool_calls: list[ToolCallRecord] = []
 
 
 class CreateThreadBody(BaseSchema):
