@@ -87,6 +87,8 @@ async def stream_create_thread_handler(
             data.content,
             user=user,
             context=data.context,
+            threadable_type=data.threadable_type,
+            threadable_id=int(data.threadable_id) if data.threadable_id is not None else None,
         ):
             yield format_frame(ev)
 

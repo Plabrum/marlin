@@ -16,7 +16,7 @@ from app.platform.llm.executor import build_tool_executor
 from app.platform.llm.models import LLMMessage, LLMThread
 from app.platform.llm.queries import create_message, create_thread, get_messages_by_thread, get_thread_by_id
 from app.platform.llm.registry import get_tool_definitions
-from app.platform.llm.schemas import MessageCompleteEvent, SseEvent, SseMessageSchema, TokenEvent
+from app.platform.llm.schemas import ErrorEvent, MessageCompleteEvent, SseEvent, SseMessageSchema, TokenEvent
 from app.utils.sqids import Sqid
 
 logger = logging.getLogger(__name__)
@@ -132,6 +132,10 @@ class LLMService:
             threadable_id=threadable_id,
         )
         await create_message(self.transaction, thread_id=thread.id, role=MessageRole.USER, content=content)
+        # Explicit commit: the request-scoped transaction has already exited by the time this
+        # generator runs (Litestar streams response body after dep cleanup). Without explicit
+        # commits, every write here gets rolled back at session teardown.
+        await self.transaction.commit()
 
         executor = build_tool_executor(self.transaction, user, invalidate_keys)
         system = _build_system_prompt(context)
@@ -140,32 +144,38 @@ class LLMService:
 
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread.id, role=role, content=json_content)
+            await self.transaction.commit()
 
-        async for ev in self.llm_client.stream(
-            [{"role": "user", "content": content}],
-            system=system,
-            tools=tools,
-            tool_executor=executor,
-            persist_tool_message=persist_tool_message,
-        ):
-            yield ev
-            if isinstance(ev, TokenEvent):
-                full_text += ev.delta
+        try:
+            async for ev in self.llm_client.stream(
+                [{"role": "user", "content": content}],
+                system=system,
+                tools=tools,
+                tool_executor=executor,
+                persist_tool_message=persist_tool_message,
+            ):
+                yield ev
+                if isinstance(ev, TokenEvent):
+                    full_text += ev.delta
 
-        assistant_msg = await create_message(
-            self.transaction, thread_id=thread.id, role=MessageRole.ASSISTANT, content=full_text
-        )
-        yield MessageCompleteEvent(
-            thread_id=str(Sqid(thread.id)),
-            message=SseMessageSchema(
-                id=str(assistant_msg.id),
-                thread_id=str(Sqid(assistant_msg.thread_id)),
-                role=assistant_msg.role,
-                content=assistant_msg.content,
-                created_at=assistant_msg.created_at.isoformat(),
-            ),
-            invalidate_queries=invalidate_keys,
-        )
+            assistant_msg = await create_message(
+                self.transaction, thread_id=thread.id, role=MessageRole.ASSISTANT, content=full_text
+            )
+            await self.transaction.commit()
+            yield MessageCompleteEvent(
+                thread_id=str(Sqid(thread.id)),
+                message=SseMessageSchema(
+                    id=str(assistant_msg.id),
+                    thread_id=str(Sqid(assistant_msg.thread_id)),
+                    role=assistant_msg.role,
+                    content=assistant_msg.content,
+                    created_at=assistant_msg.created_at.isoformat(),
+                ),
+                invalidate_queries=invalidate_keys,
+            )
+        except Exception:
+            logger.exception("LLM stream failed for thread %s", thread.id)
+            yield ErrorEvent(message="The assistant encountered an error. Your message was saved.")
 
     async def stream_send_message(
         self,
@@ -177,9 +187,12 @@ class LLMService:
     ) -> AsyncGenerator[SseEvent]:
         thread = await get_thread_by_id(self.transaction, thread_id)
         if thread is None:
-            raise NotFoundException("Thread not found")
+            logger.warning("stream_send_message called with unknown thread_id=%s", thread_id)
+            yield ErrorEvent(message="Thread not found.", code="thread_not_found")
+            return
 
         await create_message(self.transaction, thread_id=thread.id, role=MessageRole.USER, content=content)
+        await self.transaction.commit()
 
         history = await get_messages_by_thread(self.transaction, thread_id)
         llm_messages = self._build_llm_messages(history)
@@ -192,29 +205,35 @@ class LLMService:
 
         async def persist_tool_message(role: MessageRole, json_content: str) -> None:
             await create_message(self.transaction, thread_id=thread_id, role=role, content=json_content)
+            await self.transaction.commit()
 
-        async for ev in self.llm_client.stream(
-            llm_messages,
-            system=system,
-            tools=tools,
-            tool_executor=executor,
-            persist_tool_message=persist_tool_message,
-        ):
-            yield ev
-            if isinstance(ev, TokenEvent):
-                full_text += ev.delta
+        try:
+            async for ev in self.llm_client.stream(
+                llm_messages,
+                system=system,
+                tools=tools,
+                tool_executor=executor,
+                persist_tool_message=persist_tool_message,
+            ):
+                yield ev
+                if isinstance(ev, TokenEvent):
+                    full_text += ev.delta
 
-        assistant_msg = await create_message(
-            self.transaction, thread_id=thread_id, role=MessageRole.ASSISTANT, content=full_text
-        )
-        yield MessageCompleteEvent(
-            thread_id=str(Sqid(thread.id)),
-            message=SseMessageSchema(
-                id=str(assistant_msg.id),
-                thread_id=str(Sqid(assistant_msg.thread_id)),
-                role=assistant_msg.role,
-                content=assistant_msg.content,
-                created_at=assistant_msg.created_at.isoformat(),
-            ),
-            invalidate_queries=invalidate_keys,
-        )
+            assistant_msg = await create_message(
+                self.transaction, thread_id=thread_id, role=MessageRole.ASSISTANT, content=full_text
+            )
+            await self.transaction.commit()
+            yield MessageCompleteEvent(
+                thread_id=str(Sqid(thread.id)),
+                message=SseMessageSchema(
+                    id=str(assistant_msg.id),
+                    thread_id=str(Sqid(assistant_msg.thread_id)),
+                    role=assistant_msg.role,
+                    content=assistant_msg.content,
+                    created_at=assistant_msg.created_at.isoformat(),
+                ),
+                invalidate_queries=invalidate_keys,
+            )
+        except Exception:
+            logger.exception("LLM stream failed for thread %s", thread_id)
+            yield ErrorEvent(message="The assistant encountered an error. Your message was saved.")

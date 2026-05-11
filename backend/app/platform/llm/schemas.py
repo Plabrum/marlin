@@ -20,6 +20,8 @@ class CreateThreadBody(BaseSchema):
     content: str
     timezone: str | None = None
     context: dict | None = None
+    threadable_type: str | None = None
+    threadable_id: Sqid | None = None
 
 
 class ThreadCreatedSchema(BaseSchema):
