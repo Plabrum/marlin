@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import {
-  Anchor,
   ClipboardList,
   Inbox,
   LayoutDashboard,
@@ -65,14 +64,31 @@ function NavLink({ item }: { item: NavItem }) {
   );
 }
 
+
 export function AppSidebar({ user }: { user: { email?: string; name?: string } }) {
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-14 flex-row items-center px-3 gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-        <Anchor className="size-6 shrink-0 text-sidebar-primary" />
-        <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">
-          Sloopquest
+      <SidebarHeader className="h-14 flex-row items-center justify-center overflow-hidden group-data-[collapsible=icon]:px-0">
+        <span
+          style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
+          className="hidden group-data-[collapsible=icon]:block text-2xl font-semibold leading-none"
+        >
+          SQ
         </span>
+        <div className="flex flex-col items-center leading-none group-data-[collapsible=icon]:hidden">
+          <span
+            style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.04em" }}
+            className="font-semibold text-[1.35rem] leading-tight"
+          >
+            Sloopquest
+          </span>
+          <span
+            style={{ fontFamily: "'Cormorant SC', Georgia, serif", letterSpacing: "0.1em" }}
+            className="text-[0.6rem] font-medium text-muted-foreground uppercase mt-0.5"
+          >
+            Marine Survey
+          </span>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <div className="border-t border-sidebar-border/50 mx-4" />
