@@ -21,6 +21,9 @@ from app.domain.surveys.enums import SurveyState
 from app.domain.users.models import Organization
 from app.domain.users.roles import Role
 from app.domain.vessels.enums import FuelType, HullMaterial, PropulsionType, VesselType
+from app.platform.dashboard.enums import ResourceType, WidgetColor, WidgetType
+from app.platform.dashboard.models import Dashboard, Widget
+from app.platform.data.enums import AggregationType, Granularity, TimeRange
 from app.platform.state_machine.models import StateTransitionLog
 
 from .wipe import DEMO_ORG_ID, DEMO_ORG_NAME
@@ -259,6 +262,152 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         )
     await session.flush()
     logger.info("Created reports")
+
+    # ── 10. Dashboard + widgets for the admin user ──────────────────────────────
+    dashboard = Dashboard(user_id=admin.id)
+    session.add(dashboard)
+    await session.flush()
+
+    starter_widgets = [
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.STAT_NUMBER,
+            title="Revenue MTD",
+            position_x=0,
+            position_y=0,
+            size_w=1,
+            size_h=1,
+            query={
+                "resource": ResourceType.INVOICES.value,
+                "field": "total_cents",
+                "aggregation": AggregationType.sum.value,
+                "time_range": TimeRange.MONTH_TO_DATE.value,
+                "filters": [],
+                "color": WidgetColor.GREEN.value,
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.STAT_NUMBER,
+            title="Surveys MTD",
+            position_x=1,
+            position_y=0,
+            size_w=1,
+            size_h=1,
+            query={
+                "resource": ResourceType.SURVEYS.value,
+                "field": "state",
+                "time_range": TimeRange.MONTH_TO_DATE.value,
+                "filters": [],
+                "color": WidgetColor.BLUE.value,
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.STAT_NUMBER,
+            title="Total Vessels",
+            position_x=2,
+            position_y=0,
+            size_w=1,
+            size_h=1,
+            query={
+                "resource": ResourceType.VESSELS.value,
+                "field": "vessel_type",
+                "time_range": TimeRange.ALL_TIME.value,
+                "filters": [],
+                "color": WidgetColor.YELLOW.value,
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.STAT_NUMBER,
+            title="Total Reports",
+            position_x=3,
+            position_y=0,
+            size_w=1,
+            size_h=1,
+            query={
+                "resource": ResourceType.REPORTS.value,
+                "field": "state",
+                "time_range": TimeRange.ALL_TIME.value,
+                "filters": [],
+                "color": WidgetColor.RED.value,
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.AREA_CHART,
+            title="Revenue (last 90 days)",
+            position_x=0,
+            position_y=1,
+            size_w=3,
+            size_h=2,
+            query={
+                "resource": ResourceType.INVOICES.value,
+                "field": "total_cents",
+                "aggregation": AggregationType.sum.value,
+                "time_range": TimeRange.LAST_90_DAYS.value,
+                "granularity": Granularity.WEEK.value,
+                "filters": [],
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.BAR_CHART,
+            title="Surveys by Week",
+            position_x=3,
+            position_y=1,
+            size_w=1,
+            size_h=2,
+            query={
+                "resource": ResourceType.SURVEYS.value,
+                "field": "state",
+                "time_range": TimeRange.LAST_30_DAYS.value,
+                "filters": [],
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.RESOURCE_TABLE,
+            title="Recent Invoices",
+            position_x=0,
+            position_y=3,
+            size_w=2,
+            size_h=2,
+            query={
+                "resource": ResourceType.INVOICES.value,
+                "columns": ["invoice_number", "state", "total_cents"],
+                "limit": 5,
+                "filters": [],
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.CHILD_LIST,
+            title="Recent Surveys",
+            position_x=2,
+            position_y=3,
+            size_w=2,
+            size_h=2,
+            query={
+                "resource": ResourceType.SURVEYS.value,
+                "limit": 5,
+                "filters": [],
+            },
+        ),
+    ]
+    for w in starter_widgets:
+        session.add(w)
+    await session.flush()
+    logger.info("Created dashboard with %d starter widgets", len(starter_widgets))
 
     logger.info("Demo seed complete — org=%s", org.name)
     return org

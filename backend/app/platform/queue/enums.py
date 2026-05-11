@@ -7,7 +7,6 @@ class TaskName(StrEnum):
     PROCESS_INBOUND_EMAIL = auto()
     HANDLE_SURVEYS_EMAIL = auto()
     HANDLE_SUPPORT_EMAIL = auto()
-    HANDLE_USER_INBOX_EMAIL = auto()
     SEND_UNKNOWN_RECIPIENT_BOUNCE = auto()
     RUN_EVENT_CONSUMER = auto()
     GENERATE_THUMBNAIL = auto()

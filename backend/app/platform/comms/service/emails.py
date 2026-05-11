@@ -9,8 +9,8 @@ from litestar.contrib.jinja import JinjaTemplateEngine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import config
-from app.platform.comms.enums import EmailMessageStatus
-from app.platform.comms.models.emails import EmailMessage
+from app.platform.comms.enums import MessageDirection, MessageState
+from app.platform.comms.models.messages import Message
 from app.platform.queue.enums import TaskName
 from app.platform.queue.transactions import dispatch_task
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     """High-level email service: validates addresses, renders templates, persists
-    an EmailMessage row, and enqueues the SEND_EMAIL task after commit."""
+    a Message row, and enqueues the SEND_EMAIL task after commit."""
 
     def __init__(self, template_engine: JinjaTemplateEngine, transaction: AsyncSession, request: Request):
         self.template_engine = template_engine
@@ -42,6 +42,8 @@ class EmailService:
 
     async def send_email(
         self,
+        *,
+        user_id: int,
         to: list[str] | str,
         subject: str,
         template_name: str,
@@ -49,6 +51,8 @@ class EmailService:
         from_email: str | None = None,
         from_name: str | None = None,
         reply_to: str | None = None,
+        email_thread_id: int | None = None,
+        in_reply_to: str | None = None,
     ) -> int:
         if isinstance(to, str):
             to = [to]
@@ -60,8 +64,12 @@ class EmailService:
 
         html_body, text_body = self.render_template(template_name, context)
 
-        record = EmailMessage(
-            to_email=to,
+        record = Message(
+            user_id=user_id,
+            email_thread_id=email_thread_id,
+            direction=MessageDirection.OUT,
+            state=MessageState.QUEUED,
+            to_emails=to,
             from_email=from_email,
             from_name=from_name,
             reply_to_email=reply_to,
@@ -69,21 +77,24 @@ class EmailService:
             body_html=html_body,
             body_text=text_body,
             template_name=template_name,
-            status=EmailMessageStatus.PENDING,
+            in_reply_to=in_reply_to,
         )
         self.transaction.add(record)
         await self.transaction.flush()
 
-        await dispatch_task(self.transaction, self.request, TaskName.SEND_EMAIL, email_message_id=record.id)
+        await dispatch_task(self.transaction, self.request, TaskName.SEND_EMAIL, message_id=record.id)
         return record.id
 
     async def send_magic_link_email(
         self,
+        *,
+        user_id: int,
         to_email: str,
         magic_link_url: str,
         expires_minutes: int = 15,
     ) -> None:
         await self.send_email(
+            user_id=user_id,
             to=to_email,
             subject="Sign in to Sloopquest",
             template_name="magic_link",

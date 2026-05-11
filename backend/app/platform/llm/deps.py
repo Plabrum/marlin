@@ -4,7 +4,8 @@ from app.config import config as app_config
 from app.platform.llm.client import AnthropicLLMClient, BaseLLMClient, LocalLLMClient
 from app.utils.deps import dep
 
-_llm_client: BaseLLMClient = LocalLLMClient() if app_config.IS_DEV else AnthropicLLMClient()
+_use_anthropic = (not app_config.IS_DEV) or (app_config.USE_REAL_LLM and bool(app_config.ANTHROPIC_API_KEY))
+_llm_client: BaseLLMClient = AnthropicLLMClient() if _use_anthropic else LocalLLMClient()
 
 
 @dep("llm_client")

@@ -2,13 +2,10 @@ import { Suspense } from "react";
 import { PageTopBar } from "@/components/layout/page-topbar";
 import { DashboardRenderer } from "@/components/dashboard/dashboard-renderer";
 import { useGetDashboardSuspense } from "@/openapi/dashboard/dashboard";
-import type { DashboardConfig } from "@/components/dashboard/types";
 
 function DashboardContent() {
   const { data } = useGetDashboardSuspense();
-  const config = data.config as DashboardConfig;
-
-  return <DashboardRenderer config={config} />;
+  return <DashboardRenderer widgets={data.widgets} />;
 }
 
 function DashboardSkeleton() {

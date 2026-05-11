@@ -39,6 +39,7 @@ class AuthService:
 
         verify_url = f"{self.config.FRONTEND_ORIGIN.rstrip('/')}/auth/magic-link/verify?token={token}"
         await self.email_service.send_magic_link_email(
+            user_id=int(user.id),
             to_email=email,
             magic_link_url=verify_url,
             expires_minutes=MAGIC_LINK_EXPIRY_MINUTES,

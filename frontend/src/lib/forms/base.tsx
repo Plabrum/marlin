@@ -25,6 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -767,6 +774,87 @@ export function createTypedForm<TFieldValues extends FieldValues>() {
     );
   }
 
+  function FormSheet(props: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    subTitle?: string | null;
+    onSubmit: SubmitHandler<TFieldValues>;
+    children: React.ReactNode;
+    isSubmitting?: boolean;
+    submitText?: string;
+    defaultValues?: DefaultValues<TFieldValues>;
+    side?: "right" | "left";
+    width?: string;
+  }) {
+    const {
+      isOpen,
+      onClose,
+      title,
+      subTitle,
+      onSubmit,
+      children,
+      isSubmitting = false,
+      submitText = "Submit",
+      defaultValues,
+      side = "right",
+      width = "sm:max-w-2xl",
+    } = props;
+
+    return (
+      <Sheet
+        open={isOpen}
+        onOpenChange={(open) => !open && !isSubmitting && onClose()}
+      >
+        <SheetContent
+          side={side}
+          className={cn("flex h-full w-full flex-col gap-0 p-0", width)}
+        >
+          <SheetHeader className="border-b border-border px-6 py-4">
+            <SheetTitle className="font-serif text-[20px] font-bold text-[#1C1A18]">
+              {title}
+            </SheetTitle>
+            {subTitle && (
+              <SheetDescription className="text-sm text-[#8A847D]">
+                {subTitle}
+              </SheetDescription>
+            )}
+          </SheetHeader>
+
+          <Form
+            onSubmit={onSubmit}
+            defaultValues={defaultValues}
+            className="flex min-h-0 flex-1 flex-col gap-0 space-y-0"
+            mode="onSubmit"
+          >
+            <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+              {children}
+            </div>
+
+            <div className="flex flex-shrink-0 items-center justify-end gap-3 border-t border-border px-6 py-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="rounded-[10px] border-border bg-card px-5 py-2.5 text-sm font-semibold text-muted-foreground"
+              >
+                Discard
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="gap-1.5 rounded-[10px] bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90"
+              >
+                {isSubmitting ? "Saving..." : submitText}
+              </Button>
+            </div>
+          </Form>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return {
     Form,
     FormString,
@@ -781,5 +869,6 @@ export function createTypedForm<TFieldValues extends FieldValues>() {
     FormEntityCombobox,
     FormCustom,
     FormModal,
+    FormSheet,
   };
 }

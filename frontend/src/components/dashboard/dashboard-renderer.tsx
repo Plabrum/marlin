@@ -2,42 +2,40 @@ import { Suspense } from "react";
 import { WidgetSkeleton } from "./widget-skeleton";
 import { AreaChartWidget } from "./widgets/area-chart-widget";
 import { BarChartWidget } from "./widgets/bar-chart-widget";
-import { StatCardsWidget } from "./widgets/stat-cards-widget";
+import { StatNumberWidget } from "./widgets/stat-number-widget";
 import { ResourceTableWidget } from "./widgets/resource-table-widget";
 import { ChildListWidget } from "./widgets/child-list-widget";
-import type {
-  AreaChartWidgetConfig,
-  BarChartWidgetConfig,
-  ChildListWidgetConfig,
-  DashboardConfig,
-  ResourceTableWidgetConfig,
-  StatCardsWidgetConfig,
-  WidgetConfig,
-} from "./types";
+import type { WidgetRead } from "./types";
 
-function WidgetContent({ widget }: { widget: WidgetConfig }) {
+function WidgetContent({ widget }: { widget: WidgetRead }) {
   switch (widget.type) {
     case "area_chart":
-      return <AreaChartWidget config={widget as AreaChartWidgetConfig} />;
+      return <AreaChartWidget widget={widget} />;
     case "bar_chart":
-      return <BarChartWidget config={widget as BarChartWidgetConfig} />;
-    case "stat_cards":
-      return <StatCardsWidget config={widget as StatCardsWidgetConfig} />;
+      return <BarChartWidget widget={widget} />;
+    case "stat_number":
+      return <StatNumberWidget widget={widget} />;
     case "resource_table":
-      return <ResourceTableWidget config={widget as ResourceTableWidgetConfig} />;
+      return <ResourceTableWidget widget={widget} />;
     case "child_list":
-      return <ChildListWidget config={widget as ChildListWidgetConfig} />;
+      return <ChildListWidget widget={widget} />;
     default:
       return null;
   }
 }
 
-interface DashboardRendererProps {
-  config: DashboardConfig;
+const GRID_COLS = 4;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
-export function DashboardRenderer({ config }: DashboardRendererProps) {
-  if (config.widgets.length === 0) {
+interface DashboardRendererProps {
+  widgets: WidgetRead[];
+}
+
+export function DashboardRenderer({ widgets }: DashboardRendererProps) {
+  if (widgets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <p className="text-base font-medium text-foreground">Your dashboard is empty</p>
@@ -49,14 +47,32 @@ export function DashboardRenderer({ config }: DashboardRendererProps) {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {config.widgets.map((widget) => (
-        <div key={widget.id} className={`col-span-${widget.cols}`}>
-          <Suspense fallback={<WidgetSkeleton cols={widget.cols} />}>
-            <WidgetContent widget={widget} />
-          </Suspense>
-        </div>
-      ))}
+    <div
+      className="grid gap-4"
+      style={{
+        gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`,
+        gridAutoRows: "minmax(120px, auto)",
+        gridAutoFlow: "dense",
+      }}
+    >
+      {widgets.map((widget) => {
+        const w = clamp(widget.size_w, 1, GRID_COLS);
+        const h = clamp(widget.size_h, 1, 6);
+        const colStart = clamp(widget.position_x + 1, 1, GRID_COLS - w + 1);
+        return (
+          <div
+            key={widget.id}
+            style={{
+              gridColumn: `${colStart} / span ${w}`,
+              gridRow: `span ${h}`,
+            }}
+          >
+            <Suspense fallback={<WidgetSkeleton cols={w} />}>
+              <WidgetContent widget={widget} />
+            </Suspense>
+          </div>
+        );
+      })}
     </div>
   );
 }

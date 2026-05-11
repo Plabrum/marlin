@@ -1,5 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type StatCardColor = "blue" | "green" | "red" | "yellow";
@@ -8,7 +16,7 @@ interface StatCardProps {
   value: string | number;
   label: string;
   change?: { value: number; direction: "up" | "down" | "flat" };
-  color: StatCardColor;
+  color?: StatCardColor;
   href?: string;
   className?: string;
 }
@@ -18,85 +26,59 @@ interface StatCardsProps {
   className?: string;
 }
 
-const COLOR_MAP: Record<StatCardColor, { bg: string; border: string; text: string }> = {
-  blue:   {
-    bg:     "var(--color-blue-light, #EFF6FF)",
-    border: "var(--color-blue-light, #3B82F640)",
-    text:   "var(--color-blue, #3B82F6)",
-  },
-  green:  {
-    bg:     "var(--color-green-light, #EFF5F1)",
-    border: "var(--color-green-light, #4A8C3F40)",
-    text:   "var(--color-green, #4A8C3F)",
-  },
-  red:    {
-    bg:     "var(--color-red-light, #FEF2F2)",
-    border: "var(--color-red-light, #C45A4A40)",
-    text:   "var(--color-red, #C45A4A)",
-  },
-  yellow: {
-    bg:     "var(--color-yellow-light, #FDF3E7)",
-    border: "var(--color-yellow-light, #D4944A40)",
-    text:   "var(--color-yellow, #D4944A)",
-  },
-};
-
-function StatCard({ value, label, change, color, href, className }: StatCardProps) {
-  const colors = COLOR_MAP[color];
-
-  const content = (
-    <div
+function StatCard({ value, label, change, href, className }: StatCardProps) {
+  const card = (
+    <Card
       className={cn(
-        "flex flex-col gap-1 rounded-2xl p-5 shadow-lg transition-shadow",
-        href && "hover:shadow-xl",
+        "gap-0 py-5 transition-shadow",
+        href && "hover:shadow-md",
         className,
       )}
-      style={{
-        backgroundColor: colors.bg,
-        borderWidth: 1,
-        borderStyle: "solid",
-        borderColor: colors.border,
-      }}
     >
-      <div className="flex items-baseline gap-2">
-        <span
-          className="font-display text-[28px] font-bold leading-tight"
-          style={{ color: colors.text }}
-        >
+      <CardHeader className="gap-1.5 px-5">
+        <CardDescription>{label}</CardDescription>
+        <CardTitle className="text-3xl font-semibold tabular-nums tracking-tight">
           {value}
-        </span>
+        </CardTitle>
         {change && change.direction !== "flat" && (
-          <span
-            className="flex items-center gap-0.5 text-xs font-semibold"
-            style={{ color: colors.text }}
-          >
-            {change.direction === "up" ? (
-              <ArrowUp className="size-3" />
-            ) : (
-              <ArrowDown className="size-3" />
-            )}
-            {Math.abs(change.value).toFixed(1)}%
-          </span>
+          <CardAction>
+            <Badge
+              variant="outline"
+              className={cn(
+                "gap-1",
+                change.direction === "up"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400",
+              )}
+            >
+              {change.direction === "up" ? (
+                <TrendingUp className="size-3" />
+              ) : (
+                <TrendingDown className="size-3" />
+              )}
+              {Math.abs(change.value).toFixed(1)}%
+            </Badge>
+          </CardAction>
         )}
-      </div>
-      <span className="text-sm font-medium" style={{ color: colors.text }}>
-        {label}
-      </span>
-    </div>
+      </CardHeader>
+    </Card>
   );
 
   if (href) {
-    return <Link to={href}>{content}</Link>;
+    return (
+      <Link to={href} className="block">
+        {card}
+      </Link>
+    );
   }
-
-  return content;
+  return card;
 }
 
 export function StatCards({ stats, className }: StatCardsProps) {
   return (
     <div
       className={cn("grid gap-4", className)}
-      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}
     >
       {stats.map((stat) => (
         <StatCard key={stat.label} {...stat} />

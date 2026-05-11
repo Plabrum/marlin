@@ -117,7 +117,16 @@ from app.domain.vessels.enums import (  # noqa: E402
     RiggingType,
     VesselType,
 )
-from app.platform.comms.enums import EmailMessageStatus  # noqa: E402
+
+
+# EmailMessageStatus is defined inline (was deleted in a later migration that
+# collapsed email_messages + inbound_emails into a unified `messages` table).
+class EmailMessageStatus(_Enum):
+    PENDING = "PENDING"
+    SENT = "SENT"
+    FAILED = "FAILED"
+
+
 from app.platform.documents.enums import DocumentStates  # noqa: E402
 from app.platform.events.enums import EventType  # noqa: E402
 from app.platform.llm.enums import MessageRole  # noqa: E402

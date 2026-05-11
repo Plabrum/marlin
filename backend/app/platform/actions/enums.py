@@ -13,8 +13,12 @@ class ActionGroupType(StrEnum):
     REPORT_ACTIONS = auto()
     SUBSCRIPTION_ACTIONS = auto()
     ORGANIZATION_ACTIONS = auto()
+    USER_ACTIONS = auto()
     MANUFACTURER_ACTIONS = auto()
     PART_ACTIONS = auto()
+    EMAIL_THREAD_ACTIONS = auto()
+    MESSAGE_ACTIONS = auto()
+    WIDGET_ACTIONS = auto()
 
 
 class ActionResultType(StrEnum):

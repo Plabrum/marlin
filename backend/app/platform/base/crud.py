@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, get_type_hints
+from typing import Any, Literal, get_type_hints
 
 from litestar import Controller, get, post
 from litestar.exceptions import NotFoundException
@@ -41,6 +41,10 @@ class CRUDConfig[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct]:
 
     to_list_item: Callable[[ModelT, User], ListT]
     to_detail: Callable[[ModelT, User], DetailT]
+
+    # "org": scope rows by organization_id (default). "user": scope by user_id —
+    # for resources owned by a single user (e.g. inbox messages, dashboards).
+    scope: Literal["org", "user"] = "org"
 
     list_load_options: list[Any] = field(default_factory=list)
     detail_load_options: list[Any] = field(default_factory=list)
@@ -90,8 +94,13 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
     detail_guards = [*guards, *config.detail_extra_guards]
     model_name = model.__name__
 
-    # Resolve mixin columns at factory time so we get clean errors if missing
-    org_id_col = getattr(model, "organization_id")
+    # Resolve scope columns at factory time so we get clean errors if missing
+    if config.scope == "user":
+        scope_col = getattr(model, "user_id")
+        scope_value_attr = "id"
+    else:
+        scope_col = getattr(model, "organization_id")
+        scope_value_attr = "organization_id"
     deleted_at_col = getattr(model, "deleted_at", None)
     default_sort_col = getattr(model, config.default_sort or "created_at")
 
@@ -113,8 +122,8 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         limit = max(1, min(data.limit, 200))
         offset = max(0, data.offset)
 
-        # Base query: org-scoped, soft-delete if supported
-        conditions = [org_id_col == user.organization_id]
+        # Base query: scope-filtered, soft-delete if supported
+        conditions = [scope_col == getattr(user, scope_value_attr)]
         if deleted_at_col is not None:
             conditions.append(deleted_at_col.is_(None))
         base = select(model).where(*conditions)
@@ -174,7 +183,7 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: Struct, DetailT: Struct](
         user: User,
         transaction: AsyncSession,
     ) -> Struct:
-        detail_conditions = [model.id == id, org_id_col == user.organization_id]
+        detail_conditions = [model.id == id, scope_col == getattr(user, scope_value_attr)]
         if deleted_at_col is not None:
             detail_conditions.append(deleted_at_col.is_(None))
         query = select(model).where(*detail_conditions)

@@ -5,12 +5,7 @@ import type {
   TimeSeriesDataRequest,
   TimeSeriesDataResponse,
 } from "@/openapi/litestarAPI.schemas";
-import type {
-  FilterDefinition,
-  Granularity,
-  ResourceType,
-  TimeRange,
-} from "./types";
+import type { FilterDefinition, ResourceType, WidgetQuery } from "./types";
 
 interface ResourceMeta {
   labelField: string;
@@ -19,7 +14,7 @@ interface ResourceMeta {
 
 const RESOURCE_META: Record<ResourceType, ResourceMeta> = {
   invoices: { labelField: "invoice_number", subField: "state" },
-  surveys:  { labelField: "title",          subField: "state" },
+  surveys:  { labelField: "id",             subField: "state" },
   vessels:  { labelField: "name",           subField: "hin" },
   reports:  { labelField: "title",          subField: "state" },
   clients:  { labelField: "display_name",   subField: "client_type" },
@@ -29,36 +24,27 @@ export function getResourceMeta(resource: ResourceType): ResourceMeta {
   return RESOURCE_META[resource];
 }
 
-export interface TimeSeriesSpec {
-  resource: ResourceType;
-  field: string;
-  time_range?: TimeRange;
-  granularity?: Granularity;
-  filters?: FilterDefinition[];
-  aggregation?: string;
-}
-
-export function useTimeSeriesData(spec: TimeSeriesSpec) {
+export function useTimeSeriesData(query: WidgetQuery) {
   return useSuspenseQuery({
     queryKey: [
       "dashboard-data",
-      spec.resource,
-      spec.field,
-      spec.time_range,
-      spec.granularity,
-      spec.aggregation,
-      spec.filters,
+      query.resource,
+      query.field,
+      query.time_range,
+      query.granularity,
+      query.aggregation,
+      query.filters,
     ],
     queryFn: ({ signal }) => {
       const body: TimeSeriesDataRequest = {
-        field: spec.field,
-        ...(spec.time_range && { time_range: spec.time_range }),
-        ...(spec.granularity && { granularity: spec.granularity }),
-        filters: (spec.filters as TimeSeriesDataRequest["filters"]) ?? [],
-        ...(spec.aggregation && { aggregation: spec.aggregation as TimeSeriesDataRequest["aggregation"] }),
+        field: query.field ?? "",
+        ...(query.time_range && { time_range: query.time_range }),
+        ...(query.granularity && { granularity: query.granularity }),
+        filters: (query.filters as TimeSeriesDataRequest["filters"]) ?? [],
+        ...(query.aggregation && { aggregation: query.aggregation }),
       };
       return customInstance<TimeSeriesDataResponse>({
-        url: `/${spec.resource}/data`,
+        url: `/${query.resource}/data`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: body,
@@ -68,29 +54,27 @@ export function useTimeSeriesData(spec: TimeSeriesSpec) {
   });
 }
 
-export interface ResourceListSpec {
-  resource: ResourceType;
-  filters?: FilterDefinition[];
-  limit: number;
-}
-
-interface DashboardListResponse {
+interface ResourceListResponse {
   items: Record<string, unknown>[];
   total: number;
 }
 
-export function useResourceList(spec: ResourceListSpec) {
+export function useResourceList(
+  resource: ResourceType,
+  filters: FilterDefinition[] | undefined,
+  limit: number,
+) {
   return useSuspenseQuery({
-    queryKey: ["dashboard-list", spec.resource, spec.filters, spec.limit],
+    queryKey: ["dashboard-list", resource, filters, limit],
     queryFn: ({ signal }) => {
       const body: ListRequest = {
-        filters: (spec.filters as ListRequest["filters"]) ?? [],
+        filters: (filters as ListRequest["filters"]) ?? [],
         sorts: [{ column: "created_at", direction: "desc" }],
-        limit: spec.limit,
+        limit,
         offset: 0,
       };
-      return customInstance<DashboardListResponse>({
-        url: `/${spec.resource}`,
+      return customInstance<ResourceListResponse>({
+        url: `/${resource}`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: body,

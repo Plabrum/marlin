@@ -15,6 +15,7 @@ class ClientFactory(BaseFactory):
     __model__ = Client
 
     client_type = ClientType.individual
+    user_id = None
     display_name = Use(fake.name)
     email = Use(fake.email)
     phone = Use(fake.phone_number)

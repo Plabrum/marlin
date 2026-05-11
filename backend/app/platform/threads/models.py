@@ -23,10 +23,10 @@ class Thread(BaseDBModel):
     threadable_id: Mapped[int] = mapped_column(sa.Integer, nullable=False, index=True)
 
     messages: Mapped[list["Message"]] = relationship(
-        "Message",
+        "app.platform.threads.models.Message",
         back_populates="thread",
         cascade="all, delete-orphan",
-        order_by="Message.created_at",
+        order_by="app.platform.threads.models.Message.created_at",
     )
     read_statuses: Mapped[list["ThreadReadStatus"]] = relationship(
         "ThreadReadStatus",

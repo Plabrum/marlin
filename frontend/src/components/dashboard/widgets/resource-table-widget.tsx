@@ -1,20 +1,20 @@
-import type { ResourceTableWidgetConfig } from "../types";
+import type { WidgetRead } from "../types";
 import { useResourceList } from "../data-sources";
 
-export function ResourceTableWidget({ config }: { config: ResourceTableWidgetConfig }) {
-  const { data } = useResourceList({
-    resource: config.resource,
-    filters: config.filters,
-    limit: config.limit ?? 10,
-  });
+export function ResourceTableWidget({ widget }: { widget: WidgetRead }) {
+  const { data } = useResourceList(
+    widget.query.resource,
+    widget.query.filters,
+    widget.query.limit ?? 10,
+  );
 
   const items = data.items ?? [];
-  const cols = config.columns;
+  const cols = widget.query.columns ?? [];
 
   return (
     <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-sm overflow-hidden">
       <div className="border-b border-border px-6 pb-3 pt-4">
-        <h3 className="font-display text-base font-bold text-foreground">{config.title}</h3>
+        <h3 className="font-display text-base font-bold text-foreground">{widget.title}</h3>
       </div>
       {items.length === 0 ? (
         <p className="px-6 py-8 text-center text-sm text-muted-foreground">No data</p>

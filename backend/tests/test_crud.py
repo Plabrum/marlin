@@ -24,14 +24,14 @@ from app.platform.base.search import SearchMixin
 from app.utils.sqids import Sqid
 
 
-class _Vessel(BaseDBModel, SearchMixin):
+class _Vessel(SearchMixin):
     __tablename__ = "test_vessels"
 
     organization_id: Mapped[int] = mapped_column(nullable=False, index=True)
     deleted_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True), default=None)
     name: Mapped[str] = mapped_column(sa.String, nullable=False)
 
-    # No search_columns: SearchMixin emits no `search_vector` column (sqlite has
+    # No trgm/fts columns: SearchMixin emits no `search_vector` column (sqlite has
     # no `to_tsvector`), and `search_filter` is a no-op. FTS coverage lives in
     # tests/test_search.py against Postgres.
 

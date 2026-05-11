@@ -31,13 +31,11 @@ async def wipe_demo_org(session: AsyncSession) -> bool:
             "SELECT DISTINCT unnest(ARRAY["
             "  c.billing_address_id,"
             "  v.home_port_address_id,"
-            "  s.inspection_location_address_id,"
             "  o.address_id"
             "]) AS aid"
             " FROM organizations o"
             " LEFT JOIN clients c ON c.organization_id = o.id"
             " LEFT JOIN vessels v ON v.organization_id = o.id"
-            " LEFT JOIN surveys s ON s.organization_id = o.id"
             " WHERE o.id = :oid"
         ),
         {"oid": DEMO_ORG_ID},
@@ -57,29 +55,6 @@ async def wipe_demo_org(session: AsyncSession) -> bool:
                 {"otype": object_type, "ids": obj_ids},
             )
             logger.info("  Deleted transition logs for %s (%d objects)", object_type, len(obj_ids))
-
-    # recommendations → findings → surveys (via subqueries)
-    await session.execute(
-        text(
-            "DELETE FROM recommendations WHERE finding_id IN ("
-            "  SELECT id FROM findings WHERE survey_id IN ("
-            "    SELECT id FROM surveys WHERE organization_id = :oid"
-            "  )"
-            ")"
-        ),
-        {"oid": DEMO_ORG_ID},
-    )
-
-    # findings, survey_response_items, survey_parties all reference surveys
-    for table in ("findings", "survey_response_items", "survey_parties"):
-        result = await session.execute(
-            text(
-                f"DELETE FROM {table} WHERE survey_id IN "  # noqa: S608
-                "(SELECT id FROM surveys WHERE organization_id = :oid)"
-            ),
-            {"oid": DEMO_ORG_ID},
-        )
-        logger.info("  %s: %d rows deleted", table, result.rowcount)  # pyright: ignore[reportAttributeAccessIssue]
 
     # invoice_line_items reference invoices
     result = await session.execute(

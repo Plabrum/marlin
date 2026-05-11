@@ -3,7 +3,7 @@
 import email as email_lib
 import logging
 from datetime import UTC, datetime
-from email.message import Message
+from email.message import Message as MimeMessage
 from email.utils import parseaddr, parsedate_to_datetime
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -17,17 +17,19 @@ from app.domain.users.models import User
 from app.platform.clients.s3 import BaseS3Client
 from app.platform.comms.clients.email import BaseEmailClient, EmailPayload, EmailSendError
 from app.platform.comms.constants import RESERVED_INBOX_LOCAL_PARTS, normalize_local_part
-from app.platform.comms.enums import EmailMessageStatus
-from app.platform.comms.models.emails import EmailMessage
-from app.platform.comms.models.inbound_emails import InboundEmail
+from app.platform.comms.enums import MessageDirection, MessageState
+from app.platform.comms.models.email_threads import EmailThread
+from app.platform.comms.models.messages import Message
+from app.platform.comms.state_machine import message_state_machine
 from app.platform.queue.registry import TaskName, task
 from app.platform.queue.transactions import with_transaction
 from app.platform.queue.types import AppContext
+from app.platform.state_machine.machine import StateMachineService
 
 logger = logging.getLogger(__name__)
 
 
-def _parse_auth_verdicts(msg: Message) -> tuple[bool, bool, bool]:
+def _parse_auth_verdicts(msg: MimeMessage) -> tuple[bool, bool, bool]:
     """Extract (spf_pass, dkim_pass, is_automated) from an inbound MIME message.
 
     SES inserts an Authentication-Results header with `spf=pass`/`dkim=pass`
@@ -48,6 +50,29 @@ def _parse_auth_verdicts(msg: Message) -> tuple[bool, bool, bool]:
     return spf_pass, dkim_pass, is_automated
 
 
+async def _find_or_create_thread(
+    transaction: AsyncSession,
+    *,
+    user_id: int,
+    subject: str | None,
+    in_reply_to: str | None,
+) -> int:
+    """Resolve a thread for an inbound message — by In-Reply-To first, else create."""
+    if in_reply_to:
+        existing = await transaction.scalar(
+            select(EmailThread.id)
+            .join(Message, Message.email_thread_id == EmailThread.id)
+            .where(EmailThread.user_id == user_id, Message.rfc_message_id == in_reply_to)
+            .limit(1)
+        )
+        if existing is not None:
+            return existing
+    thread = EmailThread(user_id=user_id, subject=subject)
+    transaction.add(thread)
+    await transaction.flush()
+    return thread.id
+
+
 @task(TaskName.SEND_EMAIL)
 @with_transaction
 async def send_email_task(
@@ -55,39 +80,35 @@ async def send_email_task(
     *,
     transaction: AsyncSession,
     email_client: BaseEmailClient,
-    email_message_id: int,
+    message_id: int,
 ) -> None:
-    """Send a queued email and update its status.
-
-    On success: SENT + ses_message_id + sent_at.
-    On failure: raises EmailSendError (CommittableTaskError) — the FAILED status
-    is committed before the exception propagates so SAQ can retry.
-    """
-    record = await transaction.get(EmailMessage, email_message_id)
+    """Send a queued outbound message and transition it to SENT/FAILED."""
+    record = await transaction.get(Message, message_id)
     if record is None:
-        raise ValueError(f"EmailMessage {email_message_id} not found")
+        raise ValueError(f"Message {message_id} not found")
 
     payload = EmailPayload(
-        to=record.to_email,
-        subject=record.subject,
-        body_html=record.body_html,
-        body_text=record.body_text,
-        from_email=record.from_email,
+        to=record.to_emails,
+        subject=record.subject or "",
+        body_html=record.body_html or "",
+        body_text=record.body_text or "",
+        from_email=record.from_email or "",
         from_name=record.from_name,
         reply_to=record.reply_to_email,
-        in_reply_to=record.in_reply_to_message_id,
-        references=record.in_reply_to_message_id,
-        message_id=record.message_id,
+        in_reply_to=record.in_reply_to,
+        references=record.in_reply_to,
+        message_id=record.rfc_message_id,
     )
 
+    sm_service = StateMachineService(transaction)
     try:
-        ses_message_id = await email_client.send_email(payload)
-        record.ses_message_id = ses_message_id
-        record.status = EmailMessageStatus.SENT
+        ses_id = await email_client.send_email(payload)
+        record.ses_message_id = ses_id
         record.sent_at = datetime.now(UTC)
+        await sm_service.system_transition(message_state_machine, record, MessageState.SENT)
     except Exception as e:
-        record.status = EmailMessageStatus.FAILED
         record.error_message = str(e)
+        await sm_service.system_transition(message_state_machine, record, MessageState.FAILED)
         raise EmailSendError(str(e)) from e
 
 
@@ -102,7 +123,7 @@ async def process_inbound_email_task(
     bucket: str,
     s3_key: str,
 ) -> dict:
-    """Parse an inbound email from S3, persist a record, upload attachments, route.
+    """Parse an inbound email from S3, persist a Message row, upload attachments, route.
 
     Idempotent: duplicate s3_key is silently ignored via ON CONFLICT DO NOTHING.
     """
@@ -110,9 +131,9 @@ async def process_inbound_email_task(
 
     msg = email_lib.message_from_bytes(email_bytes)
     from_email = parseaddr(msg.get("From", ""))[1] or None
-    to_email = parseaddr(msg.get("To", ""))[1] or None
+    to_email = (parseaddr(msg.get("To", ""))[1] or "").lower()
     subject = msg.get("Subject") or None
-    ses_message_id = msg.get("Message-ID") or None
+    rfc_message_id = msg.get("Message-ID") or None
     in_reply_to = msg.get("In-Reply-To") or None
     raw_date = msg.get("Date")
     try:
@@ -151,23 +172,72 @@ async def process_inbound_email_task(
                 elif ct == "text/html" and body_html is None:
                     body_html = payload.decode(charset, errors="replace")
 
+    local_part = normalize_local_part(to_email.split("@", 1)[0]) if "@" in to_email else ""
+
+    # Resolve the recipient user before creating the Message row — Message.user_id
+    # is NOT NULL, so reserved/unknown branches need a fallback (or a separate path).
+    user_id: int | None = None
+    routed: str
+    if local_part == "surveys":
+        routed = "reserved_surveys"
+    elif local_part == "support":
+        routed = "reserved_support"
+    elif local_part in RESERVED_INBOX_LOCAL_PARTS:
+        routed = "reserved_dropped"
+    else:
+        resolved = await transaction.scalar(select(User.id).where(User.inbox_local_part == local_part))
+        if resolved is not None:
+            user_id = int(resolved)
+            routed = "user"
+        elif spf_pass and dkim_pass and not is_automated:
+            routed = "bounced"
+        else:
+            routed = "dropped"
+
+    if user_id is None:
+        # Reserved / bounced / dropped paths: no user-scoped Message row to write.
+        # The bounce task creates its own outbound row when needed.
+        if routed == "reserved_surveys":
+            await queue.enqueue(str(TaskName.HANDLE_SURVEYS_EMAIL), bucket=bucket, s3_key=s3_key)
+        elif routed == "reserved_support":
+            await queue.enqueue(str(TaskName.HANDLE_SUPPORT_EMAIL), bucket=bucket, s3_key=s3_key)
+        elif routed == "bounced":
+            await queue.enqueue(
+                str(TaskName.SEND_UNKNOWN_RECIPIENT_BOUNCE),
+                from_email=from_email,
+                to_email=to_email,
+                subject=subject,
+            )
+        return {"status": "processed", "routed": routed}
+
+    thread_id = await _find_or_create_thread(
+        transaction,
+        user_id=user_id,
+        subject=subject,
+        in_reply_to=in_reply_to,
+    )
+
     stmt = (
-        insert(InboundEmail)
+        insert(Message)
         .values(
+            user_id=user_id,
+            email_thread_id=thread_id,
+            direction=MessageDirection.IN.name,
+            state=MessageState.RECEIVED.name,
+            subject=subject,
+            from_email=from_email,
+            to_emails=[to_email] if to_email else [],
+            rfc_message_id=rfc_message_id,
+            in_reply_to=in_reply_to,
             s3_bucket=bucket,
             s3_key=s3_key,
-            ses_message_id=ses_message_id,
-            from_email=from_email,
-            to_email=to_email,
-            subject=subject,
             received_at=received_at,
-            in_reply_to=in_reply_to,
             spf_pass=spf_pass,
             dkim_pass=dkim_pass,
             is_automated=is_automated,
         )
         .on_conflict_do_nothing(index_elements=["s3_key"])
-        .returning(InboundEmail)
+        .returning(Message)
     )
     result = await transaction.execute(stmt)
     record = result.scalar_one_or_none()
@@ -197,34 +267,7 @@ async def process_inbound_email_task(
     record.attachments_json = {"attachments": attachments_meta}
     record.processed_at = datetime.now(UTC)
 
-    to = (record.to_email or "").lower()
-    local_part = normalize_local_part(to.split("@", 1)[0]) if "@" in to else ""
-
-    # Reserved local-parts route to dedicated handlers
-    if local_part == "surveys":
-        await queue.enqueue(str(TaskName.HANDLE_SURVEYS_EMAIL), inbound_email_id=record.id)
-        return {"status": "processed", "id": record.id, "routed": "reserved_surveys"}
-    if local_part == "support":
-        await queue.enqueue(str(TaskName.HANDLE_SUPPORT_EMAIL), inbound_email_id=record.id)
-        return {"status": "processed", "id": record.id, "routed": "reserved_support"}
-    if local_part in RESERVED_INBOX_LOCAL_PARTS:
-        # Reserved but no handler yet (e.g. admin@, billing@) — silently drop.
-        return {"status": "processed", "id": record.id, "routed": "reserved_dropped"}
-
-    # User inbox lookup
-    target_user_id = await transaction.scalar(select(User.id).where(User.inbox_local_part == local_part))
-    if target_user_id is not None:
-        record.target_user_id = target_user_id
-        await queue.enqueue(str(TaskName.HANDLE_USER_INBOX_EMAIL), inbound_email_id=record.id)
-        return {"status": "processed", "id": record.id, "routed": "user"}
-
-    # Unknown recipient — bounce only if SPF+DKIM passed and message isn't
-    # automated (RFC 3834: don't bounce auto-replies/bounces).
-    if spf_pass and dkim_pass and not is_automated:
-        await queue.enqueue(str(TaskName.SEND_UNKNOWN_RECIPIENT_BOUNCE), inbound_email_id=record.id)
-        return {"status": "processed", "id": record.id, "routed": "bounced"}
-
-    return {"status": "processed", "id": record.id, "routed": "dropped"}
+    return {"status": "processed", "id": record.id, "routed": "user"}
 
 
 @task(TaskName.HANDLE_SUPPORT_EMAIL)
@@ -233,11 +276,12 @@ async def handle_support_email_task(
     ctx: AppContext,
     *,
     transaction: AsyncSession,
-    inbound_email_id: int,
+    bucket: str,
+    s3_key: str,
 ) -> dict:
     """Support email received — no automated action (human triage)."""
-    logger.info("Support email received (id=%s) — no automated action", inbound_email_id)
-    return {"status": "noop", "id": inbound_email_id}
+    logger.info("Support email received (s3_key=%s) — no automated action", s3_key)
+    return {"status": "noop", "s3_key": s3_key}
 
 
 @task(TaskName.HANDLE_SURVEYS_EMAIL)
@@ -246,26 +290,14 @@ async def handle_surveys_email_task(
     ctx: AppContext,
     *,
     transaction: AsyncSession,
-    inbound_email_id: int,
+    bucket: str,
+    s3_key: str,
 ) -> dict:
     """Surveys email received — TODO: route to surveyor / survey-context resolver."""
     # TODO(SLQ): resolve sender → surveyor/customer, attach to a survey thread,
     # and trigger any auto-acknowledgement once that domain lands.
-    logger.info("Surveys email received (id=%s) — handler stub, no-op", inbound_email_id)
-    return {"status": "noop", "id": inbound_email_id}
-
-
-@task(TaskName.HANDLE_USER_INBOX_EMAIL)
-@with_transaction
-async def handle_user_inbox_email_task(
-    ctx: AppContext,
-    *,
-    transaction: AsyncSession,
-    inbound_email_id: int,
-) -> dict:
-    """Per-user inbox email received — TODO: hydrate UI threads + LLM context."""
-    logger.info("User inbox email received (id=%s) — handler stub, no-op", inbound_email_id)
-    return {"status": "noop", "id": inbound_email_id}
+    logger.info("Surveys email received (s3_key=%s) — handler stub, no-op", s3_key)
+    return {"status": "noop", "s3_key": s3_key}
 
 
 @task(TaskName.SEND_UNKNOWN_RECIPIENT_BOUNCE)
@@ -274,47 +306,41 @@ async def send_unknown_recipient_bounce_task(
     ctx: AppContext,
     *,
     transaction: AsyncSession,
-    queue: Queue,
-    inbound_email_id: int,
+    email_client: BaseEmailClient,
+    from_email: str | None,
+    to_email: str,
+    subject: str | None,
 ) -> dict:
-    """Send an RFC-style mailer-daemon bounce for a delivered-but-unrouteable inbound.
+    """Send an RFC-style mailer-daemon bounce for an unrouteable inbound.
 
-    Persists an EmailMessage row and enqueues SEND_EMAIL — same path as
-    user-facing sends, so retries and tracking work uniformly.
+    Sent directly via the email client — we don't persist a Message row because
+    bounces have no owning user (Message.user_id is NOT NULL) and the audit
+    value of a per-bounce row is low compared to the cost of a synthetic owner.
     """
-    inbound = await transaction.get(InboundEmail, inbound_email_id)
-    if inbound is None or not inbound.from_email:
+    if not from_email:
         return {"status": "skipped", "reason": "missing_from"}
-
-    # Defense-in-depth: caller already filters automated traffic, but a queue
-    # replay could re-bounce; check again so we never backscatter.
-    if inbound.is_automated:
-        return {"status": "skipped", "reason": "automated"}
 
     domain = config.SES_FROM_EMAIL.rsplit("@", 1)[-1]
     bounce_from = f"mailer-daemon@{domain}"
 
     html_body, text_body = _render_bounce_template(
-        original_to=inbound.to_email or "",
-        original_subject=inbound.subject or "",
+        original_to=to_email,
+        original_subject=subject or "",
     )
 
-    message = EmailMessage(
-        to_email=[inbound.from_email],
-        from_email=bounce_from,
-        from_name="Mail Delivery System",
-        reply_to_email=None,
-        subject=f"Delivery failure: {inbound.to_email}",
+    payload = EmailPayload(
+        to=[from_email],
+        subject=f"Delivery failure: {to_email}",
         body_html=html_body,
         body_text=text_body,
-        template_name="unknown_recipient_bounce",
-        status=EmailMessageStatus.PENDING,
+        from_email=bounce_from,
+        from_name="Mail Delivery System",
     )
-    transaction.add(message)
-    await transaction.flush()
-
-    await queue.enqueue(str(TaskName.SEND_EMAIL), email_message_id=message.id)
-    return {"status": "queued", "email_message_id": message.id}
+    try:
+        await email_client.send_email(payload)
+    except Exception as e:
+        raise EmailSendError(str(e)) from e
+    return {"status": "sent", "to": from_email}
 
 
 def _render_bounce_template(*, original_to: str, original_subject: str) -> tuple[str, str]:

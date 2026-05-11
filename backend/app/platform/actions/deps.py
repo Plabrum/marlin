@@ -35,7 +35,7 @@ def provide_action_registry() -> ActionRegistry:
 
 @dep("action_deps", sync_to_thread=False)
 def provide_action_deps(
-    db_session: AsyncSession,
+    transaction: AsyncSession,
     request: Request,
     user: User,
     billing_service: BillingService,
@@ -43,12 +43,12 @@ def provide_action_deps(
 ) -> ActionDeps:
     task_queues = request.app.state.task_queues
     return ActionDeps(
-        transaction=db_session,
+        transaction=transaction,
         config=config,
         request=request,
         user=user,
         organization=organization,
         task_queues=task_queues,
-        sm_service=StateMachineService(db_session),
+        sm_service=StateMachineService(transaction),
         billing=billing_service,
     )

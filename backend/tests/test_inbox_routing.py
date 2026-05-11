@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.users.actions import ClaimInbox, ClaimInboxData
 from app.domain.users.models import User
 from app.domain.users.service import (
     InboxAlreadyClaimedError,
@@ -21,6 +22,7 @@ from app.domain.users.service import (
     InboxLocalPartTakenError,
     UserService,
 )
+from app.platform.actions.deps import ActionDeps
 from app.platform.comms.constants import (
     RESERVED_INBOX_LOCAL_PARTS,
     is_valid_local_part_shape,
@@ -286,8 +288,9 @@ async def test_process_inbound_routes_to_user_inbox(db_session: AsyncSession, us
     )
 
     assert result["routed"] == "user"
-    queue.enqueue.assert_awaited_once()
-    assert queue.enqueue.await_args.args[0] == str(TaskName.HANDLE_USER_INBOX_EMAIL)
+    # User inbox no longer enqueues a follow-up task — the inbound row is
+    # written inline by process_inbound_email_task and is immediately visible.
+    queue.enqueue.assert_not_awaited()
 
 
 async def test_process_inbound_bounces_unknown_when_authenticated(
@@ -351,3 +354,44 @@ async def test_process_inbound_drops_unknown_when_automated(
 
     assert result["routed"] == "dropped"
     queue.enqueue.assert_not_awaited()
+
+
+# ── ClaimInbox action — gating ────────────────────────────────────────────────
+
+
+def _action_deps_for(current_user: User) -> ActionDeps:
+    return ActionDeps(
+        user=current_user,
+        organization=MagicMock(),
+        request=MagicMock(),
+        transaction=AsyncMock(),
+        config=MagicMock(),
+        task_queues=MagicMock(),
+        sm_service=MagicMock(),
+        billing=MagicMock(),
+    )
+
+
+def test_claim_inbox_available_when_unclaimed_and_self(user) -> None:
+    user.inbox_local_part = None
+    assert ClaimInbox.is_available(user, _action_deps_for(user)) is True
+
+
+def test_claim_inbox_unavailable_when_already_claimed(user) -> None:
+    user.inbox_local_part = "phil"
+    assert ClaimInbox.is_available(user, _action_deps_for(user)) is False
+
+
+def test_claim_inbox_unavailable_for_other_user(user, org) -> None:
+    user.inbox_local_part = None
+    other = User(name="other", email="o@example.test", organization_id=org.id)
+    other.id = user.id + 1  # type: ignore[assignment]
+    # Caller is `other` trying to claim on `user`'s row — must be blocked.
+    assert ClaimInbox.is_available(user, _action_deps_for(other)) is False
+
+
+async def test_claim_inbox_execute_persists_local_part(db_session: AsyncSession, user) -> None:
+    response = await ClaimInbox.execute(user, ClaimInboxData(local_part="Phil"), db_session, _action_deps_for(user))
+    assert "phil@" in response.message
+    refreshed = await db_session.get(User, int(user.id))
+    assert refreshed is not None and refreshed.inbox_local_part == "phil"

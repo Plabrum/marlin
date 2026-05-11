@@ -137,7 +137,7 @@ class ActionGroup:
         self.default_invalidation = default_invalidation
         self.load_options = load_options or []
 
-    def __call__(self, action_class: type[BaseAction]) -> type[BaseAction]:
+    def __call__[T: BaseAction](self, action_class: type[T]) -> type[T]:
         action_class.model = self.model_type
         action_key = action_class.action_key
         combined_key = self._get_action_key(action_key)

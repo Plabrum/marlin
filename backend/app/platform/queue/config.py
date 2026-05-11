@@ -50,7 +50,8 @@ async def queue_startup(ctx: AppContext) -> None:  # type: ignore[override]
     ctx["queue"] = ctx["worker"].queue
     ctx["email_client"] = LocalEmailClient() if config.IS_DEV else SESEmailClient(config)
     ctx["s3_client"] = LocalS3Client() if config.IS_DEV else S3Client(config.AWS_REGION)
-    ctx["llm_client"] = LocalLLMClient() if config.IS_DEV else AnthropicLLMClient()
+    use_anthropic = (not config.IS_DEV) or (config.USE_REAL_LLM and bool(config.ANTHROPIC_API_KEY))
+    ctx["llm_client"] = AnthropicLLMClient() if use_anthropic else LocalLLMClient()
     logger.info("Queue worker started — DB sessionmaker, email, S3 & LLM clients injected into context")
 
 

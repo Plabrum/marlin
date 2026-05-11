@@ -8,11 +8,15 @@ import {
   VesselActionsCreateForm,
   VesselActionsUpdateForm,
   VesselActionsAddEngineForm,
+  EmailThreadActionsComposeForm,
+  EmailThreadActionsReplyToThreadForm,
+  MessageActionsForwardMessageForm,
   InvoiceActionsCreateForm,
   InvoiceActionsUpdateForm,
   InvoiceActionsAddLineItemForm,
   SubscriptionActionsCreateForm,
   SubscriptionActionsUpdateForm,
+  UserActionsClaimInboxForm,
   ManufacturerActionsCreateForm,
   ManufacturerActionsUpdateForm,
   PartActionsCreateForm,
@@ -23,6 +27,8 @@ import {
   SurveyTemplateActionsUpdateForm,
   ReportActionsCreateForm,
   ReportActionsUpdateForm,
+  WidgetActionsCreateForm,
+  WidgetActionsUpdateForm,
 } from "./forms.gen";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +48,15 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   "vessel_actions__add_engine": {
     render: (params) => <VesselActionsAddEngineForm {...params} />,
   },
+  "email_thread_actions__compose": {
+    render: (params) => <EmailThreadActionsComposeForm {...params} />,
+  },
+  "email_thread_actions__reply_to_thread": {
+    render: (params) => <EmailThreadActionsReplyToThreadForm {...params} />,
+  },
+  "message_actions__forward_message": {
+    render: (params) => <MessageActionsForwardMessageForm {...params} />,
+  },
   "invoice_actions__create": {
     render: (params) => <InvoiceActionsCreateForm {...params} />,
   },
@@ -56,6 +71,9 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "subscription_actions__update": {
     render: (params) => <SubscriptionActionsUpdateForm {...params} />,
+  },
+  "user_actions__claim_inbox": {
+    render: (params) => <UserActionsClaimInboxForm {...params} />,
   },
   "manufacturer_actions__create": {
     render: (params) => <ManufacturerActionsCreateForm {...params} />,
@@ -86,5 +104,11 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "report_actions__update": {
     render: (params) => <ReportActionsUpdateForm {...params} />,
+  },
+  "widget_actions__create": {
+    render: (params) => <WidgetActionsCreateForm {...params} />,
+  },
+  "widget_actions__update": {
+    render: (params) => <WidgetActionsUpdateForm {...params} />,
   },
 };

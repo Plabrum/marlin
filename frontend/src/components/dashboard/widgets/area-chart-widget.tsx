@@ -1,6 +1,6 @@
 import { MetricAreaChart } from "@/components/data-display/metric-area-chart";
 import type { NumericalTimeSeriesData } from "@/openapi/litestarAPI.schemas";
-import type { AreaChartWidgetConfig } from "../types";
+import type { WidgetRead } from "../types";
 import { useTimeSeriesData } from "../data-sources";
 
 function formatTimestamp(ts: string, granularity: string): string {
@@ -11,14 +11,8 @@ function formatTimestamp(ts: string, granularity: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-export function AreaChartWidget({ config }: { config: AreaChartWidgetConfig }) {
-  const { data: response } = useTimeSeriesData({
-    resource: config.resource,
-    field: config.field,
-    time_range: config.time_range,
-    granularity: config.granularity,
-    filters: config.filters,
-  });
+export function AreaChartWidget({ widget }: { widget: WidgetRead }) {
+  const { data: response } = useTimeSeriesData(widget.query);
 
   const numericalData = response.data as NumericalTimeSeriesData;
   const granularity = response.granularity_used ?? "DAY";
@@ -29,9 +23,9 @@ export function AreaChartWidget({ config }: { config: AreaChartWidgetConfig }) {
 
   return (
     <MetricAreaChart
-      title={config.title}
+      title={widget.title}
       data={chartData}
-      series={[{ key: "value", label: config.field }]}
+      series={[{ key: "value", label: widget.query.field ?? "" }]}
     />
   );
 }

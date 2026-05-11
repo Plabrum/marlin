@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.config import Config
 from app.demo.routes import demo_router
 from app.domain.clients.routes import client_router
+from app.domain.inbox.routes import email_thread_router, message_router
 from app.domain.invoices.routes import invoice_router
 from app.domain.manufacturers.routes import manufacturer_router
 from app.domain.parts.routes import part_router
@@ -162,6 +163,8 @@ def create_app(
             demo_router,
             action_router,
             comms_webhook_router,
+            email_thread_router,
+            message_router,
             billing_webhook_router,
             thread_router,
             thread_handler,

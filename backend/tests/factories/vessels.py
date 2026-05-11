@@ -19,6 +19,7 @@ class VesselFactory(BaseFactory):
     uscg_official_number = None
     state_registration_number = None
     builder = None
+    manufacturer_id = None
     model = None
     year_built = None
     vessel_type = VesselType.sailboat_monohull
@@ -42,6 +43,7 @@ class EngineFactory(BaseFactory):
 
     position = EnginePosition.single
     make = None
+    manufacturer_id = None
     model = None
     serial_number = None
     year = None
