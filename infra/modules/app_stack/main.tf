@@ -10,7 +10,6 @@ locals {
   }
 
   inbound_emails_bucket_name = "${local.name}-inbound-emails-${random_id.bucket_suffix.hex}"
-  ses_recipient              = var.ses_inbound_recipient != "" ? var.ses_inbound_recipient : "support@${var.domain}"
 }
 
 resource "random_id" "bucket_suffix" {
@@ -540,7 +539,9 @@ resource "aws_ses_receipt_rule" "inbound" {
   enabled       = true
   scan_enabled  = true
 
-  recipients = [local.ses_recipient]
+  # Domain-wide catch-all: SES routes anything@<domain> through this rule.
+  # Per-recipient routing happens in process_inbound_email_task.
+  recipients = [var.domain]
 
   s3_action {
     bucket_name       = module.inbound_emails.bucket_id

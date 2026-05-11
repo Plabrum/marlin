@@ -1,8 +1,30 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.users.models import User
 from app.domain.users.queries import create_organization, create_user, get_user_by_email, get_user_by_id
 from app.domain.users.roles import Role
+from app.platform.comms.constants import (
+    RESERVED_INBOX_LOCAL_PARTS,
+    is_valid_local_part_shape,
+    normalize_local_part,
+)
+from app.utils.exceptions import ApplicationError
+
+
+class InboxLocalPartError(ApplicationError):
+    status_code = 400
+    detail = "Invalid inbox local part"
+
+
+class InboxLocalPartTakenError(InboxLocalPartError):
+    status_code = 409
+    detail = "Inbox address is already taken"
+
+
+class InboxAlreadyClaimedError(InboxLocalPartError):
+    status_code = 409
+    detail = "Inbox has already been claimed for this user"
 
 
 class UserService:
@@ -30,3 +52,49 @@ class UserService:
             await self.db.flush()
 
         return user, True
+
+    async def is_inbox_local_part_available(self, raw: str) -> tuple[bool, str, str | None]:
+        """Return (available, canonical, reason).
+
+        `reason` is None when available, otherwise a stable code: "invalid",
+        "reserved", or "taken". Used by the live-check endpoint during onboarding.
+        """
+        canonical = normalize_local_part(raw)
+        if not is_valid_local_part_shape(canonical):
+            return False, canonical, "invalid"
+        if canonical in RESERVED_INBOX_LOCAL_PARTS:
+            return False, canonical, "reserved"
+        existing = await self.db.scalar(select(User.id).where(User.inbox_local_part == canonical))
+        if existing is not None:
+            return False, canonical, "taken"
+        return True, canonical, None
+
+    async def claim_inbox_local_part(self, user_id: int, raw: str) -> str:
+        """Claim once. Raises if already set, invalid, reserved, or taken.
+        Returns the canonical form that was stored."""
+        user = await self.db.get(User, user_id)
+        if user is None:
+            raise InboxLocalPartError("User not found", status_code=404)
+        if user.inbox_local_part is not None:
+            raise InboxAlreadyClaimedError(f"Inbox already set to '{user.inbox_local_part}'")
+
+        canonical = normalize_local_part(raw)
+        if not is_valid_local_part_shape(canonical):
+            raise InboxLocalPartError(
+                f"'{raw}' is not a valid inbox local part",
+            )
+        if canonical in RESERVED_INBOX_LOCAL_PARTS:
+            raise InboxLocalPartError(
+                f"'{canonical}' is reserved",
+            )
+
+        # Race: another concurrent claim of the same canonical form would hit
+        # the partial unique index and raise IntegrityError on flush. Pre-check
+        # to surface a clean 409 in the common (non-racing) path.
+        existing = await self.db.scalar(select(User.id).where(User.inbox_local_part == canonical))
+        if existing is not None:
+            raise InboxLocalPartTakenError(f"'{canonical}' is already taken")
+
+        user.inbox_local_part = canonical
+        await self.db.flush()
+        return canonical

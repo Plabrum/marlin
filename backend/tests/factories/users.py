@@ -38,5 +38,6 @@ class UserFactory(BaseFactory):
     role = Role.ADMIN
     email_verified = False
     phone = Use(fake.phone_number)
+    inbox_local_part = None
     created_at = Use(fake.date_time_between, start_date="-1y", end_date="now", tzinfo=UTC)
     updated_at = Use(lambda: datetime.now(tz=UTC))

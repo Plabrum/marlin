@@ -1,7 +1,7 @@
 import { MetricBarChart } from "@/components/data-display/metric-bar-chart";
 import type { NumericalTimeSeriesData } from "@/openapi/litestarAPI.schemas";
 import type { BarChartWidgetConfig } from "../types";
-import { useResourceData } from "./use-resource-data";
+import { useTimeSeriesData } from "../data-sources";
 
 function formatTimestamp(ts: string): string {
   const d = new Date(ts);
@@ -9,13 +9,12 @@ function formatTimestamp(ts: string): string {
 }
 
 export function BarChartWidget({ config }: { config: BarChartWidgetConfig }) {
-  const { data: response } = useResourceData(
-    config.resource,
-    config.field,
-    config.time_range,
-    undefined,
-    config.filters,
-  );
+  const { data: response } = useTimeSeriesData({
+    resource: config.resource,
+    field: config.field,
+    time_range: config.time_range,
+    filters: config.filters,
+  });
 
   const numericalData = response.data as NumericalTimeSeriesData;
   const bars = (numericalData.points ?? []).map((p) => ({

@@ -1,7 +1,7 @@
 import { MetricAreaChart } from "@/components/data-display/metric-area-chart";
 import type { NumericalTimeSeriesData } from "@/openapi/litestarAPI.schemas";
 import type { AreaChartWidgetConfig } from "../types";
-import { useResourceData } from "./use-resource-data";
+import { useTimeSeriesData } from "../data-sources";
 
 function formatTimestamp(ts: string, granularity: string): string {
   const d = new Date(ts);
@@ -12,13 +12,13 @@ function formatTimestamp(ts: string, granularity: string): string {
 }
 
 export function AreaChartWidget({ config }: { config: AreaChartWidgetConfig }) {
-  const { data: response } = useResourceData(
-    config.resource,
-    config.field,
-    config.time_range,
-    config.granularity,
-    config.filters,
-  );
+  const { data: response } = useTimeSeriesData({
+    resource: config.resource,
+    field: config.field,
+    time_range: config.time_range,
+    granularity: config.granularity,
+    filters: config.filters,
+  });
 
   const numericalData = response.data as NumericalTimeSeriesData;
   const granularity = response.granularity_used ?? "DAY";

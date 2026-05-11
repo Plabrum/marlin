@@ -94,7 +94,10 @@ function StatCard({ value, label, change, color, href, className }: StatCardProp
 
 export function StatCards({ stats, className }: StatCardsProps) {
   return (
-    <div className={cn("grid grid-cols-2 gap-4 md:grid-cols-4", className)}>
+    <div
+      className={cn("grid gap-4", className)}
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
+    >
       {stats.map((stat) => (
         <StatCard key={stat.label} {...stat} />
       ))}

@@ -19,12 +19,6 @@ variable "api_subdomain" {
   default     = "api"
 }
 
-variable "ses_inbound_recipient" {
-  description = "SES receipt rule recipient email. Defaults to support@{domain} when empty."
-  type        = string
-  default     = ""
-}
-
 # ── Networking ─────────────────────────────────────────────────────────────────
 
 variable "vpc_cidr" {

@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.platform.base.models import BaseDBModel
+from app.utils.sqids import Sqid, SqidType
 
 
 class InboundEmail(BaseDBModel):
@@ -37,6 +38,16 @@ class InboundEmail(BaseDBModel):
     email_thread_id: Mapped[int | None] = mapped_column(
         sa.ForeignKey("email_threads.id", ondelete="SET NULL"), index=True
     )
+
+    # Recipient resolution — set when routing matches a user inbox
+    target_user_id: Mapped[Sqid | None] = mapped_column(
+        SqidType, sa.ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+
+    # SES Authentication-Results verdicts (used to decide bounce-vs-drop on unknown recipients)
+    spf_pass: Mapped[bool] = mapped_column(sa.Boolean, server_default=sa.text("false"))
+    dkim_pass: Mapped[bool] = mapped_column(sa.Boolean, server_default=sa.text("false"))
+    is_automated: Mapped[bool] = mapped_column(sa.Boolean, server_default=sa.text("false"))
 
     # {"attachments": [{filename, s3_key, content_type, size}]}
     attachments_json: Mapped[dict | None] = mapped_column(sa.JSON)
