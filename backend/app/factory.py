@@ -41,6 +41,7 @@ from app.platform.base.schema_routes import schema_router
 from app.platform.base.search_routes import search_router
 from app.platform.billing import billing_webhook_router, connect_router
 from app.platform.comms.webhook_routes import comms_webhook_router
+from app.platform.dashboard.routes import dashboard_router
 from app.platform.documents import document_router
 from app.platform.llm.routes import llm_router
 from app.platform.media import local_files_router, media_router
@@ -167,6 +168,7 @@ def create_app(
             media_router,
             document_router,
             local_files_router,
+            dashboard_router,
             vessel_router,
             manufacturer_router,
             part_router,

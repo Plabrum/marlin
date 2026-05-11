@@ -1,10 +1,36 @@
+import { Suspense } from "react";
 import { PageTopBar } from "@/components/layout/page-topbar";
+import { DashboardRenderer } from "@/components/dashboard/dashboard-renderer";
+import { useGetDashboardSuspense } from "@/openapi/dashboard/dashboard";
+import type { DashboardConfig } from "@/components/dashboard/types";
+
+function DashboardContent() {
+  const { data } = useGetDashboardSuspense();
+  const config = data.config as DashboardConfig;
+
+  return <DashboardRenderer config={config} />;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="grid grid-cols-4 gap-4 p-6">
+      {[4, 2, 2, 4].map((cols, i) => (
+        <div
+          key={i}
+          className={`col-span-${cols} h-56 animate-pulse rounded-2xl bg-muted`}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function DashboardPage() {
   return (
     <PageTopBar title="Dashboard">
       <div className="p-6">
-        <p className="text-sm text-muted-foreground">Welcome to Sloopquest.</p>
+        <Suspense fallback={<DashboardSkeleton />}>
+          <DashboardContent />
+        </Suspense>
       </div>
     </PageTopBar>
   );
