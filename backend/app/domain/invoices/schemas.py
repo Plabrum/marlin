@@ -40,6 +40,8 @@ class InvoiceDetail(BaseSchema):
     tax_cents: int
     total_cents: int
     notes: str | None
+    stripe_payment_intent_id: str | None
+    stripe_client_secret: str | None
     line_items: list[InvoiceLineItemSchema]
     created_at: datetime
     updated_at: datetime

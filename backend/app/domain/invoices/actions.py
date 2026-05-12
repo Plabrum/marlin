@@ -35,6 +35,7 @@ class InvoiceActionKey(StrEnum):
     ADD_LINE_ITEM = auto()
     UPDATE_LINE_ITEM = auto()
     REMOVE_LINE_ITEM = auto()
+    REFUND = auto()
 
 
 invoice_actions = action_group_factory(
@@ -141,21 +142,20 @@ class SendInvoice(BaseObjectAction[Invoice, EmptyActionData]):
     async def execute(
         cls, obj: Invoice, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
+        if (
+            obj.stripe_payment_intent_id is None
+            and obj.total_cents > 0
+            and deps.organization.stripe_account_id is not None
+        ):
+            pi_id, client_secret = await deps.billing.create_payment_intent(
+                amount_cents=obj.total_cents,
+                currency=obj.currency,
+                connected_account_id=deps.organization.stripe_account_id,
+                invoice_id=str(obj.id),
+            )
+            obj.stripe_payment_intent_id = pi_id
+            obj.stripe_client_secret = client_secret
         await deps.sm_service.transition(invoice_state_machine, obj, InvoiceState.sent, actor=deps.user)
-
-        if obj.total_cents > 0:
-            org = deps.organization
-            if org.stripe_account_id:
-                try:
-                    obj.payment_link_url = await deps.billing.create_payment_link(
-                        amount_cents=obj.total_cents,
-                        currency=obj.currency,
-                        connected_account_id=org.stripe_account_id,
-                        invoice_id=str(obj.id),
-                    )
-                except Exception:
-                    logger.exception("Failed to create payment link for invoice %s", obj.id)
-
         return ActionExecutionResponse(message="Invoice sent")
 
 
@@ -194,8 +194,37 @@ class VoidInvoice(BaseObjectAction[Invoice, EmptyActionData]):
     async def execute(
         cls, obj: Invoice, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
+        if obj.stripe_payment_intent_id is not None and obj.state != InvoiceState.paid:
+            await deps.billing.cancel_payment_intent(obj.stripe_payment_intent_id)
+            obj.stripe_client_secret = None
         await deps.sm_service.transition(invoice_state_machine, obj, InvoiceState.void, actor=deps.user)
         return ActionExecutionResponse(message="Invoice voided")
+
+
+@invoice_actions
+class Refund(BaseObjectAction[Invoice, EmptyActionData]):
+    action_key = InvoiceActionKey.REFUND
+    label = "Refund"
+    icon = ActionIcon.X
+    priority = 86
+    confirmation_message = "Refund this invoice? This cannot be undone."
+
+    @classmethod
+    def is_available(cls, obj: Invoice, deps: ActionDeps) -> bool:
+        return obj.state == InvoiceState.paid and obj.stripe_payment_intent_id is not None
+
+    @classmethod
+    async def execute(
+        cls, obj: Invoice, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        assert obj.stripe_payment_intent_id is not None
+        assert deps.organization.stripe_account_id is not None
+        await deps.billing.refund_payment_intent(
+            payment_intent_id=obj.stripe_payment_intent_id,
+            connected_account_id=deps.organization.stripe_account_id,
+        )
+        await deps.sm_service.transition(invoice_state_machine, obj, InvoiceState.refunded, actor=deps.user)
+        return ActionExecutionResponse(message="Invoice refunded")
 
 
 @invoice_actions

@@ -53,13 +53,17 @@ class StartConnectOnboarding(BaseTopLevelAction[EmptyActionData]):
         org = deps.organization
 
         if not org.stripe_account_id:
-            org.stripe_account_id = await deps.billing.create_connected_account(name=org.name, email=deps.user.email)
+            account_id = await deps.billing.create_connected_account(name=org.name, email=deps.user.email)
+            merged_org = await transaction.merge(org)
+            merged_org.stripe_account_id = account_id
+        else:
+            account_id = org.stripe_account_id
 
         return_url = f"{deps.config.FRONTEND_ORIGIN}/settings/billing?onboarding=complete"
         refresh_url = f"{deps.config.FRONTEND_ORIGIN}/settings/billing?onboarding=refresh"
 
         account_link_url = await deps.billing.create_account_link(
-            stripe_account_id=org.stripe_account_id,
+            stripe_account_id=account_id,
             return_url=return_url,
             refresh_url=refresh_url,
         )

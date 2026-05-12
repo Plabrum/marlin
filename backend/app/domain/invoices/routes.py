@@ -50,6 +50,8 @@ def _to_detail(invoice: Invoice, user: User) -> InvoiceDetail:
         tax_cents=invoice.tax_cents,
         total_cents=invoice.total_cents,
         notes=invoice.notes,
+        stripe_payment_intent_id=invoice.stripe_payment_intent_id,
+        stripe_client_secret=invoice.stripe_client_secret,
         line_items=[_to_line_item(li) for li in invoice.line_items],
         created_at=invoice.created_at,
         updated_at=invoice.updated_at,

@@ -81,3 +81,14 @@ class ConnectAccountRequirementsResponse(BaseSchema):
     future_requirements: dict[str, Any]
     charges_enabled: bool
     payouts_enabled: bool
+
+
+class ConnectAccountStatusResponse(BaseSchema):
+    stripe_account_id: str
+    charges_enabled: bool
+    payouts_enabled: bool
+    requirements: dict[str, Any]
+
+
+class IdentityDocumentResponse(BaseSchema):
+    file_id: str

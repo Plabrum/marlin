@@ -19,6 +19,8 @@ class ActionGroupType(StrEnum):
     EMAIL_THREAD_ACTIONS = auto()
     MESSAGE_ACTIONS = auto()
     WIDGET_ACTIONS = auto()
+    PAYMENT_METHOD_ACTIONS = auto()
+    PRICING_GUIDE_ACTIONS = auto()
 
 
 class ActionResultType(StrEnum):

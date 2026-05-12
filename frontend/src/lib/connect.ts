@@ -21,7 +21,7 @@ export interface ConnectAccountResponse {
 }
 
 export const connectRequirementsQueryKey = [
-  "/organizations/me/connect/account/requirements",
+  "/billing/connect/account/requirements",
 ] as const;
 
 async function fetchConnectRequirements(
@@ -29,7 +29,7 @@ async function fetchConnectRequirements(
 ): Promise<ConnectAccountRequirements | null> {
   try {
     return await customInstance<ConnectAccountRequirements>({
-      url: "/organizations/me/connect/account/requirements",
+      url: "/billing/connect/account/requirements",
       method: "GET",
       signal,
     });
@@ -59,7 +59,7 @@ export function useCreateConnectAccount() {
   return useMutation({
     mutationFn: () =>
       customInstance<ConnectAccountResponse>({
-        url: "/organizations/me/connect/account",
+        url: "/billing/connect/account",
         method: "POST",
       }),
     onSuccess: () => {
@@ -117,7 +117,7 @@ export function useUpdateConnectAccount() {
   return useMutation({
     mutationFn: (payload: UpdateConnectAccountPayload) =>
       customInstance<ConnectAccountResponse>({
-        url: "/organizations/me/connect/account",
+        url: "/billing/connect/account",
         method: "PATCH",
         data: payload,
       }),
@@ -137,7 +137,7 @@ export function useAcceptConnectTos() {
   return useMutation({
     mutationFn: (payload: AcceptTosPayload) =>
       customInstance<ConnectAccountResponse>({
-        url: "/organizations/me/connect/account/tos-acceptance",
+        url: "/billing/connect/account/tos-acceptance",
         method: "POST",
         data: payload,
       }),
@@ -158,7 +158,7 @@ export function useAttachExternalAccount() {
   return useMutation({
     mutationFn: (token: string) =>
       customInstance<ExternalAccountResponse>({
-        url: "/organizations/me/connect/account/external-accounts",
+        url: "/billing/connect/account/external-accounts",
         method: "POST",
         data: { token },
       }),

@@ -27,7 +27,6 @@ class Subscription(
     current_period_start: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True))
     current_period_end: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True))
     cancelled_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True))
-    stripe_customer_id: Mapped[str | None] = mapped_column(sa.Text)
     stripe_subscription_id: Mapped[str | None] = mapped_column(sa.Text)
 
     organization: Mapped[Any] = relationship(

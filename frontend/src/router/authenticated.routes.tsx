@@ -1,5 +1,7 @@
 import { createRoute } from "@tanstack/react-router";
 import { authenticatedLayoutRoute } from "@/router/layout.routes";
+import { CrmLayout } from "@/layouts/crm-layout";
+import { MoneyLayout } from "@/layouts/money-layout";
 import { DashboardPage } from "@/pages/dashboard-page";
 import { InboxPage } from "@/pages/inbox/inbox-page";
 import { SurveysListPage } from "@/pages/surveys/surveys-list-page";
@@ -19,6 +21,10 @@ import { SearchPage } from "@/pages/search/search-page";
 import { SettingsPage } from "@/pages/settings/settings-page";
 import { BillingPage } from "@/pages/settings/billing-page";
 import { ConnectOnboardingPage } from "@/pages/settings/connect-onboarding-page";
+import { CrmDashboardPage } from "@/pages/crm/crm-dashboard-page";
+import { MoneyDashboardPage } from "@/pages/money/money-dashboard-page";
+import { QuotesListPage } from "@/pages/crm/quotes-list-page";
+import { PricingGuideDetailPage } from "@/pages/pricing-guides/pricing-guide-detail-page";
 
 export const indexRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
@@ -53,6 +59,66 @@ export const inboxRoute = createRoute({
   component: InboxPage,
 });
 
+// CRM workspace
+export const crmLayoutRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/crm",
+  component: CrmLayout,
+});
+
+export const crmIndexRoute = createRoute({
+  getParentRoute: () => crmLayoutRoute,
+  path: "/",
+  component: CrmDashboardPage,
+});
+
+export const clientsListRoute = createRoute({
+  getParentRoute: () => crmLayoutRoute,
+  path: "/clients",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
+  component: ClientsListPage,
+});
+
+export const vesselsListRoute = createRoute({
+  getParentRoute: () => crmLayoutRoute,
+  path: "/vessels",
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
+  component: VesselsListPage,
+});
+
+export const quotesListRoute = createRoute({
+  getParentRoute: () => crmLayoutRoute,
+  path: "/quotes",
+  component: QuotesListPage,
+});
+
+// CRM detail routes (flat under authenticated layout)
+export const clientRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/clients/$clientId",
+  params: {
+    parse: (p) => ({ clientId: p.clientId }),
+    stringify: (p) => ({ clientId: p.clientId }),
+  },
+  staticData: { threadable: { type: "client", paramKey: "clientId" } },
+  component: ClientDetailPage,
+});
+
+export const vesselRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/vessels/$vesselId",
+  params: {
+    parse: (p) => ({ vesselId: p.vesselId }),
+    stringify: (p) => ({ vesselId: p.vesselId }),
+  },
+  staticData: { threadable: { type: "vessel", paramKey: "vesselId" } },
+  component: VesselDetailPage,
+});
+
 export const surveysListRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/surveys",
@@ -73,46 +139,6 @@ export const surveyRoute = createRoute({
   component: SurveyDetailPage,
 });
 
-export const vesselsListRoute = createRoute({
-  getParentRoute: () => authenticatedLayoutRoute,
-  path: "/vessels",
-  validateSearch: (search: Record<string, unknown>) => ({
-    q: typeof search.q === "string" ? search.q : "",
-  }),
-  component: VesselsListPage,
-});
-
-export const vesselRoute = createRoute({
-  getParentRoute: () => authenticatedLayoutRoute,
-  path: "/vessels/$vesselId",
-  params: {
-    parse: (p) => ({ vesselId: p.vesselId }),
-    stringify: (p) => ({ vesselId: p.vesselId }),
-  },
-  staticData: { threadable: { type: "vessel", paramKey: "vesselId" } },
-  component: VesselDetailPage,
-});
-
-export const clientsListRoute = createRoute({
-  getParentRoute: () => authenticatedLayoutRoute,
-  path: "/clients",
-  validateSearch: (search: Record<string, unknown>) => ({
-    q: typeof search.q === "string" ? search.q : "",
-  }),
-  component: ClientsListPage,
-});
-
-export const clientRoute = createRoute({
-  getParentRoute: () => authenticatedLayoutRoute,
-  path: "/clients/$clientId",
-  params: {
-    parse: (p) => ({ clientId: p.clientId }),
-    stringify: (p) => ({ clientId: p.clientId }),
-  },
-  staticData: { threadable: { type: "client", paramKey: "clientId" } },
-  component: ClientDetailPage,
-});
-
 export const reportsRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/reports",
@@ -130,12 +156,32 @@ export const reportRoute = createRoute({
   component: ReportDetailPage,
 });
 
-export const invoicesListRoute = createRoute({
+// Money workspace
+export const moneyLayoutRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
+  path: "/money",
+  component: MoneyLayout,
+});
+
+export const moneyIndexRoute = createRoute({
+  getParentRoute: () => moneyLayoutRoute,
+  path: "/",
+  component: MoneyDashboardPage,
+});
+
+export const invoicesListRoute = createRoute({
+  getParentRoute: () => moneyLayoutRoute,
   path: "/invoices",
   component: InvoicesListPage,
 });
 
+export const subscriptionsRoute = createRoute({
+  getParentRoute: () => moneyLayoutRoute,
+  path: "/subscriptions",
+  component: SubscriptionsPage,
+});
+
+// Money detail routes (flat under authenticated layout)
 export const invoiceRoute = createRoute({
   getParentRoute: () => authenticatedLayoutRoute,
   path: "/invoices/$invoiceId",
@@ -145,12 +191,6 @@ export const invoiceRoute = createRoute({
   },
   staticData: { threadable: { type: "invoice", paramKey: "invoiceId" } },
   component: InvoiceDetailPage,
-});
-
-export const subscriptionsRoute = createRoute({
-  getParentRoute: () => authenticatedLayoutRoute,
-  path: "/subscriptions",
-  component: SubscriptionsPage,
 });
 
 export const surveyTemplatesListRoute = createRoute({
@@ -168,6 +208,16 @@ export const surveyTemplateRoute = createRoute({
   },
   staticData: { threadable: { type: "survey_template", paramKey: "templateId" } },
   component: SurveyTemplateDetailPage,
+});
+
+export const pricingGuideRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: "/pricing-guides/$guideId",
+  params: {
+    parse: (p) => ({ guideId: p.guideId }),
+    stringify: (p) => ({ guideId: p.guideId }),
+  },
+  component: PricingGuideDetailPage,
 });
 
 export const settingsRoute = createRoute({

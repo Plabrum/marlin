@@ -16,6 +16,9 @@ import {
   InvoiceActionsAddLineItemForm,
   SubscriptionActionsCreateForm,
   SubscriptionActionsUpdateForm,
+  PricingGuideActionsCreateForm,
+  PricingGuideActionsUpdateForm,
+  PricingGuideActionsAddTierForm,
   UserActionsClaimInboxForm,
   ManufacturerActionsCreateForm,
   ManufacturerActionsUpdateForm,
@@ -71,6 +74,15 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "subscription_actions__update": {
     render: (params) => <SubscriptionActionsUpdateForm {...params} />,
+  },
+  "pricing_guide_actions__create": {
+    render: (params) => <PricingGuideActionsCreateForm {...params} />,
+  },
+  "pricing_guide_actions__update": {
+    render: (params) => <PricingGuideActionsUpdateForm {...params} />,
+  },
+  "pricing_guide_actions__add_tier": {
+    render: (params) => <PricingGuideActionsAddTierForm {...params} />,
   },
   "user_actions__claim_inbox": {
     render: (params) => <UserActionsClaimInboxForm {...params} />,

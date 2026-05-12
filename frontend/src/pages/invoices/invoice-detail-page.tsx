@@ -16,7 +16,7 @@ function InvoiceDetailContent() {
   return (
     <PageTopBar
       title={data.invoice_number ?? `Invoice ${invoiceId}`}
-      breadcrumbSegments={[{ label: "Invoices", href: "/invoices" }]}
+      breadcrumbSegments={[{ label: "Invoices", href: "/money/invoices" }]}
       actions={
         <ActionsMenu
           actions={actionsData?.actions ?? []}
@@ -50,7 +50,7 @@ export function InvoiceDetailPage() {
   return (
     <Suspense
       fallback={
-        <PageTopBar title="Invoice" breadcrumbSegments={[{ label: "Invoices", href: "/invoices" }]}>
+        <PageTopBar title="Invoice" breadcrumbSegments={[{ label: "Invoices", href: "/money/invoices" }]}>
           <div className="p-6">
             <Skeleton className="h-64 rounded-2xl" />
           </div>

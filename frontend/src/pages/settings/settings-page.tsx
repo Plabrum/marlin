@@ -15,6 +15,8 @@ import { ResourceTable } from "@/components/resource-table/resource-table";
 import { useResourceTable } from "@/hooks/use-resource-table";
 import { useListSurveyTemplate } from "@/openapi/survey-templates/survey-templates";
 import { surveyTemplateColumnDefs } from "@/openapi/survey-templates/columns.gen";
+import { useListPricingGuide } from "@/openapi/pricing-guides/pricing-guides";
+import { pricingGuideColumnDefs } from "@/openapi/pricing_guides/columns.gen";
 import { useTheme } from "@/lib/theme";
 
 const THEME_OPTIONS = [
@@ -109,6 +111,40 @@ function SurveyTemplatesTab() {
   );
 }
 
+function PricingGuidesTab() {
+  const navigate = useNavigate();
+  const { tableProps } = useResourceTable({
+    listQuery: useListPricingGuide,
+    columns: pricingGuideColumnDefs,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold">Pricing Guides</h2>
+          <p className="text-sm text-muted-foreground">
+            Fee schedules used when generating quotes.
+          </p>
+        </div>
+        <Suspense>
+          <TopLevelActions actionGroup="pricing_guide_actions" />
+        </Suspense>
+      </div>
+      <ResourceTable
+        {...tableProps}
+        columns={pricingGuideColumnDefs}
+        onRowClick={(row) =>
+          navigate({
+            to: "/pricing-guides/$guideId",
+            params: { guideId: String(row.id) },
+          })
+        }
+      />
+    </div>
+  );
+}
+
 export function SettingsPage() {
   return (
     <PageTopBar title="Settings">
@@ -118,6 +154,7 @@ export function SettingsPage() {
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="pricing-guides">Pricing Guides</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           <TabsContent value="account" className="pt-6">
@@ -130,6 +167,9 @@ export function SettingsPage() {
           </TabsContent>
           <TabsContent value="templates" className="pt-6">
             <SurveyTemplatesTab />
+          </TabsContent>
+          <TabsContent value="pricing-guides" className="pt-6">
+            <PricingGuidesTab />
           </TabsContent>
           <TabsContent value="notifications" className="pt-6">
             <p className="text-sm text-muted-foreground">

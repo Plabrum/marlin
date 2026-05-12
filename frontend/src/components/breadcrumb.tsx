@@ -10,11 +10,18 @@ import {
 
 const routeLabels: Record<string, string> = {
   "": "Dashboard",
+  crm: "CRM",
+  money: "Money",
   surveys: "Surveys",
   vessels: "Vessels",
   clients: "Clients",
+  quotes: "Quotes",
+  invoices: "Invoices",
+  subscriptions: "Subscriptions",
+  inbox: "Inbox",
   reports: "Reports",
   settings: "Settings",
+  "pricing-guides": "Pricing Guides",
 };
 
 export interface BreadcrumbSegment {

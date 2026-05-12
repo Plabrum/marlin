@@ -16,6 +16,7 @@ from app.domain.invoices.state_machine import invoice_state_machine
 from app.domain.subscriptions.enums import SubscriptionStatus
 from app.domain.subscriptions.models import Subscription
 from app.domain.subscriptions.state_machine import subscription_state_machine
+from app.domain.users.models import Organization
 from app.domain.users.roles import Role
 from app.platform.state_machine.machine import StateMachineService
 
@@ -77,12 +78,15 @@ async def handle_platform_webhook(
 
     elif event_type == "invoice.payment_failed":
         stripe_customer_id: str = data_object.get("customer", "")
-        result = await transaction.execute(
-            select(Subscription).where(Subscription.stripe_customer_id == stripe_customer_id)
+        org_result = await transaction.execute(
+            select(Organization).where(Organization.stripe_customer_id == stripe_customer_id)
         )
-        sub = result.scalar_one_or_none()
-        if sub is not None and sub.state == SubscriptionStatus.active:
-            await sm.system_transition(subscription_state_machine, sub, SubscriptionStatus.past_due)
+        org = org_result.scalar_one_or_none()
+        if org is not None:
+            sub_result = await transaction.execute(select(Subscription).where(Subscription.organization_id == org.id))
+            sub = sub_result.scalar_one_or_none()
+            if sub is not None and sub.state == SubscriptionStatus.active:
+                await sm.system_transition(subscription_state_machine, sub, SubscriptionStatus.past_due)
 
     else:
         logger.debug("Unhandled platform webhook event: %s", event_type)

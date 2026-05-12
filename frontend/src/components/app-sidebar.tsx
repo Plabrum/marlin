@@ -2,8 +2,12 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import {
   ClipboardList,
+  DollarSign,
+  FileText,
   Inbox,
   LayoutDashboard,
+  Receipt,
+  RefreshCw,
   Sailboat,
   Search,
   Settings,
@@ -18,41 +22,84 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavUser } from "@/components/nav-user";
 import { GlobalSearch } from "@/components/global-search";
 
-interface NavItem {
+interface SubNavItem {
   title: string;
   url: string;
   icon: LucideIcon;
 }
 
-const NAV_ITEMS: NavItem[] = [
+interface WorkspaceNavItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  children?: SubNavItem[];
+}
+
+const WORKSPACE_ITEMS: WorkspaceNavItem[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Search", url: "/search", icon: Search },
-  { title: "Inbox", url: "/inbox", icon: Inbox },
+  {
+    title: "CRM",
+    url: "/crm",
+    icon: Users,
+    children: [
+      { title: "Clients", url: "/crm/clients", icon: Users },
+      { title: "Vessels", url: "/crm/vessels", icon: Sailboat },
+      { title: "Quotes", url: "/crm/quotes", icon: FileText },
+    ],
+  },
   { title: "Surveys", url: "/surveys", icon: ClipboardList },
-  { title: "Vessels", url: "/vessels", icon: Sailboat },
-  { title: "Clients", url: "/clients", icon: Users },
+  {
+    title: "Money",
+    url: "/money",
+    icon: DollarSign,
+    children: [
+      { title: "Invoices", url: "/money/invoices", icon: Receipt },
+      { title: "Subscriptions", url: "/money/subscriptions", icon: RefreshCw },
+    ],
+  },
+  { title: "Inbox", url: "/inbox", icon: Inbox },
 ];
 
-function NavLink({ item }: { item: NavItem }) {
-  // Match exact path or genuine child segment so siblings like `/me` and
-  // `/messages` don't both light up under the naive startsWith check.
-  const isActive = useRouterState({
+function useIsActive(url: string) {
+  return useRouterState({
     select: (s) => {
       const path = s.location.pathname;
-      if (item.url === "/") return path === "/";
-      if (path === item.url) return true;
-      return path.startsWith(`${item.url}/`);
+      if (url === "/") return path === "/";
+      if (path === url) return true;
+      return path.startsWith(`${url}/`);
     },
   });
+}
+
+function SubNavLink({ item }: { item: SubNavItem }) {
+  const isActive = useIsActive(item.url);
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton asChild isActive={isActive}>
+        <Link to={item.url}>
+          <item.icon className={cn("size-4", isActive ? "opacity-100" : "opacity-60")} />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
+  );
+}
+
+function WorkspaceNavLink({ item }: { item: WorkspaceNavItem }) {
+  const isActive = useIsActive(item.url);
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} className="h-9">
+      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive && !item.children} className="h-9">
         <Link to={item.url}>
           <item.icon className={cn("size-5", isActive ? "opacity-100" : "opacity-70")} />
           <span className="font-medium group-data-[collapsible=icon]:hidden">
@@ -60,10 +107,16 @@ function NavLink({ item }: { item: NavItem }) {
           </span>
         </Link>
       </SidebarMenuButton>
+      {item.children && isActive && (
+        <SidebarMenuSub className="group-data-[collapsible=icon]:hidden">
+          {item.children.map((child) => (
+            <SubNavLink key={child.url} item={child} />
+          ))}
+        </SidebarMenuSub>
+      )}
     </SidebarMenuItem>
   );
 }
-
 
 export function AppSidebar({ user }: { user: { email?: string; name?: string } }) {
   return (
@@ -93,14 +146,14 @@ export function AppSidebar({ user }: { user: { email?: string; name?: string } }
       <SidebarContent>
         <div className="border-t border-sidebar-border/50 mx-4" />
         <SidebarMenu className="px-2 pt-2 group-data-[collapsible=icon]:px-0">
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.title} item={item} />
+          {WORKSPACE_ITEMS.map((item) => (
+            <WorkspaceNavLink key={item.url} item={item} />
           ))}
         </SidebarMenu>
         <div className="mt-auto px-2 group-data-[collapsible=icon]:px-0">
           <div className="border-t border-sidebar-border/50 mx-2 mb-2" />
           <SidebarMenu>
-            <NavLink item={{ title: "Settings", url: "/settings", icon: Settings }} />
+            <WorkspaceNavLink item={{ title: "Settings", url: "/settings", icon: Settings }} />
           </SidebarMenu>
         </div>
       </SidebarContent>

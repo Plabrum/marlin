@@ -28,6 +28,8 @@ from app.domain.inbox.routes import email_thread_router, message_router
 from app.domain.invoices.routes import invoice_router
 from app.domain.manufacturers.routes import manufacturer_router
 from app.domain.parts.routes import part_router
+from app.domain.payment_methods.routes import payment_method_router
+from app.domain.pricing_guides.routes import pricing_guides_router
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
 from app.domain.surveys.routes import survey_router, survey_template_router
@@ -41,7 +43,7 @@ from app.platform.base.models import BaseDBModel
 from app.platform.base.schema_routes import schema_router
 from app.platform.base.search_routes import search_router
 from app.platform.base.soft_delete import install_soft_delete_filter
-from app.platform.billing import billing_webhook_router, connect_router
+from app.platform.billing import billing_router, billing_webhook_router, connect_router
 from app.platform.comms.webhook_routes import comms_webhook_router
 from app.platform.dashboard.routes import dashboard_router
 from app.platform.documents import document_router
@@ -182,9 +184,12 @@ def create_app(
             survey_router,
             survey_template_router,
             invoice_router,
+            payment_method_router,
+            pricing_guides_router,
             report_router,
             subscription_router,
             user_router,
+            billing_router,
             connect_router,
             llm_router,
             search_router,

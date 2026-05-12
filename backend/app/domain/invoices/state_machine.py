@@ -36,11 +36,18 @@ class OverdueState(State[InvoiceState, Invoice]):
 
 class PaidState(State[InvoiceState, Invoice]):
     value = InvoiceState.paid
-    transitions = []
+    transitions = [
+        Transition(to=InvoiceState.refunded, roles=_staff),
+    ]
 
 
 class VoidState(State[InvoiceState, Invoice]):
     value = InvoiceState.void
+    transitions = []
+
+
+class RefundedState(State[InvoiceState, Invoice]):
+    value = InvoiceState.refunded
     transitions = []
 
 
@@ -52,5 +59,6 @@ invoice_state_machine = StateMachine(
         InvoiceState.overdue: OverdueState,
         InvoiceState.paid: PaidState,
         InvoiceState.void: VoidState,
+        InvoiceState.refunded: RefundedState,
     },
 )

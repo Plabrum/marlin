@@ -46,7 +46,13 @@ class CreateSubscription(BaseTopLevelAction[CreateSubscriptionData]):
     async def execute(
         cls, data: CreateSubscriptionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
-        customer_id = await deps.billing.create_customer(name=deps.user.name, email=deps.user.email)
+        org = deps.organization
+        if not org.stripe_customer_id:
+            customer_id = await deps.billing.create_customer(name=org.name, email=deps.user.email)
+            merged_org = await transaction.merge(org)
+            merged_org.stripe_customer_id = customer_id
+        else:
+            customer_id = org.stripe_customer_id
 
         price_id = _PLAN_PRICE_IDS.get(data.plan, "")
         stripe_sub_id, period_start, period_end = await deps.billing.create_subscription(
@@ -56,7 +62,6 @@ class CreateSubscription(BaseTopLevelAction[CreateSubscriptionData]):
         sub = Subscription(
             organization_id=deps.user.organization_id,
             plan=data.plan,
-            stripe_customer_id=customer_id,
             stripe_subscription_id=stripe_sub_id,
             current_period_start=period_start,
             current_period_end=period_end,

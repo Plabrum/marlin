@@ -7,3 +7,4 @@ class InvoiceState(Enum):
     paid = "paid"
     overdue = "overdue"
     void = "void"
+    refunded = "refunded"

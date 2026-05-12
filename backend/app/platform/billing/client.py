@@ -56,10 +56,40 @@ class BaseBillingClient(ABC):
         """Attach a bank account or debit card token to a Connect account. Returns the external account dict."""
 
     @abstractmethod
-    async def create_payment_link(
+    async def create_setup_intent(self, customer_id: str) -> str:
+        """Create a SetupIntent for saving a payment method. Returns the client_secret."""
+
+    @abstractmethod
+    async def retrieve_payment_method(self, payment_method_id: str) -> dict:
+        """Retrieve card details for a payment method. Returns {brand, last4, exp_month, exp_year}."""
+
+    @abstractmethod
+    async def set_default_payment_method(self, customer_id: str, payment_method_id: str) -> None:
+        """Set the default payment method on a customer's invoice settings."""
+
+    @abstractmethod
+    async def detach_payment_method(self, payment_method_id: str) -> None:
+        """Detach a payment method from its customer."""
+
+    @abstractmethod
+    async def create_payment_intent(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
+    ) -> tuple[str, str]:
+        """Create a PaymentIntent with a destination charge. Returns (payment_intent_id, client_secret)."""
+
+    @abstractmethod
+    async def refund_payment_intent(self, payment_intent_id: str, connected_account_id: str) -> str:
+        """Refund a destination-charge PaymentIntent. Returns the refund ID."""
+
+    @abstractmethod
+    async def cancel_payment_intent(self, payment_intent_id: str) -> None:
+        """Cancel a PaymentIntent that has not yet succeeded."""
+
+    @abstractmethod
+    async def upload_identity_document(
+        self, account_id: str, file_content: bytes, filename: str, content_type: str
     ) -> str:
-        """Create a one-time Checkout Session URL for a Connect account invoice."""
+        """Upload an identity document file to a Connect account. Returns the Stripe file ID."""
 
 
 class LocalBillingClient(BaseBillingClient):
@@ -132,19 +162,60 @@ class LocalBillingClient(BaseBillingClient):
             "routing_number": "110000000",
         }
 
-    async def create_payment_link(
+    async def create_setup_intent(self, customer_id: str) -> str:
+        client_secret = f"seti_local_{uuid.uuid4().hex[:16]}_secret_local"
+        logger.info("LOCAL BILLING: create_setup_intent customer=%s → %s", customer_id, client_secret)
+        return client_secret
+
+    async def retrieve_payment_method(self, payment_method_id: str) -> dict:
+        logger.info("LOCAL BILLING: retrieve_payment_method pm=%s", payment_method_id)
+        return {"brand": "visa", "last4": "4242", "exp_month": 12, "exp_year": 2030}
+
+    async def set_default_payment_method(self, customer_id: str, payment_method_id: str) -> None:
+        logger.info("LOCAL BILLING: set_default_payment_method customer=%s pm=%s", customer_id, payment_method_id)
+
+    async def detach_payment_method(self, payment_method_id: str) -> None:
+        logger.info("LOCAL BILLING: detach_payment_method pm=%s", payment_method_id)
+
+    async def create_payment_intent(
         self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
-    ) -> str:
-        link = f"https://buy.stripe.com/local_{uuid.uuid4().hex[:16]}"
+    ) -> tuple[str, str]:
+        pi_id = f"pi_local_{uuid.uuid4().hex[:16]}"
+        client_secret = f"{pi_id}_secret_local"
         logger.info(
-            "LOCAL BILLING: create_payment_link amount=%d %s account=%s invoice=%s → %s",
+            "LOCAL BILLING: create_payment_intent amount=%d %s account=%s invoice=%s → %s",
             amount_cents,
             currency,
             connected_account_id,
             invoice_id,
-            link,
+            pi_id,
         )
-        return link
+        return pi_id, client_secret
+
+    async def refund_payment_intent(self, payment_intent_id: str, connected_account_id: str) -> str:
+        refund_id = f"re_local_{uuid.uuid4().hex[:16]}"
+        logger.info(
+            "LOCAL BILLING: refund_payment_intent pi=%s account=%s → %s",
+            payment_intent_id,
+            connected_account_id,
+            refund_id,
+        )
+        return refund_id
+
+    async def cancel_payment_intent(self, payment_intent_id: str) -> None:
+        logger.info("LOCAL BILLING: cancel_payment_intent pi=%s", payment_intent_id)
+
+    async def upload_identity_document(
+        self, account_id: str, file_content: bytes, filename: str, content_type: str
+    ) -> str:
+        file_id = f"file_local_{uuid.uuid4().hex[:16]}"
+        logger.info(
+            "LOCAL BILLING: upload_identity_document account=%s filename=%s → %s",
+            account_id,
+            filename,
+            file_id,
+        )
+        return file_id
 
 
 class StripeBillingClient(BaseBillingClient):
@@ -229,27 +300,61 @@ class StripeBillingClient(BaseBillingClient):
         )
         return external_account.to_dict()
 
-    async def create_payment_link(
-        self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
-    ) -> str:
-        # Checkout Session (one-time URL) with destination charge — funds flow to connected account.
-        session = await stripe.checkout.Session.create_async(
-            mode="payment",
-            line_items=[
-                {
-                    "price_data": {
-                        "currency": currency.lower(),
-                        "unit_amount": amount_cents,
-                        "product_data": {"name": "Invoice Payment"},
-                    },
-                    "quantity": 1,
-                }
-            ],
-            payment_intent_data={
-                "transfer_data": {"destination": connected_account_id},
-                "metadata": {"invoice_id": invoice_id},
-            },
-            success_url=f"{self._frontend_origin}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{self._frontend_origin}/payment/cancelled",
+    async def create_setup_intent(self, customer_id: str) -> str:
+        si = await stripe.SetupIntent.create_async(
+            customer=customer_id,
+            payment_method_types=["card"],
         )
-        return session.url or ""
+        assert si.client_secret is not None
+        return si.client_secret
+
+    async def retrieve_payment_method(self, payment_method_id: str) -> dict:
+        pm = await stripe.PaymentMethod.retrieve_async(payment_method_id)
+        card = pm.card
+        return {
+            "brand": getattr(card, "brand", "") or "",
+            "last4": getattr(card, "last4", "") or "",
+            "exp_month": getattr(card, "exp_month", 0) or 0,
+            "exp_year": getattr(card, "exp_year", 0) or 0,
+        }
+
+    async def set_default_payment_method(self, customer_id: str, payment_method_id: str) -> None:
+        await stripe.Customer.modify_async(
+            customer_id,
+            invoice_settings={"default_payment_method": payment_method_id},
+        )
+
+    async def detach_payment_method(self, payment_method_id: str) -> None:
+        await stripe.PaymentMethod.detach_async(payment_method_id)
+
+    async def create_payment_intent(
+        self, amount_cents: int, currency: str, connected_account_id: str, invoice_id: str
+    ) -> tuple[str, str]:
+        pi = await stripe.PaymentIntent.create_async(
+            amount=amount_cents,
+            currency=currency.lower(),
+            transfer_data={"destination": connected_account_id},
+            metadata={"invoice_id": invoice_id},
+        )
+        assert pi.client_secret is not None
+        return pi.id, pi.client_secret
+
+    async def refund_payment_intent(self, payment_intent_id: str, connected_account_id: str) -> str:
+        refund = await stripe.Refund.create_async(
+            payment_intent=payment_intent_id,
+            reverse_transfer=True,
+        )
+        return refund.id
+
+    async def cancel_payment_intent(self, payment_intent_id: str) -> None:
+        await stripe.PaymentIntent.cancel_async(payment_intent_id)
+
+    async def upload_identity_document(
+        self, account_id: str, file_content: bytes, filename: str, content_type: str
+    ) -> str:
+        f = await stripe.File.create_async(
+            purpose="identity_document",
+            file=(filename, file_content, content_type),
+            stripe_account=account_id,
+        )
+        return f.id
