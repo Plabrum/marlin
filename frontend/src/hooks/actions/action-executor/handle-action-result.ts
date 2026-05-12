@@ -10,6 +10,7 @@ type NavigateFunction = (options: { to: string }) => void;
 export function handleActionResult(
   response: ActionExecutionResponse,
   navigate: NavigateFunction,
+  options: { clipboardClaimed?: boolean } = {},
 ): void {
   if (!response.action_result) {
     return;
@@ -48,7 +49,9 @@ export function handleActionResult(
       text: string;
       toast?: string | null;
     };
-    void navigator.clipboard.writeText(text);
+    if (!options.clipboardClaimed) {
+      void navigator.clipboard.writeText(text);
+    }
     if (toastMessage) {
       toast.success(toastMessage);
     }

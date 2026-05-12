@@ -10,6 +10,7 @@ import {
 import { executeActionApi } from "./action-executor/execute-action-api";
 import { handleActionResult } from "./action-executor/handle-action-result";
 import { handleQueryInvalidation } from "./action-executor/handle-query-invalidation";
+import { preclaimClipboardFromActionResponse } from "./action-executor/preclaim-clipboard";
 import type {
   ActionDTO,
   ActionExecutionResponse,
@@ -89,7 +90,7 @@ export function useActionExecutor({
         } as ActionBodyUnion;
       }
 
-      const response = await executeActionApi({
+      const responsePromise = executeActionApi({
         action,
         actionGroup,
         objectId,
@@ -98,15 +99,28 @@ export function useActionExecutor({
         executeObjectActionMutation,
       });
 
-      toast.success(
-        response.message || `${action.label} completed successfully`,
-      );
+      const clipboardClaimed =
+        preclaimClipboardFromActionResponse(responsePromise);
+
+      const response = await responsePromise;
+
+      const resultHasOwnToast =
+        response.action_result != null &&
+        "type" in response.action_result &&
+        response.action_result.type === "copy_to_clipboard" &&
+        response.action_result.toast != null;
+
+      if (!resultHasOwnToast) {
+        toast.success(
+          response.message || `${action.label} completed successfully`,
+        );
+      }
 
       handleQueryInvalidation(queryClient, response, onInvalidate);
 
       onSuccess?.(action, response);
 
-      handleActionResult(response, navigate);
+      handleActionResult(response, navigate, { clipboardClaimed });
 
       setState({
         isExecuting: false,
