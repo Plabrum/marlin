@@ -1,7 +1,2 @@
 node_modules
 dist
-src/openapi/*
-!src/openapi/custom-instance.ts
-!src/openapi/actions
-src/openapi/actions/*
-!src/openapi/actions/registry.gen.tsx
