@@ -20,6 +20,7 @@ from app.platform.actions.registry import ActionRegistry
 from app.platform.actions.schemas import (
     ActionDTO,
     ActionExecutionResponse,
+    DisabledReason,
 )
 from app.platform.base.models import BaseDBModel
 
@@ -84,6 +85,10 @@ class BaseObjectAction[O: BaseDBModel, D: Struct](BaseAction[O, D]):
         return True
 
     @classmethod
+    def is_disabled(cls, obj: O, deps: ActionDeps) -> DisabledReason | None:
+        return None
+
+    @classmethod
     async def execute(
         cls,
         obj: O,
@@ -107,6 +112,10 @@ class BaseTopLevelAction[D: Struct](BaseAction[BaseDBModel, D]):
     @classmethod
     def is_available(cls, deps: ActionDeps) -> bool:
         return True
+
+    @classmethod
+    def is_disabled(cls, deps: ActionDeps) -> DisabledReason | None:
+        return None
 
     @classmethod
     async def execute(
@@ -204,6 +213,9 @@ class ActionGroup:
                 raise PermissionDeniedException(
                     detail=f"Action {action_class.__name__} is not available in the current state"
                 )
+            disabled_reason = action_class.is_disabled(obj, deps)
+            if disabled_reason is not None:
+                raise PermissionDeniedException(detail=disabled_reason.message)
             actions_execution_response = await action_class.execute(obj, action_data, transaction, deps)
         elif issubclass(action_class, BaseTopLevelAction):
             if not action_class.is_available(deps):
@@ -213,6 +225,9 @@ class ActionGroup:
                     getattr(deps.user, "id", None),
                 )
                 raise PermissionDeniedException(detail=f"Action {action_class.__name__} is not available for this user")
+            disabled_reason = action_class.is_disabled(deps)
+            if disabled_reason is not None:
+                raise PermissionDeniedException(detail=disabled_reason.message)
             actions_execution_response = await action_class.execute(action_data, transaction, deps)
         else:
             raise TypeError(f"Action {action_class.__name__} must inherit from BaseObjectAction or BaseTopLevelAction")
@@ -228,24 +243,24 @@ class ActionGroup:
         obj: BaseDBModel | None = None,
     ) -> list[ActionDTO]:
 
-        available: list[tuple[str, type[BaseAction]]] = []
+        available: list[tuple[str, type[BaseAction], DisabledReason | None]] = []
         if obj is not None:
             for action_key, action_class in self.object_actions.items():
                 if action_class.is_hidden:
                     continue
                 if action_class.is_available(obj, deps):
-                    available.append((action_key, action_class))
+                    available.append((action_key, action_class, action_class.is_disabled(obj, deps)))
         else:
             for action_key, action_class in self.top_level_actions.items():
                 if action_class.is_hidden:
                     continue
                 if action_class.is_available(deps):
-                    available.append((action_key, action_class))
+                    available.append((action_key, action_class, action_class.is_disabled(deps)))
 
         available.sort(key=lambda x: x[1].priority)
 
         results: list[ActionDTO] = []
-        for action_key, action_class in available:
+        for action_key, action_class, disabled_reason in available:
             label = action_class.get_label(obj, deps) if obj is not None else action_class.label
             results.append(
                 ActionDTO(
@@ -257,6 +272,7 @@ class ActionGroup:
                     icon=action_class.icon.value if action_class.icon else None,
                     confirmation_message=action_class.confirmation_message,
                     should_redirect_to_parent=action_class.should_redirect_to_parent,
+                    disabled_reason=disabled_reason,
                 )
             )
         return results

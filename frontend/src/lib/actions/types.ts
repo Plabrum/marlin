@@ -4,6 +4,16 @@ import type {
   ActionsActionGroupObjectIdExecuteObjectActionBody,
 } from "@/openapi/litestarAPI.schemas";
 
+export interface ActionCTA {
+  label: string;
+  path: string;
+}
+
+export interface DisabledReason {
+  message: string;
+  cta?: ActionCTA | null;
+}
+
 export interface ActionDTO {
   action: string;
   label: string;
@@ -11,6 +21,7 @@ export interface ActionDTO {
   priority?: number;
   confirmation_message?: string | null;
   icon?: string | null;
+  disabled_reason?: DisabledReason | null;
 }
 
 export interface RedirectActionResult {

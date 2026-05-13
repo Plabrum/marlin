@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Download,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { ActionConfirmationDialog } from "@/components/actions/action-confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useActionExecutor } from "@/hooks/actions/use-action-executor";
 import { useActionFormRenderer } from "@/hooks/actions/use-action-form-renderer";
 import type {
@@ -54,6 +61,7 @@ type ObjectActionsProps = (ObjectActionData | TopLevelActionData) & {
 
 export function ObjectActions(props: ObjectActionsProps) {
   const isObjectAction = "data" in props;
+  const navigate = useNavigate();
 
   const actionGroup = props.actionGroup;
   const onActionComplete = props.onActionComplete;
@@ -105,6 +113,13 @@ export function ObjectActions(props: ObjectActionsProps) {
   const editAction = availableActions.find(isEditModeAction);
 
   const handleActionClick = (action: ActionDTO) => {
+    if (action.disabled_reason?.cta) {
+      navigate({ to: action.disabled_reason.cta.path });
+      return;
+    }
+    if (action.disabled_reason) {
+      return;
+    }
     if (isEditModeAction(action) && props.editMode) {
       if (props.editMode.isOpen) {
         props.editMode.onClose();
@@ -141,23 +156,47 @@ export function ObjectActions(props: ObjectActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        {visibleActions.map((action: ActionDTO, index: number) => (
-          <Button
-            key={action.action}
-            variant={index === 0 || props.allPrimary ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleActionClick(action)}
-            className="hidden md:inline-flex"
-          >
-            {action.icon &&
-              ACTION_ICONS[action.icon] &&
-              (() => {
-                const Icon = ACTION_ICONS[action.icon!];
-                return <Icon className="h-3.5 w-3.5" />;
-              })()}
-            {getActionLabel(action)}
-          </Button>
-        ))}
+        {visibleActions.map((action: ActionDTO, index: number) => {
+          const button = (
+            <Button
+              key={action.action}
+              variant={index === 0 || props.allPrimary ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleActionClick(action)}
+              aria-disabled={!!action.disabled_reason}
+              className={
+                "hidden md:inline-flex" +
+                (action.disabled_reason ? " opacity-50" : "")
+              }
+            >
+              {action.icon &&
+                ACTION_ICONS[action.icon] &&
+                (() => {
+                  const Icon = ACTION_ICONS[action.icon!];
+                  return <Icon className="h-3.5 w-3.5" />;
+                })()}
+              {getActionLabel(action)}
+            </Button>
+          );
+          if (!action.disabled_reason) return button;
+          return (
+            <TooltipProvider key={action.action} delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent>
+                  <div className="max-w-xs">
+                    {action.disabled_reason.message}
+                    {action.disabled_reason.cta ? (
+                      <span className="ml-1 underline">
+                        {action.disabled_reason.cta.label} →
+                      </span>
+                    ) : null}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
 
         {singleDirectAction ? (
           <span
@@ -189,7 +228,13 @@ export function ObjectActions(props: ObjectActionsProps) {
                 <DropdownMenuItem
                   key={`mobile-${action.action}`}
                   onClick={() => handleActionClick(action)}
-                  className="cursor-pointer md:hidden"
+                  className={
+                    "cursor-pointer md:hidden" +
+                    (action.disabled_reason && !action.disabled_reason.cta
+                      ? " opacity-50"
+                      : "")
+                  }
+                  title={action.disabled_reason?.message}
                 >
                   {getActionLabel(action)}
                 </DropdownMenuItem>
@@ -198,7 +243,13 @@ export function ObjectActions(props: ObjectActionsProps) {
                 <DropdownMenuItem
                   key={`${action.action}-${index}`}
                   onClick={() => handleActionClick(action)}
-                  className="cursor-pointer"
+                  className={
+                    "cursor-pointer" +
+                    (action.disabled_reason && !action.disabled_reason.cta
+                      ? " opacity-50"
+                      : "")
+                  }
+                  title={action.disabled_reason?.message}
                 >
                   {getActionLabel(action)}
                 </DropdownMenuItem>

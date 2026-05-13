@@ -23,7 +23,12 @@ from app.domain.invoices.state_machine import invoice_state_machine
 from app.platform.actions.base import BaseObjectAction, BaseTopLevelAction, EmptyActionData, action_group_factory
 from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType, ActionIcon
-from app.platform.actions.schemas import ActionExecutionResponse, CopyToClipboardActionResult
+from app.platform.actions.schemas import (
+    ActionCTA,
+    ActionExecutionResponse,
+    CopyToClipboardActionResult,
+    DisabledReason,
+)
 from app.platform.sequences.service import assign_identifier_if_missing
 
 logger = logging.getLogger(__name__)
@@ -141,6 +146,15 @@ class SendInvoice(BaseObjectAction[Invoice, EmptyActionData]):
     @classmethod
     def is_available(cls, obj: Invoice, deps: ActionDeps) -> bool:
         return invoice_state_machine.can_transition(obj, InvoiceState.sent, deps.user.role)
+
+    @classmethod
+    def is_disabled(cls, obj: Invoice, deps: ActionDeps) -> DisabledReason | None:
+        if obj.total_cents > 0 and deps.organization.stripe_account_id is None:
+            return DisabledReason(
+                message="Connect a Stripe account to accept payments on this invoice.",
+                cta=ActionCTA(label="Set up payments", path="/settings/billing"),
+            )
+        return None
 
     @classmethod
     async def execute(

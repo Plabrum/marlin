@@ -29,6 +29,16 @@ if TYPE_CHECKING:
 _action_metadata: dict[str, dict] = {}
 
 
+class ActionCTA(BaseSchema):
+    label: str
+    path: str
+
+
+class DisabledReason(BaseSchema):
+    message: str
+    cta: ActionCTA | None = None
+
+
 class ActionDTO(BaseSchema):
     action: str
     label: str
@@ -39,6 +49,7 @@ class ActionDTO(BaseSchema):
     icon: str | None = None
     confirmation_message: str | None = None
     should_redirect_to_parent: bool = False
+    disabled_reason: DisabledReason | None = None
 
 
 class ActionExecutionRequest(BaseSchema):

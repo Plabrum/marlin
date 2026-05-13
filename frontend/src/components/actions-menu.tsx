@@ -1,4 +1,5 @@
 import { MoreHorizontal } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { ActionConfirmationDialog } from "@/components/actions/action-confirmation-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,16 @@ export function ActionsMenu({
   objectData,
 }: ActionsMenuProps) {
   const formRenderer = useActionFormRenderer(objectData);
+  const navigate = useNavigate();
+
+  const handleClick = (action: ActionDTO) => {
+    if (action.disabled_reason?.cta) {
+      navigate({ to: action.disabled_reason.cta.path });
+      return;
+    }
+    if (action.disabled_reason) return;
+    executor.initiateAction(action);
+  };
 
   const executor = useActionExecutor({
     actionGroup,
@@ -60,8 +71,14 @@ export function ActionsMenu({
             .map((action, index) => (
               <DropdownMenuItem
                 key={`${action.action}-${index}`}
-                onClick={() => executor.initiateAction(action)}
-                className="cursor-pointer"
+                onClick={() => handleClick(action)}
+                className={
+                  "cursor-pointer" +
+                  (action.disabled_reason && !action.disabled_reason.cta
+                    ? " opacity-50"
+                    : "")
+                }
+                title={action.disabled_reason?.message}
               >
                 {action.label}
               </DropdownMenuItem>
