@@ -22,9 +22,9 @@ export function LlmMinimizedIcon({ isOpen, onOpen }: Props) {
             type="button"
             onClick={onOpen}
             aria-label="Open assistant"
-            className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-background border border-border shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 h-8 px-6 rounded-full bg-background border border-border shadow-lg flex items-center hover:scale-105 active:scale-95 transition-transform"
           >
-            <LlmOrb size={32} />
+            <LlmOrb size={18} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="left" className="text-xs">

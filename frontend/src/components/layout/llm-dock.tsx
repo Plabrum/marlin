@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useRef } from "react";
+import { Suspense, useCallback, useEffect, useRef } from "react";
 import { MoreHorizontal, SquarePen, X } from "lucide-react";
 
 import {
@@ -71,6 +71,12 @@ export function LlmDock() {
     when: useCallback(() => isOpen, [isOpen]),
     handler: useCallback(() => composerInputRef.current?.focus(), []),
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      composerInputRef.current?.focus();
+    }
+  }, [isOpen]);
 
   return (
     <>
