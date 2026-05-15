@@ -20,6 +20,7 @@ export const calendarEventColumnDefs = createColumnBuilder<CalendarEventListItem
 
 export const CalendarEventSortableColumn = {
   created_at: 'created_at',
+  effective_start: 'effective_start',
   end: 'end',
   start: 'start',
 } as const;
@@ -27,6 +28,7 @@ export const CalendarEventSortableColumn = {
 export const CalendarEventFilterableColumn = {
   client_id: 'client_id',
   created_at: 'created_at',
+  effective_start: 'effective_start',
   end: 'end',
   start: 'start',
   state: 'state',

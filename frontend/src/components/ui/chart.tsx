@@ -43,10 +43,14 @@ function ChartContainer({
     <ChartContext.Provider value={{ config }}>
       <div
         id={chartId}
-        className={cn("flex aspect-video justify-center text-xs", className)}
+        className={cn("aspect-video w-full text-xs", className)}
         style={colorVars as React.CSSProperties}
       >
-        <RechartsPrimitive.ResponsiveContainer>
+        <RechartsPrimitive.ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 1, height: 1 }}
+        >
           {children as React.ReactElement}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

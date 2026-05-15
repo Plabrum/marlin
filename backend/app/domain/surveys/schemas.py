@@ -62,3 +62,36 @@ class UpdateSurveyTemplateData(BaseSchema):
 
 class SaveSurveyResponseData(BaseSchema):
     response: dict[str, Any]
+
+
+# ── SurveyMedia ────────────────────────────────────────────────────────────────
+
+
+class SurveyMediaListItem(BaseSchema):
+    id: Sqid
+    survey_id: Sqid
+    media_id: Sqid
+    field_id: str | None
+    caption: str | None
+    sort_order: int
+    file_name: str
+    file_type: str
+    mime_type: str
+    view_url: str
+    thumbnail_url: str | None
+
+
+class SurveyMediaDetail(SurveyMediaListItem):
+    pass
+
+
+class AttachSurveyMediaData(BaseSchema):
+    survey_id: Sqid
+    media_id: Sqid
+    field_id: str | None = None
+    caption: str | None = None
+    sort_order: int = 0
+
+
+class SetSurveyMediaCaptionData(BaseSchema):
+    caption: str | None

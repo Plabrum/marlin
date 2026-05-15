@@ -16,6 +16,7 @@ import { FieldTypeEnum, buildRules, useDynamicForm } from "@/lib/form-dsl";
 import type { FormField } from "@/lib/form-dsl/types";
 import { useActionsActionGroupObjectIdExecuteObjectAction } from "@/openapi/actions/actions";
 import { useSurveyTemplatesIdDetailHandlerSuspense } from "@/openapi/survey-templates/survey-templates";
+import { PhotoField } from "@/components/surveys/photo-field";
 
 interface Props {
   surveyId: string;
@@ -48,7 +49,7 @@ export function DynamicFormRenderer({ surveyId, templateId, existingResponse }: 
             </CardHeader>
             <CardContent className="space-y-4">
               {section.fields.map((field) => (
-                <DynamicField key={field.id} field={field} />
+                <DynamicField key={field.id} field={field} surveyId={surveyId} />
               ))}
             </CardContent>
           </Card>
@@ -63,9 +64,20 @@ export function DynamicFormRenderer({ surveyId, templateId, existingResponse }: 
   );
 }
 
-function DynamicField({ field }: { field: FormField }) {
+function DynamicField({ field, surveyId }: { field: FormField; surveyId: string }) {
   const rules = buildRules(field);
   const htmlId = `field-${field.id}`;
+
+  if (field.type === FieldTypeEnum.photo) {
+    return (
+      <PhotoField
+        surveyId={surveyId}
+        fieldId={field.id}
+        label={field.label}
+        required={field.required ?? false}
+      />
+    );
+  }
 
   return (
     <Controller

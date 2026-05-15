@@ -34,7 +34,7 @@ from app.domain.payment_methods.routes import payment_method_router
 from app.domain.pricing_guides.routes import pricing_guides_router
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
-from app.domain.surveys.routes import survey_router, survey_template_router
+from app.domain.surveys.routes import survey_media_router, survey_router, survey_template_router
 from app.domain.users.models import User
 from app.domain.users.queries import get_user_by_id
 from app.domain.users.routes import user_router
@@ -50,7 +50,6 @@ from app.platform.comms.webhook_routes import comms_webhook_router
 from app.platform.dashboard.routes import dashboard_router
 from app.platform.documents import document_router
 from app.platform.llm.routes import llm_router
-from app.platform.llm.voice_routes import voice_router
 from app.platform.media import local_files_router, media_router
 from app.platform.queue.config import queue_config
 from app.platform.threads import thread_handler, thread_router
@@ -186,6 +185,7 @@ def create_app(
             client_router,
             survey_router,
             survey_template_router,
+            survey_media_router,
             invoice_router,
             public_invoice_router,
             calendar_event_router,
@@ -197,7 +197,6 @@ def create_app(
             billing_router,
             connect_router,
             llm_router,
-            voice_router,
             search_router,
         ],
         plugins=plugins,

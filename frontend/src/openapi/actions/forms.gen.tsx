@@ -3,7 +3,7 @@
  */
 import { createTypedForm } from "@/lib/forms/base";
 import type { GeneratedFormProps } from "@/lib/forms/types";
-import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, UpdateCalendarEventData, UpdateClientData, UpdateInvoiceData, UpdatePricingGuideData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
+import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateInvoiceData, UpdatePricingGuideData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
 import { ClientType, EnginePosition, EngineType, FuelType, HullMaterial, PartCategory, PricingType, PropulsionType, RiggingType, SubscriptionPlan, VesselType, WidgetType } from "@/openapi/litestarAPI.schemas";
 
 // --- client_actions__create ---
@@ -609,6 +609,24 @@ export function SurveyTemplateActionsUpdateForm(props: GeneratedFormProps<Update
       <_survey_template_actions__update.FormStringList name="tags" label="Tags" required />
       <_survey_template_actions__update.FormString name="definition" label="Definition" required />
     </_survey_template_actions__update.FormModal>
+  );
+}
+
+// --- survey_media_actions__set_caption ---
+const _survey_media_actions__set_caption = createTypedForm<SetSurveyMediaCaptionData>();
+
+export function SurveyMediaActionsSetCaptionForm(props: GeneratedFormProps<SetSurveyMediaCaptionData>) {
+  return (
+    <_survey_media_actions__set_caption.FormModal
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_survey_media_actions__set_caption.FormString name="caption" label="Caption" />
+    </_survey_media_actions__set_caption.FormModal>
   );
 }
 

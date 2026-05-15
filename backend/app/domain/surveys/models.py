@@ -11,6 +11,7 @@ from app.domain.vessels.models import Vessel
 from app.platform.base.models import BaseDBModel
 from app.platform.base.rls_mixins import OrgScopedMixin
 from app.platform.base.search import SearchMixin
+from app.platform.media.models import Media
 from app.platform.sequences.enums import SequenceType
 from app.platform.sequences.mixins import SequenceMixin
 from app.platform.state_machine.models import StateMachineMixin
@@ -70,3 +71,45 @@ class Survey(
     vessel: Mapped[Vessel] = relationship("Vessel", foreign_keys=[vessel_id], lazy="raise")
     assigned_surveyor: Mapped[Any] = relationship("User", foreign_keys=[assigned_surveyor_id], lazy="raise")
     template: Mapped[SurveyTemplate | None] = relationship("SurveyTemplate", foreign_keys=[template_id], lazy="raise")
+    media: Mapped[list[Media]] = relationship(
+        "Media",
+        secondary="survey_media",
+        lazy="noload",
+        viewonly=True,
+    )
+    survey_media: Mapped[list[SurveyMedia]] = relationship(
+        "SurveyMedia",
+        back_populates="survey",
+        lazy="noload",
+        cascade="all, delete-orphan",
+    )
+
+
+class SurveyMedia(OrgScopedMixin, BaseDBModel):
+    """Association row linking a survey to a media asset.
+
+    The session-level raiseload rule means the `Media` and `Survey`
+    relationships here need `lazy="noload"`; callers explicitly
+    `joinedload` them in CRUD configs.
+    """
+
+    __tablename__ = "survey_media"
+    __table_args__ = (sa.UniqueConstraint("survey_id", "media_id"),)
+
+    organization_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("organizations.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    survey_id: Mapped[Sqid] = mapped_column(
+        SqidType, sa.ForeignKey("surveys.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    media_id: Mapped[Sqid] = mapped_column(
+        SqidType, sa.ForeignKey("media.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    field_id: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    caption: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    sort_order: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0, server_default="0")
+
+    survey: Mapped[Survey] = relationship("Survey", foreign_keys=[survey_id], lazy="noload")
+    media: Mapped[Media] = relationship("Media", foreign_keys=[media_id], lazy="noload")

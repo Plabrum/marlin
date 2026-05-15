@@ -16,6 +16,7 @@ export const authMeQueryKey = ["auth", "me"] as const;
 export const authMeQueryOptions = {
   queryKey: authMeQueryKey,
   queryFn: () => customInstance<AuthUser>({ url: "/auth/me", method: "GET" }),
+  staleTime: Infinity,
 };
 
 function redirectToAuth(reason?: AuthRedirectReason): never {

@@ -9,6 +9,7 @@ class FieldType(StrEnum):
     NUMBER = auto()
     SELECT = auto()
     CHECKBOX = auto()
+    PHOTO = auto()
 
 
 class FormField(BaseSchema):

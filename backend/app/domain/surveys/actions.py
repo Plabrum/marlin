@@ -7,11 +7,13 @@ from litestar.exceptions import NotFoundException, ValidationException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.surveys.enums import SurveyState
-from app.domain.surveys.models import Survey, SurveyTemplate
+from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
+    AttachSurveyMediaData,
     CreateSurveyData,
     CreateSurveyTemplateData,
     SaveSurveyResponseData,
+    SetSurveyMediaCaptionData,
     UpdateSurveyData,
     UpdateSurveyTemplateData,
 )
@@ -351,3 +353,82 @@ class DeleteSurveyTemplate(BaseObjectAction[SurveyTemplate, EmptyActionData]):
     ) -> ActionExecutionResponse:
         obj.soft_delete()
         return ActionExecutionResponse(message="Template deleted")
+
+
+# ── SurveyMedia actions ────────────────────────────────────────────────────────
+
+
+class SurveyMediaActionKey(StrEnum):
+    ATTACH = auto()
+    DETACH = auto()
+    SET_CAPTION = auto()
+
+
+survey_media_actions = action_group_factory(
+    group_type=ActionGroupType.SURVEY_MEDIA_ACTIONS,
+    default_invalidation="/survey-media",
+    model_type=SurveyMedia,
+)
+
+
+@survey_media_actions
+class AttachSurveyMedia(BaseTopLevelAction[AttachSurveyMediaData]):
+    action_key = SurveyMediaActionKey.ATTACH
+    label = "Attach Media"
+    icon = ActionIcon.ADD
+    priority = 10
+    is_hidden = True
+
+    @classmethod
+    async def execute(
+        cls, data: AttachSurveyMediaData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        survey = await transaction.get(Survey, data.survey_id)
+        if survey is None:
+            raise NotFoundException("Survey not found")
+        sm = SurveyMedia(
+            organization_id=deps.user.organization_id,
+            survey_id=data.survey_id,
+            media_id=data.media_id,
+            field_id=data.field_id,
+            caption=data.caption,
+            sort_order=data.sort_order,
+        )
+        transaction.add(sm)
+        await transaction.flush()
+        return ActionExecutionResponse(
+            message="Media attached",
+            created_id=sm.id,
+            invalidate_queries=["/survey-media", f"/surveys/{data.survey_id}"],
+        )
+
+
+@survey_media_actions
+class DetachSurveyMedia(BaseObjectAction[SurveyMedia, EmptyActionData]):
+    action_key = SurveyMediaActionKey.DETACH
+    label = "Remove"
+    icon = ActionIcon.TRASH
+    priority = 90
+    confirmation_message = "Remove this photo from the survey?"
+
+    @classmethod
+    async def execute(
+        cls, obj: SurveyMedia, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        await transaction.delete(obj)
+        return ActionExecutionResponse(message="Media removed")
+
+
+@survey_media_actions
+class SetSurveyMediaCaption(BaseObjectAction[SurveyMedia, SetSurveyMediaCaptionData]):
+    action_key = SurveyMediaActionKey.SET_CAPTION
+    label = "Edit Caption"
+    icon = ActionIcon.EDIT
+    priority = 20
+
+    @classmethod
+    async def execute(
+        cls, obj: SurveyMedia, data: SetSurveyMediaCaptionData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        obj.caption = data.caption
+        return ActionExecutionResponse(message="Caption updated")

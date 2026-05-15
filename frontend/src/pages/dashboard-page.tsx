@@ -4,7 +4,9 @@ import { DashboardRenderer } from "@/components/dashboard/dashboard-renderer";
 import { useGetDashboardSuspense } from "@/openapi/dashboard/dashboard";
 
 function DashboardContent() {
-  const { data } = useGetDashboardSuspense();
+  const { data } = useGetDashboardSuspense({
+    query: { staleTime: Infinity },
+  });
   return <DashboardRenderer widgets={data.widgets} />;
 }
 

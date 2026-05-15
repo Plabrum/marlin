@@ -22,6 +22,7 @@ class ActionGroupType(StrEnum):
     PAYMENT_METHOD_ACTIONS = auto()
     PRICING_GUIDE_ACTIONS = auto()
     CALENDAR_EVENT_ACTIONS = auto()
+    SURVEY_MEDIA_ACTIONS = auto()
 
 
 class ActionResultType(StrEnum):

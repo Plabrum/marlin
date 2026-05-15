@@ -5,6 +5,15 @@ import msgspec
 from app.platform.form_dsl.schema import FieldType, FormDefinition, FormField
 
 
+class PhotoFieldValue(msgspec.Struct):
+    """Photo field payload — the SurveyMedia association is the source of
+    truth; this JSON copy lets the renderer read attachments without an
+    extra round-trip.
+    """
+
+    media_ids: list[int]
+
+
 def build_response_struct(definition: FormDefinition) -> type:
     fields = []
     for section in definition.sections:
@@ -25,5 +34,7 @@ def _python_type(field: FormField) -> type:
             return bool
         case FieldType.SELECT:
             return Literal[tuple(field.options)] if field.options else str  # type: ignore[return-value]
+        case FieldType.PHOTO:
+            return PhotoFieldValue
         case _:
             return str

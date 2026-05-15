@@ -71,6 +71,7 @@ export const ActionGroupType = {
   payment_method_actions: 'payment_method_actions',
   pricing_guide_actions: 'pricing_guide_actions',
   calendar_event_actions: 'calendar_event_actions',
+  survey_media_actions: 'survey_media_actions',
 } as const;
 
 export interface ActionListResponse {
@@ -217,6 +218,25 @@ export interface AttachPaymentMethodData {
 export interface AttachSurveyData {
   /** SQID-encoded identifier */
   survey_id: string;
+}
+
+export interface AttachSurveyMediaAction {
+  data: AttachSurveyMediaData;
+  action: 'survey_media_actions__attach';
+}
+
+export type AttachSurveyMediaDataFieldId = string | null;
+
+export type AttachSurveyMediaDataCaption = string | null;
+
+export interface AttachSurveyMediaData {
+  /** SQID-encoded identifier */
+  survey_id: string;
+  /** SQID-encoded identifier */
+  media_id: string;
+  field_id?: AttachSurveyMediaDataFieldId;
+  caption?: AttachSurveyMediaDataCaption;
+  sort_order?: number;
 }
 
 export interface AttachToClientAction {
@@ -879,6 +899,11 @@ export interface DeliverWatermarkedAction {
   action: 'report_actions__deliver_watermarked';
 }
 
+export interface DetachSurveyMediaAction {
+  data: EmptyActionData;
+  action: 'survey_media_actions__detach';
+}
+
 export type DisabledReasonCta = ActionCTA | null;
 
 export interface DisabledReason {
@@ -1537,6 +1562,14 @@ export interface PagedResponseAppDomainSurveysSchemasSurveyListItem {
   has_more: boolean;
 }
 
+export interface PagedResponseAppDomainSurveysSchemasSurveyMediaListItem {
+  items: SurveyMediaListItem[];
+  total: number;
+  offset: number;
+  limit: number;
+  has_more: boolean;
+}
+
 export interface PagedResponseAppDomainSurveysSchemasSurveyTemplateListItem {
   items: SurveyTemplateListItem[];
   total: number;
@@ -2004,6 +2037,17 @@ export interface SetDefaultPaymentMethodAction {
   action: 'payment_method_actions__set_default';
 }
 
+export interface SetSurveyMediaCaptionAction {
+  data: SetSurveyMediaCaptionData;
+  action: 'survey_media_actions__set_caption';
+}
+
+export type SetSurveyMediaCaptionDataCaption = string | null;
+
+export interface SetSurveyMediaCaptionData {
+  caption?: SetSurveyMediaCaptionDataCaption;
+}
+
 export interface SetupIntentResponse {
   client_secret: string;
 }
@@ -2122,6 +2166,52 @@ export interface SurveyListItem {
   vessel: EntityRef;
   surveyor: EntityRef;
   created_at: string;
+}
+
+export type SurveyMediaDetailFieldId = string | null;
+
+export type SurveyMediaDetailCaption = string | null;
+
+export type SurveyMediaDetailThumbnailUrl = string | null;
+
+export interface SurveyMediaDetail {
+  /** SQID-encoded identifier */
+  id: string;
+  /** SQID-encoded identifier */
+  survey_id: string;
+  /** SQID-encoded identifier */
+  media_id: string;
+  field_id?: SurveyMediaDetailFieldId;
+  caption?: SurveyMediaDetailCaption;
+  sort_order: number;
+  file_name: string;
+  file_type: string;
+  mime_type: string;
+  view_url: string;
+  thumbnail_url?: SurveyMediaDetailThumbnailUrl;
+}
+
+export type SurveyMediaListItemFieldId = string | null;
+
+export type SurveyMediaListItemCaption = string | null;
+
+export type SurveyMediaListItemThumbnailUrl = string | null;
+
+export interface SurveyMediaListItem {
+  /** SQID-encoded identifier */
+  id: string;
+  /** SQID-encoded identifier */
+  survey_id: string;
+  /** SQID-encoded identifier */
+  media_id: string;
+  field_id?: SurveyMediaListItemFieldId;
+  caption?: SurveyMediaListItemCaption;
+  sort_order: number;
+  file_name: string;
+  file_type: string;
+  mime_type: string;
+  view_url: string;
+  thumbnail_url?: SurveyMediaListItemThumbnailUrl;
 }
 
 export type SurveyState = typeof SurveyState[keyof typeof SurveyState];
@@ -2917,6 +3007,7 @@ export const FormDslSchemaFieldType = {
   number: 'number',
   select: 'select',
   checkbox: 'checkbox',
+  photo: 'photo',
 } as const;
 
 export interface LlmSchemasMessageSchema {
@@ -3025,7 +3116,7 @@ export type ActionsActionGroupListActions400 = {
   extra?: ActionsActionGroupListActions400Extra;
 };
 
-export type ActionsActionGroupExecuteActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | ScheduleSurveyAction | StartInspectionAction | CompleteInspectionAction | SubmitForReviewAction | MoveToDraftAction | DeliverSurveyAction | CancelSurveyAction | SaveSurveyResponseAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
+export type ActionsActionGroupExecuteActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | ScheduleSurveyAction | StartInspectionAction | CompleteInspectionAction | SubmitForReviewAction | MoveToDraftAction | DeliverSurveyAction | CancelSurveyAction | SaveSurveyResponseAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
 
 export type ActionsActionGroupExecuteAction400ExtraAnyOf = {[key: string]: unknown};
 
@@ -3053,7 +3144,7 @@ export type ActionsActionGroupObjectIdListObjectActions400 = {
   extra?: ActionsActionGroupObjectIdListObjectActions400Extra;
 };
 
-export type ActionsActionGroupObjectIdExecuteObjectActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | ScheduleSurveyAction | StartInspectionAction | CompleteInspectionAction | SubmitForReviewAction | MoveToDraftAction | DeliverSurveyAction | CancelSurveyAction | SaveSurveyResponseAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
+export type ActionsActionGroupObjectIdExecuteObjectActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | ScheduleSurveyAction | StartInspectionAction | CompleteInspectionAction | SubmitForReviewAction | MoveToDraftAction | DeliverSurveyAction | CancelSurveyAction | SaveSurveyResponseAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
 
 export type ActionsActionGroupObjectIdExecuteObjectAction400ExtraAnyOf = {[key: string]: unknown};
 
@@ -3521,6 +3612,32 @@ export type ListSurveyTemplate400 = {
   status_code: number;
   detail: string;
   extra?: ListSurveyTemplate400Extra;
+};
+
+export type SurveyMediaIdDetailHandler400ExtraAnyOf = {[key: string]: unknown};
+
+export type SurveyMediaIdDetailHandler400Extra = null | SurveyMediaIdDetailHandler400ExtraAnyOf | unknown[];
+
+/**
+ * Validation Exception
+ */
+export type SurveyMediaIdDetailHandler400 = {
+  status_code: number;
+  detail: string;
+  extra?: SurveyMediaIdDetailHandler400Extra;
+};
+
+export type ListSurveyMedia400ExtraAnyOf = {[key: string]: unknown};
+
+export type ListSurveyMedia400Extra = null | ListSurveyMedia400ExtraAnyOf | unknown[];
+
+/**
+ * Validation Exception
+ */
+export type ListSurveyMedia400 = {
+  status_code: number;
+  detail: string;
+  extra?: ListSurveyMedia400Extra;
 };
 
 export type DataInvoice400ExtraAnyOf = {[key: string]: unknown};

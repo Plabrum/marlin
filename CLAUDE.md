@@ -39,3 +39,4 @@
 - `T | None` over `Optional[T]`
 - `datetime.now(tz=timezone.utc)` not `datetime.utcnow()` (deprecated)
 - 4-space indents, snake_case for modules/functions/variables, PascalCase for classes
+- f-strings in logging calls (`logger.info(f"...{var}")`), not `%`-style lazy args

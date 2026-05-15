@@ -52,8 +52,8 @@ async def register_media(
     """Register an uploaded media file and trigger thumbnail generation."""
     file_type = "image" if data.mime_type.startswith("image/") else "video"
 
-    # TODO: scope by sloopquest org/vessel/survey once domain is decided.
     media = Media(
+        organization_id=int(request.user.organization_id),
         file_key=data.file_key,
         file_name=data.file_name,
         file_size=data.file_size,

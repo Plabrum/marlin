@@ -12,6 +12,11 @@ export function buildDefaultValues(
   const defaults: FormValues = {};
   for (const section of definition.sections) {
     for (const field of section.fields) {
+      if (field.type === FieldTypeEnum.photo) {
+        // PhotoField manages its own state via the SurveyMedia API; skip
+        // registering a form value so submit doesn't overwrite it.
+        continue;
+      }
       if (existing && field.id in existing) {
         defaults[field.id] = existing[field.id] as string | number | boolean | null;
       } else {

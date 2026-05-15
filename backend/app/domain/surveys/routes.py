@@ -4,16 +4,20 @@ import msgspec
 from litestar import Router
 from sqlalchemy.orm import joinedload
 
-from app.domain.surveys.models import Survey, SurveyTemplate
+from app.config import config
+from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
     SurveyDetail,
     SurveyListItem,
+    SurveyMediaDetail,
+    SurveyMediaListItem,
     SurveyTemplateDetail,
     SurveyTemplateListItem,
 )
 from app.domain.users.models import User
 from app.platform.base.crud import CRUDConfig, make_crud_controller
 from app.platform.base.schemas import EntityRef
+from app.platform.clients.s3 import BaseS3Client, LocalS3Client, S3Client
 from app.platform.data.enums import FieldType
 from app.platform.data.service import FieldConfig
 from app.platform.form_dsl.schema import FormDefinition
@@ -120,3 +124,54 @@ _template_controller = make_crud_controller("", _template_config)
 survey_template_router = Router(
     path="/survey-templates", route_handlers=[_template_controller], tags=["survey-templates"]
 )
+
+
+# ── SurveyMedia ────────────────────────────────────────────────────────────────
+
+
+def _get_s3() -> BaseS3Client:
+    return LocalS3Client() if config.IS_DEV else S3Client(config.AWS_REGION)
+
+
+def _survey_media_to_item(sm: SurveyMedia, user: User) -> SurveyMediaListItem:
+    s3 = _get_s3()
+    view_url = s3.generate_presigned_download_url(bucket=config.S3_MEDIA_BUCKET, key=sm.media.file_key, expires_in=3600)
+    thumbnail_url = (
+        s3.generate_presigned_download_url(bucket=config.S3_MEDIA_BUCKET, key=sm.media.thumbnail_key, expires_in=3600)
+        if sm.media.thumbnail_key
+        else None
+    )
+    return SurveyMediaListItem(
+        id=sm.id,
+        survey_id=sm.survey_id,
+        media_id=sm.media_id,
+        field_id=sm.field_id,
+        caption=sm.caption,
+        sort_order=sm.sort_order,
+        file_name=sm.media.file_name,
+        file_type=sm.media.file_type,
+        mime_type=sm.media.mime_type,
+        view_url=view_url,
+        thumbnail_url=thumbnail_url,
+    )
+
+
+def _survey_media_to_detail(sm: SurveyMedia, user: User) -> SurveyMediaDetail:
+    item = _survey_media_to_item(sm, user)
+    return SurveyMediaDetail(**{f: getattr(item, f) for f in item.__struct_fields__})
+
+
+_survey_media_config = CRUDConfig(
+    model=SurveyMedia,
+    to_list_item=_survey_media_to_item,
+    to_detail=_survey_media_to_detail,
+    list_load_options=[joinedload(SurveyMedia.media)],
+    detail_load_options=[joinedload(SurveyMedia.media)],
+    filterable_columns={"survey_id", "field_id"},
+    sortable_columns={"sort_order", "created_at"},
+    default_sort="sort_order",
+)
+
+_survey_media_controller = make_crud_controller("", _survey_media_config)
+
+survey_media_router = Router(path="/survey-media", route_handlers=[_survey_media_controller], tags=["survey-media"])

@@ -26,6 +26,7 @@ export function getResourceMeta(resource: ResourceType): ResourceMeta {
 
 export function useTimeSeriesData(query: WidgetQuery) {
   return useSuspenseQuery({
+    staleTime: Infinity,
     queryKey: [
       "dashboard-data",
       query.resource,
@@ -65,6 +66,7 @@ export function useResourceList(
   limit: number,
 ) {
   return useSuspenseQuery({
+    staleTime: Infinity,
     queryKey: ["dashboard-list", resource, filters, limit],
     queryFn: ({ signal }) => {
       const body: ListRequest = {

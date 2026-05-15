@@ -1,15 +1,15 @@
-"""LLM chat routes — SSE streaming + thread/message CRUD."""
+"""LLM chat routes — SSE streaming, thread/message CRUD, and realtime voice WS."""
 
 from collections.abc import AsyncGenerator
 
-from litestar import Router, delete, get, post
+from litestar import Router, WebSocket, delete, get, post, websocket
 from litestar.response import Stream
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.users.models import User
 from app.platform.auth.guards import requires_session
 from app.platform.llm.client import BaseLLMClient
-from app.platform.llm.queries import delete_thread, get_messages_after, list_threads_by_user
+from app.platform.llm.queries import create_thread, delete_thread, get_messages_after, list_threads_by_user
 from app.platform.llm.schemas import (
     CreateThreadBody,
     MessagePageSchema,
@@ -19,9 +19,11 @@ from app.platform.llm.schemas import (
     ThreadSummarySchema,
     ToolCallRecord,
 )
-from app.platform.llm.service import LLMService
+from app.platform.llm.service import LLMService, _build_system_prompt
 from app.platform.streaming.sse import format_frame, stream_response
-from app.utils.sqids import Sqid, sqid_decode
+from app.platform.streaming.ws import run_websocket
+from app.utils.deps import rls_transaction
+from app.utils.sqids import Sqid
 
 
 @get("/threads", guards=[requires_session])
@@ -29,7 +31,7 @@ async def list_threads_handler(
     transaction: AsyncSession,
     user: User,
 ) -> ThreadListPage:
-    rows = await list_threads_by_user(transaction, int(user.id))
+    rows = await list_threads_by_user(transaction, user.id)
     summaries = [
         ThreadSummarySchema(
             id=thread.id,
@@ -45,11 +47,10 @@ async def list_threads_handler(
 async def get_thread_messages_handler(
     thread_id: Sqid,
     transaction: AsyncSession,
-    after: str | None = None,
+    after: Sqid | None = None,
     limit: int = 50,
 ) -> MessagePageSchema:
-    after_id = sqid_decode(after) if after else None
-    messages, has_more = await get_messages_after(transaction, int(thread_id), after_id=after_id, limit=limit)
+    messages, has_more = await get_messages_after(transaction, thread_id, after_id=after, limit=limit)
     return MessagePageSchema(
         messages=[
             MessageSchema(
@@ -75,25 +76,22 @@ async def delete_thread_handler(
     thread_id: Sqid,
     transaction: AsyncSession,
 ) -> None:
-    await delete_thread(transaction, int(thread_id))
+    await delete_thread(transaction, thread_id)
 
 
 @post("/threads/stream", guards=[requires_session])
 async def stream_create_thread_handler(
     data: CreateThreadBody,
-    transaction: AsyncSession,
-    llm_client: BaseLLMClient,
+    llm_service: LLMService,
     user: User,
 ) -> Stream:
-    service = LLMService(transaction, llm_client)
-
     async def gen() -> AsyncGenerator[bytes]:
-        async for ev in service.stream_create_thread(
+        async for ev in llm_service.stream_create_thread(
             data.content,
             user=user,
             context=data.context,
             threadable_type=data.threadable_type,
-            threadable_id=int(data.threadable_id) if data.threadable_id is not None else None,
+            threadable_id=data.threadable_id,
         ):
             yield format_frame(ev)
 
@@ -104,15 +102,12 @@ async def stream_create_thread_handler(
 async def stream_send_message_handler(
     thread_id: Sqid,
     data: SendMessageBody,
-    transaction: AsyncSession,
-    llm_client: BaseLLMClient,
+    llm_service: LLMService,
     user: User,
 ) -> Stream:
-    service = LLMService(transaction, llm_client)
-
     async def gen() -> AsyncGenerator[bytes]:
-        async for ev in service.stream_send_message(
-            int(thread_id),
+        async for ev in llm_service.stream_send_message(
+            thread_id,
             data.content,
             user=user,
             context=data.context,
@@ -120,6 +115,27 @@ async def stream_send_message_handler(
             yield format_frame(ev)
 
     return stream_response(gen())
+
+
+@websocket("/voice", guards=[requires_session])
+async def voice_handler(
+    socket: WebSocket,
+    db_session: AsyncSession,
+    voice_llm_client: BaseLLMClient,
+) -> None:
+    async def handle(ws: WebSocket, user: User) -> None:
+        async with rls_transaction(db_session, user_id=user.id, organization_id=user.organization_id) as txn:
+            thread = await create_thread(txn, user_id=user.id, model=voice_llm_client.model)
+
+        await voice_llm_client.voice_stream(
+            ws,
+            db_session=db_session,
+            user=user,
+            thread_id=thread.id,
+            system_prompt=_build_system_prompt(),
+        )
+
+    await run_websocket(socket, label="Voice WS", handler=handle)
 
 
 llm_router = Router(
@@ -130,6 +146,7 @@ llm_router = Router(
         delete_thread_handler,
         stream_create_thread_handler,
         stream_send_message_handler,
+        voice_handler,
     ],
     tags=["llm"],
 )

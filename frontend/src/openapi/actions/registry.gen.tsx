@@ -30,6 +30,7 @@ import {
   SurveyActionsUpdateForm,
   SurveyTemplateActionsCreateForm,
   SurveyTemplateActionsUpdateForm,
+  SurveyMediaActionsSetCaptionForm,
   ReportActionsCreateForm,
   ReportActionsUpdateForm,
   WidgetActionsCreateForm,
@@ -118,6 +119,9 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "survey_template_actions__update": {
     render: (params) => <SurveyTemplateActionsUpdateForm {...params} />,
+  },
+  "survey_media_actions__set_caption": {
+    render: (params) => <SurveyMediaActionsSetCaptionForm {...params} />,
   },
   "report_actions__create": {
     render: (params) => <ReportActionsCreateForm {...params} />,
