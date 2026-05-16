@@ -3,7 +3,6 @@
 import json
 import logging
 from collections.abc import AsyncGenerator
-from datetime import UTC, datetime
 
 from litestar.exceptions import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +13,7 @@ from app.platform.llm.client import BaseLLMClient
 from app.platform.llm.enums import MessageRole
 from app.platform.llm.executor import build_tool_executor
 from app.platform.llm.models import LLMMessage, LLMThread
+from app.platform.llm.prompts import PromptContext, build_system_prompt
 from app.platform.llm.queries import (
     create_message,
     create_thread,
@@ -36,14 +36,9 @@ from app.utils.sqids import Sqid
 logger = logging.getLogger(__name__)
 
 
-def _build_system_prompt(context: dict | None = None) -> str:
-    today = datetime.now(tz=UTC).strftime("%Y-%m-%d")
-    parts = [f"Today's date is {today} (UTC)."]
-    if context:
-        page = context.get("current_page")
-        if page:
-            parts.append(f"The user is currently viewing: {page}")
-    return " ".join(parts)
+def _text_prompt(user: User | None, context: dict | None) -> str:
+    page = context.get("current_page") if context else None
+    return build_system_prompt("text", PromptContext(user=user, current_page=page))
 
 
 class LLMService:
@@ -165,7 +160,7 @@ class LLMService:
         await self.transaction.commit()
 
         executor = build_tool_executor(self.transaction, user, invalidate_keys)
-        system = _build_system_prompt(context)
+        system = _text_prompt(user, context)
         tools = get_tool_definitions() or None
         full_text = ""
         tool_calls_this_turn: list[dict] = []
@@ -242,7 +237,7 @@ class LLMService:
 
         invalidate_keys: list[str] = []
         executor = build_tool_executor(self.transaction, user, invalidate_keys)
-        system = _build_system_prompt(context)
+        system = _text_prompt(user, context)
         tools = get_tool_definitions() or None
         full_text = ""
         tool_calls_this_turn: list[dict] = []

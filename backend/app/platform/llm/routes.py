@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.users.models import User
 from app.platform.auth.guards import requires_session
 from app.platform.llm.client import BaseLLMClient
+from app.platform.llm.prompts import PromptContext, build_system_prompt
 from app.platform.llm.queries import create_thread, delete_thread, get_messages_after, list_threads_by_user
 from app.platform.llm.schemas import (
     CreateThreadBody,
@@ -19,7 +20,7 @@ from app.platform.llm.schemas import (
     ThreadSummarySchema,
     ToolCallRecord,
 )
-from app.platform.llm.service import LLMService, _build_system_prompt
+from app.platform.llm.service import LLMService
 from app.platform.streaming.sse import format_frame, stream_response
 from app.platform.streaming.ws import run_websocket
 from app.utils.deps import rls_transaction
@@ -132,7 +133,7 @@ async def voice_handler(
             db_session=db_session,
             user=user,
             thread_id=thread.id,
-            system_prompt=_build_system_prompt(),
+            system_prompt=build_system_prompt("voice", PromptContext(user=user)),
         )
 
     await run_websocket(socket, label="Voice WS", handler=handle)

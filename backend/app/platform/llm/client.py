@@ -293,12 +293,7 @@ class OpenAIRealtimeLLMClient(BaseLLMClient):
             session_payload: Any = {
                 "type": "realtime",
                 "output_modalities": ["audio"],
-                "instructions": (
-                    f"{system_prompt}\n\n"
-                    "Do not speak first. Wait for the user to speak before "
-                    "responding. Do not greet, introduce yourself, or fill "
-                    "silence. Stay silent until the user says something."
-                ),
+                "instructions": system_prompt,
                 "audio": {
                     "input": {
                         "format": pcm_format,
