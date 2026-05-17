@@ -76,6 +76,19 @@ dev-worker:
 dev-frontend:
     cd frontend && pnpm dev
 
+# Full dev with ngrok tunnel for remote access (prints public URL)
+dev-ngrok:
+    #!/usr/bin/env bash
+    trap 'kill 0' EXIT
+    (cd backend && uv run litestar --app app.index:app run -r -d -p 8000) &
+    (cd frontend && NGROK=1 pnpm dev --host 0.0.0.0) &
+    sleep 3
+    ngrok http 5173 &
+    sleep 4
+    curl -s http://localhost:4040/api/tunnels \
+      | python3 -c "import sys,json; t=json.load(sys.stdin)['tunnels']; print('\n  ngrok URL:', t[0]['public_url']) if t else print('ngrok not ready')"
+    wait
+
 # Start Next.js landing page dev server
 dev-landing:
     cd landing && pnpm dev
