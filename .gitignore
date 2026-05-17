@@ -12,3 +12,4 @@ infra/lambda/*.zip
 .vscode/settings.json
 .vscode/settings.json
 .playwright-mcp
+backend/uploads/sloopquest-media/media

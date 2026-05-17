@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Any
 
 from app.domain.surveys.enums import SurveyState
 from app.platform.actions.schemas import ActionableDetail, ActionableList
 from app.platform.base.schemas import BaseSchema, EntityRef
 from app.platform.form_dsl.schema import TemplateDefinition
+from app.platform.form_dsl.schemas import FormNodeRef, SectionCompletion
 from app.utils.sqids import Sqid
 
 
@@ -22,7 +22,9 @@ class SurveyDetail(ActionableDetail):
     vessel: EntityRef
     surveyor: EntityRef
     template: EntityRef | None
-    form_response: dict[str, Any] | None
+    template_version: int | None
+    form_nodes: list[FormNodeRef]
+    section_completion: list[SectionCompletion]
 
 
 class CreateSurveyData(BaseSchema):
@@ -61,10 +63,6 @@ class UpdateSurveyTemplateData(BaseSchema):
     definition: TemplateDefinition
 
 
-class SaveSurveyResponseData(BaseSchema):
-    response: dict[str, Any]
-
-
 # ── SurveyMedia ────────────────────────────────────────────────────────────────
 
 
@@ -72,7 +70,7 @@ class SurveyMediaListItem(ActionableList):
     id: Sqid
     survey_id: Sqid
     media_id: Sqid
-    field_id: str | None
+    node_id: Sqid | None
     caption: str | None
     sort_order: int
     file_name: str
@@ -86,7 +84,7 @@ class SurveyMediaDetail(ActionableDetail):
     id: Sqid
     survey_id: Sqid
     media_id: Sqid
-    field_id: str | None
+    node_id: Sqid | None
     caption: str | None
     sort_order: int
     file_name: str
@@ -99,10 +97,14 @@ class SurveyMediaDetail(ActionableDetail):
 class AttachSurveyMediaData(BaseSchema):
     survey_id: Sqid
     media_id: Sqid
-    field_id: str | None = None
+    node_id: Sqid | None = None
     caption: str | None = None
     sort_order: int = 0
 
 
 class SetSurveyMediaCaptionData(BaseSchema):
     caption: str | None
+
+
+class AssignSurveyMediaData(BaseSchema):
+    node_id: Sqid | None

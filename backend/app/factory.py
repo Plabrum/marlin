@@ -34,6 +34,7 @@ from app.domain.payment_methods.routes import payment_method_router
 from app.domain.pricing_guides.routes import pricing_guides_router
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
+from app.domain.surveys.listeners import install_survey_media_node_detach_listener
 from app.domain.surveys.routes import survey_media_router, survey_router, survey_template_router
 from app.domain.users.models import User
 from app.domain.users.queries import get_user_by_id
@@ -67,6 +68,7 @@ discover_and_import(["tools.py"], base_path="app")
 discover_and_import(["actions.py"], base_path="app/domain")
 
 install_soft_delete_filter()
+install_survey_media_node_detach_listener()
 
 __all__ = ["BaseDBModel", "create_app"]
 
@@ -151,6 +153,8 @@ def create_app(
             "^/auth/logout",
             "^/schema",
             "^/webhooks/",
+            "^/local-upload/",
+            "^/local-download/",
         ],
     )
 

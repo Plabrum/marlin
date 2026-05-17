@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import msgspec
-from litestar import Router
+import sqlalchemy as sa
+from litestar import Router, get
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.config import config
@@ -20,7 +22,11 @@ from app.platform.base.schemas import EntityRef
 from app.platform.clients.s3 import BaseS3Client, LocalS3Client, S3Client
 from app.platform.data.enums import FieldType
 from app.platform.data.service import FieldConfig
+from app.platform.form_dsl.conditions import resolve_visibility, section_completion
+from app.platform.form_dsl.models import FormNode
 from app.platform.form_dsl.schema import TemplateDefinition
+from app.platform.form_dsl.schemas import FormNodeRef, SectionCompletion
+from app.utils.sqids import Sqid
 
 
 def _to_survey_list_item(survey: Survey, user: User) -> SurveyListItem:
@@ -41,6 +47,20 @@ def _to_survey_list_item(survey: Survey, user: User) -> SurveyListItem:
     )
 
 
+def _to_form_node_ref(node: FormNode, visibility: dict[int, bool]) -> FormNodeRef:
+    return FormNodeRef(
+        id=node.id,
+        parent_id=node.parent_id,
+        kind=node.kind,
+        schema_ref=node.schema_ref,
+        label=node.label,
+        value=node.value,
+        config=node.config,
+        sort_order=node.sort_order,
+        condition_visible=visibility.get(node.id),
+    )
+
+
 def _to_survey_detail(survey: Survey, user: User) -> SurveyDetail:
     template_ref = (
         EntityRef(
@@ -51,6 +71,7 @@ def _to_survey_detail(survey: Survey, user: User) -> SurveyDetail:
         if survey.template is not None
         else None
     )
+    visibility = resolve_visibility(survey.form_nodes)
     return SurveyDetail(
         id=survey.id,
         state=survey.state,
@@ -65,7 +86,15 @@ def _to_survey_detail(survey: Survey, user: User) -> SurveyDetail:
             href=f"/users/{survey.assigned_surveyor_id}",
         ),
         template=template_ref,
-        form_response=survey.form_response,
+        template_version=survey.template_version,
+        form_nodes=[
+            _to_form_node_ref(n, visibility)
+            for n in sorted(survey.form_nodes, key=lambda n: (n.parent_id or 0, n.sort_order))
+        ],
+        section_completion=[
+            SectionCompletion(section_id=Sqid(sid), filled=v["filled"], total=v["total"])
+            for sid, v in section_completion(survey.form_nodes).items()
+        ],
     )
 
 
@@ -78,6 +107,7 @@ _survey_config = CRUDConfig(
         joinedload(Survey.vessel),
         joinedload(Survey.assigned_surveyor),
         joinedload(Survey.template),
+        joinedload(Survey.form_nodes),
     ],
     filterable_columns={"state", "vessel_id", "assigned_surveyor_id", "created_at"},
     sortable_columns={"created_at"},
@@ -90,7 +120,50 @@ _survey_config = CRUDConfig(
 
 _survey_controller = make_crud_controller("", _survey_config)
 
-survey_router = Router(path="/surveys", route_handlers=[_survey_controller], tags=["surveys"])
+
+class AdHocSuggestion(msgspec.Struct):
+    label: str
+    type: str
+    count: int
+
+
+class AdHocSuggestionsResponse(msgspec.Struct):
+    threshold: int
+    suggestions: list[AdHocSuggestion]
+
+
+_AD_HOC_PROMOTE_THRESHOLD = 3
+
+
+@get("/ad-hoc-suggestions")
+async def list_ad_hoc_suggestions(
+    transaction: AsyncSession,
+    user: User,
+) -> AdHocSuggestionsResponse:
+    label_expr = FormNode.label
+    type_expr = sa.text("config->>'type'")
+    stmt = (
+        sa.select(label_expr, type_expr, sa.func.count(sa.distinct(FormNode.owner_id)))
+        .where(
+            FormNode.owner_type == Survey.__tablename__,
+            FormNode.schema_ref.is_(None),
+            FormNode.kind == "field",
+            FormNode.deleted_at.is_(None),
+        )
+        .group_by(label_expr, type_expr)
+        .having(sa.func.count(sa.distinct(FormNode.owner_id)) >= _AD_HOC_PROMOTE_THRESHOLD)
+        .order_by(sa.func.count(sa.distinct(FormNode.owner_id)).desc(), label_expr)
+    )
+    rows = (await transaction.execute(stmt)).all()
+    suggestions = [AdHocSuggestion(label=row[0], type=row[1] or "text", count=int(row[2])) for row in rows]
+    return AdHocSuggestionsResponse(threshold=_AD_HOC_PROMOTE_THRESHOLD, suggestions=suggestions)
+
+
+survey_router = Router(
+    path="/surveys",
+    route_handlers=[_survey_controller, list_ad_hoc_suggestions],
+    tags=["surveys"],
+)
 
 
 def _to_template_list_item(template: SurveyTemplate, user: User) -> SurveyTemplateListItem:
@@ -141,7 +214,7 @@ def _survey_media_to_item(sm: SurveyMedia, user: User) -> SurveyMediaListItem:
         id=sm.id,
         survey_id=sm.survey_id,
         media_id=sm.media_id,
-        field_id=sm.field_id,
+        node_id=sm.node_id,
         caption=sm.caption,
         sort_order=sm.sort_order,
         file_name=sm.media.file_name,
@@ -163,7 +236,7 @@ _survey_media_config = CRUDConfig(
     to_detail=_survey_media_to_detail,
     list_load_options=[joinedload(SurveyMedia.media)],
     detail_load_options=[joinedload(SurveyMedia.media)],
-    filterable_columns={"survey_id", "field_id"},
+    filterable_columns={"survey_id", "node_id"},
     sortable_columns={"sort_order", "created_at"},
     default_sort="sort_order",
 )

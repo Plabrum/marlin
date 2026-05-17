@@ -202,7 +202,7 @@ def make_crud_controller[ModelT: BaseDBModel, ListT: ActionableList, DetailT: Ac
             query = query.options(opt)
 
         result = await transaction.execute(query)
-        obj = result.scalar_one_or_none()
+        obj = result.unique().scalar_one_or_none()
         if obj is None:
             raise NotFoundException()
 

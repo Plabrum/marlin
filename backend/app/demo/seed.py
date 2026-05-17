@@ -27,8 +27,12 @@ from app.platform.comms.models.messages import Message
 from app.platform.dashboard.enums import ResourceType, WidgetColor, WidgetType
 from app.platform.dashboard.models import Dashboard, Widget
 from app.platform.data.enums import AggregationType, Granularity, TimeRange
+from app.platform.form_dsl.enums import FormNodeKind
+from app.platform.form_dsl.materialize import materialize_form_response
+from app.platform.form_dsl.models import FormNode
 from app.platform.state_machine.models import StateTransitionLog
 
+from .marine_template import marine_template
 from .wipe import DEMO_ORG_ID, DEMO_ORG_NAME
 
 logger = logging.getLogger(__name__)
@@ -42,7 +46,7 @@ from tests.factories.clients import ClientFactory  # noqa: E402
 from tests.factories.invoices import InvoiceFactory, InvoiceLineItemFactory  # noqa: E402
 from tests.factories.reports import ReportFactory  # noqa: E402
 from tests.factories.subscriptions import SubscriptionFactory  # noqa: E402
-from tests.factories.surveys import SurveyFactory  # noqa: E402
+from tests.factories.surveys import SurveyFactory, SurveyTemplateFactory  # noqa: E402
 from tests.factories.users import OrgFactory, UserFactory  # noqa: E402
 from tests.factories.vessels import EngineFactory, VesselFactory  # noqa: E402
 
@@ -151,12 +155,29 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     await session.flush()
 
     # Add an engine to the motor yacht
-    engine = EngineFactory.build(vessel_id=vessels[1].id, fuel_type=FuelType.diesel, horsepower=320)
+    engine = EngineFactory.build(
+        organization_id=org.id, vessel_id=vessels[1].id, fuel_type=FuelType.diesel, horsepower=320
+    )
     session.add(engine)
     await session.flush()
     logger.info("Created %d vessels", len(vessels))
 
-    # ── 6. Surveys ────────────────────────────────────────────────────────────
+    # ── 6a. Survey template ───────────────────────────────────────────────────
+    import msgspec  # noqa: PLC0415
+    import sqlalchemy as _sa  # noqa: PLC0415
+
+    template_definition = marine_template()
+    template = SurveyTemplateFactory.build(
+        organization_id=org.id,
+        name="Pre-Purchase Survey",
+        tags=["pre_purchase", "default"],
+        definition=msgspec.to_builtins(template_definition),
+    )
+    session.add(template)
+    await session.flush()
+    logger.info("Created survey template: %s (id=%s)", template.name, template.id)
+
+    # ── 6b. Surveys ───────────────────────────────────────────────────────────
     surveys = []
     for i, survey_state in enumerate(_SURVEY_STATES):
         vessel = vessels[i % len(vessels)]
@@ -165,11 +186,67 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             vessel_id=vessel.id,
             assigned_surveyor_id=surveyor.id,
             state=survey_state,
+            template_id=template.id,
         )
         session.add(survey)
         surveys.append(survey)
     await session.flush()
-    logger.info("Created %d surveys", len(surveys))
+
+    for survey in surveys:
+        survey.template_version = await materialize_form_response(
+            session,
+            survey,
+            owner_type="surveys",
+            definition=template_definition,
+        )
+    await session.flush()
+    logger.info("Created %d surveys (materialized against template)", len(surveys))
+
+    # ── 6c. Ad-hoc field shared across 3 surveys (triggers PromoteAdHocBanner) ─
+    shared_field_def = {
+        "id": "ad_hoc_thruster_condition",
+        "label": "Bow thruster condition",
+        "type": "select",
+        "required": False,
+        "allow_finding": True,
+        "config": {"options": ["good", "fair", "needs_service"]},
+        "condition": None,
+        "fields": [],
+        "min": None,
+        "max": None,
+        "instance_label_field": None,
+    }
+    for survey in surveys[:3]:
+        nodes = (
+            (
+                await session.execute(
+                    _sa.select(FormNode).where(FormNode.owner_type == "surveys", FormNode.owner_id == survey.id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        engine_section = next(n for n in nodes if n.kind == FormNodeKind.section and n.schema_ref == "engine")
+        engine_subsection = next(
+            n for n in nodes if n.kind == FormNodeKind.subsection and n.parent_id == engine_section.id
+        )
+        existing_count = sum(1 for n in nodes if n.parent_id == engine_subsection.id and n.kind == FormNodeKind.field)
+        session.add(
+            FormNode(
+                organization_id=org.id,
+                owner_type="surveys",
+                owner_id=survey.id,
+                parent_id=engine_subsection.id,
+                kind=FormNodeKind.field,
+                schema_ref=None,
+                label=shared_field_def["label"],
+                value=None,
+                config=shared_field_def,
+                sort_order=existing_count,
+            )
+        )
+    await session.flush()
+    logger.info("Created shared ad-hoc field across 3 surveys")
 
     # ── 7. State transition logs ──────────────────────────────────────────────
     for survey, survey_state in zip(surveys, _SURVEY_STATES):
@@ -214,6 +291,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         await session.flush()
         session.add(
             InvoiceLineItemFactory.build(
+                organization_id=org.id,
                 invoice_id=invoice.id,
                 description="Marine Survey Services",
                 quantity=Decimal("1.00"),

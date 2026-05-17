@@ -32,6 +32,7 @@ def _to_detail(report: Report, user: User) -> ReportDetail:
         watermarked_file_key=report.watermarked_file_key,
         released_file_key=report.released_file_key,
         released_at=report.released_at,
+        blocks=report.blocks or [],
         created_at=report.created_at,
         updated_at=report.updated_at,
     )

@@ -22,7 +22,6 @@ class SurveyFactory(BaseFactory):
     __model__ = Survey
 
     template_id = None
-    form_response = None
 
     vessel = None
     assigned_surveyor = None

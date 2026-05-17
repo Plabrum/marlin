@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from app.domain.reports.enums import ReportState
 from app.platform.actions.schemas import ActionableDetail, ActionableList
@@ -25,6 +26,7 @@ class ReportDetail(ActionableDetail):
     watermarked_file_key: str | None
     released_file_key: str | None
     released_at: datetime | None
+    blocks: list[Any]
     created_at: datetime
     updated_at: datetime
 

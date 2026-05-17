@@ -69,7 +69,6 @@ class Survey(
         SqidType, sa.ForeignKey("survey_templates.id", ondelete="SET NULL"), index=True
     )
     template_version: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
-    form_response: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
     vessel: Mapped[Vessel] = relationship("Vessel", foreign_keys=[vessel_id], lazy="raise")
     assigned_surveyor: Mapped[Any] = relationship("User", foreign_keys=[assigned_surveyor_id], lazy="raise")
@@ -110,7 +109,12 @@ class SurveyMedia(OrgScopedMixin, BaseDBModel):
     media_id: Mapped[Sqid] = mapped_column(
         SqidType, sa.ForeignKey("media.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    field_id: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    node_id: Mapped[Sqid | None] = mapped_column(
+        SqidType,
+        sa.ForeignKey("form_nodes.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     caption: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
     sort_order: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0, server_default="0")
 

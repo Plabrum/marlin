@@ -3,16 +3,18 @@ from __future__ import annotations
 from enum import StrEnum, auto
 
 import msgspec
-from litestar.exceptions import NotFoundException, ValidationException
+from litestar.exceptions import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.reports.builder import build_report_blocks
+from app.domain.reports.models import Report
 from app.domain.surveys.enums import SurveyState
 from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
+    AssignSurveyMediaData,
     AttachSurveyMediaData,
     CreateSurveyData,
     CreateSurveyTemplateData,
-    SaveSurveyResponseData,
     SetSurveyMediaCaptionData,
     UpdateSurveyData,
     UpdateSurveyTemplateData,
@@ -22,9 +24,8 @@ from app.platform.actions.base import BaseObjectAction, BaseTopLevelAction, Empt
 from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType, ActionIcon
 from app.platform.actions.schemas import ActionExecutionResponse
-from app.platform.form_dsl.interpreter import build_response_struct
 from app.platform.form_dsl.materialize import materialize_form_response
-from app.platform.form_dsl.schema import TemplateDefinition
+from app.platform.form_dsl.models import FormNode
 from app.platform.sequences.service import assign_identifier_if_missing
 
 # ── Survey actions ─────────────────────────────────────────────────────────────
@@ -37,7 +38,6 @@ class SurveyActionKey(StrEnum):
     START_DRAFT = auto()
     DELIVER = auto()
     CANCEL = auto()
-    SAVE_RESPONSE = auto()
 
 
 survey_actions = action_group_factory(
@@ -161,8 +161,20 @@ class DeliverSurvey(BaseObjectAction[Survey, EmptyActionData]):
     async def execute(
         cls, obj: Survey, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
+        blocks = await build_report_blocks(transaction, obj)
+        report = Report(
+            organization_id=deps.user.organization_id,
+            survey_id=obj.id,
+            title=None,
+            blocks=blocks,
+        )
+        transaction.add(report)
         await deps.sm_service.transition(survey_state_machine, obj, SurveyState.delivered, actor=deps.user)
-        return ActionExecutionResponse(message="Survey delivered")
+        await transaction.flush()
+        return ActionExecutionResponse(
+            message="Survey delivered",
+            invalidate_queries=["/surveys", "/reports", f"/surveys/{obj.id}"],
+        )
 
 
 @survey_actions
@@ -184,28 +196,6 @@ class CancelSurvey(BaseObjectAction[Survey, EmptyActionData]):
     ) -> ActionExecutionResponse:
         await deps.sm_service.transition(survey_state_machine, obj, SurveyState.cancelled, actor=deps.user)
         return ActionExecutionResponse(message="Survey cancelled")
-
-
-@survey_actions
-class SaveSurveyResponse(BaseObjectAction[Survey, SaveSurveyResponseData]):
-    action_key = SurveyActionKey.SAVE_RESPONSE
-    label = "Save Inspection Data"
-    is_hidden = True
-
-    @classmethod
-    async def execute(
-        cls, obj: Survey, data: SaveSurveyResponseData, transaction: AsyncSession, deps: ActionDeps
-    ) -> ActionExecutionResponse:
-        if obj.template_id is None:
-            raise ValidationException("Survey has no template")
-        template = await transaction.get(SurveyTemplate, obj.template_id)
-        if template is None:
-            raise NotFoundException("Template not found")
-        definition = msgspec.convert(template.definition, TemplateDefinition)
-        struct_cls = build_response_struct(definition)
-        validated = msgspec.convert(data.response, struct_cls)
-        obj.form_response = msgspec.to_builtins(validated)
-        return ActionExecutionResponse(message="Inspection data saved")
 
 
 # ── Survey template actions ────────────────────────────────────────────────────
@@ -291,6 +281,7 @@ class SurveyMediaActionKey(StrEnum):
     ATTACH = auto()
     DETACH = auto()
     SET_CAPTION = auto()
+    ASSIGN = auto()
 
 
 survey_media_actions = action_group_factory(
@@ -315,12 +306,17 @@ class AttachSurveyMedia(BaseTopLevelAction[AttachSurveyMediaData]):
         survey = await transaction.get(Survey, data.survey_id)
         if survey is None:
             raise NotFoundException("Survey not found")
+        caption = data.caption
+        if caption is None and data.node_id is not None:
+            node = await transaction.get(FormNode, data.node_id)
+            if node is not None:
+                caption = node.label
         sm = SurveyMedia(
             organization_id=deps.user.organization_id,
             survey_id=data.survey_id,
             media_id=data.media_id,
-            field_id=data.field_id,
-            caption=data.caption,
+            node_id=data.node_id,
+            caption=caption,
             sort_order=data.sort_order,
         )
         transaction.add(sm)
@@ -361,3 +357,26 @@ class SetSurveyMediaCaption(BaseObjectAction[SurveyMedia, SetSurveyMediaCaptionD
     ) -> ActionExecutionResponse:
         obj.caption = data.caption
         return ActionExecutionResponse(message="Caption updated")
+
+
+@survey_media_actions
+class AssignSurveyMedia(BaseObjectAction[SurveyMedia, AssignSurveyMediaData]):
+    action_key = SurveyMediaActionKey.ASSIGN
+    label = "Assign to node"
+    icon = ActionIcon.EDIT
+    priority = 15
+    is_hidden = True
+
+    @classmethod
+    async def execute(
+        cls, obj: SurveyMedia, data: AssignSurveyMediaData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        obj.node_id = data.node_id
+        if data.node_id is not None and not obj.caption:
+            node = await transaction.get(FormNode, data.node_id)
+            if node is not None:
+                obj.caption = node.label
+        return ActionExecutionResponse(
+            message="Media assigned",
+            invalidate_queries=["/survey-media", f"/surveys/{obj.survey_id}"],
+        )

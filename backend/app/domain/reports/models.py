@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.reports.enums import ReportState
@@ -47,6 +48,7 @@ class Report(
     watermarked_file_key: Mapped[str | None] = mapped_column(sa.Text)
     released_file_key: Mapped[str | None] = mapped_column(sa.Text)
     released_at: Mapped[datetime | None] = mapped_column(sa.DateTime(timezone=True))
+    blocks: Mapped[list[Any]] = mapped_column(JSONB, nullable=False, server_default="[]", default=list)
 
     survey: Mapped[Any] = relationship(
         "Survey",

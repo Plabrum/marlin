@@ -72,8 +72,30 @@ async def wipe_demo_org(session: AsyncSession) -> bool:
     )
     logger.info("  engines: %d rows deleted", result.rowcount)  # pyright: ignore[reportAttributeAccessIssue]
 
-    # Org-scoped tables (order matters: invoices/reports before surveys)
-    for table in ("invoices", "reports", "surveys", "survey_templates", "subscriptions", "vessels", "clients", "users"):
+    # Org-scoped tables (order matters: child rows before parents)
+    for table in (
+        "form_nodes",
+        "survey_media",
+        "media",
+        "calendar_events",
+        "events",
+        "quote_line_items",
+        "quotes",
+        "pricing_tiers",
+        "pricing_guides",
+        "parts",
+        "manufacturers",
+        "payment_methods",
+        "business_sequences",
+        "invoices",
+        "reports",
+        "surveys",
+        "survey_templates",
+        "subscriptions",
+        "vessels",
+        "clients",
+        "users",
+    ):
         result = await session.execute(
             text(f"DELETE FROM {table} WHERE organization_id = :oid"),  # noqa: S608
             {"oid": DEMO_ORG_ID},
