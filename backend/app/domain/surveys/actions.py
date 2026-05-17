@@ -23,7 +23,8 @@ from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType, ActionIcon
 from app.platform.actions.schemas import ActionExecutionResponse
 from app.platform.form_dsl.interpreter import build_response_struct
-from app.platform.form_dsl.schema import FormDefinition
+from app.platform.form_dsl.materialize import materialize_form_response
+from app.platform.form_dsl.schema import TemplateDefinition
 from app.platform.sequences.service import assign_identifier_if_missing
 
 # ── Survey actions ─────────────────────────────────────────────────────────────
@@ -70,6 +71,15 @@ class CreateSurvey(BaseTopLevelAction[CreateSurveyData]):
         )
         transaction.add(survey)
         await transaction.flush()
+
+        if data.template_id is not None:
+            template = await transaction.get(SurveyTemplate, data.template_id)
+            if template is None:
+                raise NotFoundException("Template not found")
+            survey.template_version = await materialize_form_response(
+                transaction, survey, owner_type=Survey.__tablename__, definition=template.definition
+            )
+
         return ActionExecutionResponse(message="Survey created", created_id=survey.id)
 
 
@@ -191,7 +201,7 @@ class SaveSurveyResponse(BaseObjectAction[Survey, SaveSurveyResponseData]):
         template = await transaction.get(SurveyTemplate, obj.template_id)
         if template is None:
             raise NotFoundException("Template not found")
-        definition = msgspec.convert(template.definition, FormDefinition)
+        definition = msgspec.convert(template.definition, TemplateDefinition)
         struct_cls = build_response_struct(definition)
         validated = msgspec.convert(data.response, struct_cls)
         obj.form_response = msgspec.to_builtins(validated)

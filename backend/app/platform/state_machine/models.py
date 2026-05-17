@@ -13,6 +13,17 @@ from app.platform.base.models import BaseDBModel
 from app.utils.textenum import TextEnum
 
 
+def get_state_machine_meta(model: type[BaseDBModel]) -> dict[str, Any] | None:
+    """Return {column, states} if `model` has a state-machine `state` column."""
+    state_col = model.__table__.columns.get("state")
+    if state_col is None or not isinstance(state_col.type, TextEnum):
+        return None
+    return {
+        "column": "state",
+        "states": [v.value for v in state_col.type.enum_class],
+    }
+
+
 class _StateMachineMixinBase[E: Enum](BaseDBModel):
     __abstract__ = True
     state: Mapped[E]

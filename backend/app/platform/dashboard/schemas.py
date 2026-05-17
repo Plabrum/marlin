@@ -7,12 +7,25 @@ from app.platform.data.enums import AggregationType, Granularity, TimeRange
 from app.utils.sqids import Sqid
 
 
+class ColumnRule(BaseSchema):
+    """Per-column post-fetch rule for grouped widgets (e.g. kanban).
+
+    `since` is an ISO-8601 duration-ish string ("7d", "24h") — the widget
+    applies it client-side to drop rows older than that window in the
+    targeted column. Lives here (not in `filters`) because it's a
+    presentation-time concern, not a server filter.
+    """
+
+    since: str | None = None
+
+
 class WidgetQuery(BaseSchema):
     """Typed query payload for any widget.
 
     Different widget types use different subsets — chart widgets use
     field/aggregation/time_range/granularity, list widgets use columns/limit,
-    stat numbers use field/aggregation/time_range + color/href.
+    stat numbers use field/aggregation/time_range + color/href, kanban uses
+    allowed_columns/column_rules.
     """
 
     resource: ResourceType
@@ -25,6 +38,8 @@ class WidgetQuery(BaseSchema):
     limit: int | None = None
     color: WidgetColor | None = None
     href: str | None = None
+    allowed_columns: list[str] | None = None
+    column_rules: dict[str, ColumnRule] | None = None
 
 
 class WidgetRead(BaseSchema):

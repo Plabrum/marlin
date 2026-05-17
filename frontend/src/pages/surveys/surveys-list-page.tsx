@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { PageTopBar } from "@/components/layout/page-topbar";
 import { ResourceTable } from "@/components/resource-table/resource-table";
 import { TopLevelActions } from "@/components/object-list/top-level-actions";
-import { SurveyKanban } from "@/components/kanban/survey-kanban";
+import { ResourceKanban } from "@/components/kanban/resource-kanban";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useResourceTable } from "@/hooks/use-resource-table";
 import { useListSurvey } from "@/openapi/survey/survey";
@@ -42,7 +42,7 @@ export function SurveysListPage() {
           />
         ) : (
           <Suspense>
-            <SurveyKanban />
+            <ResourceKanban resource="surveys" />
           </Suspense>
         )}
       </div>

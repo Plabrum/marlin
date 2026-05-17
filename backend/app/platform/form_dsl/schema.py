@@ -1,31 +1,63 @@
+from __future__ import annotations
+
 from enum import StrEnum, auto
+from typing import Any
 
 from app.platform.base.schemas import BaseSchema
 
 
 class FieldType(StrEnum):
     TEXT = auto()
-    TEXTAREA = auto()
-    NUMBER = auto()
+    LONGTEXT = auto()
     SELECT = auto()
-    CHECKBOX = auto()
+    MULTISELECT = auto()
+    SEGMENTED = auto()
+    NUMBER = auto()
+    CURRENCY = auto()
+    DATE = auto()
+    BOOLEAN = auto()
     PHOTO = auto()
+    TABLE = auto()
+    REPEATER = auto()
+    STATIC_TEXT = auto()
+    SIGNATURE = auto()
+    ANNOTATED_IMAGE = auto()
 
 
-class FormField(BaseSchema):
+class FieldCondition(BaseSchema):
+    field: str
+    equals: Any
+
+
+class FieldDef(BaseSchema):
     id: str
-    type: FieldType
     label: str
+    type: FieldType
     required: bool = False
-    options: list[str] = []
-    unit: str | None = None
+    allow_finding: bool = True
+    config: dict[str, Any] = {}
+    condition: FieldCondition | None = None
+    # Repeater-only — sub-fields defining each instance's shape.
+    fields: list[FieldDef] = []
+    min: int | None = None
+    max: int | None = None
+    instance_label_field: str | None = None
 
 
-class FormSection(BaseSchema):
+class Subsection(BaseSchema):
     id: str
     title: str
-    fields: list[FormField]
+    fields: list[FieldDef] = []
 
 
-class FormDefinition(BaseSchema):
-    sections: list[FormSection]
+class Section(BaseSchema):
+    id: str
+    title: str
+    condition: FieldCondition | None = None
+    subsections: list[Subsection] = []
+
+
+class TemplateDefinition(BaseSchema):
+    version: int = 1
+    survey_metadata_fields: list[FieldDef] = []
+    sections: list[Section] = []

@@ -4,7 +4,7 @@ from typing import Any
 from app.domain.surveys.enums import SurveyState
 from app.platform.actions.schemas import ActionableDetail, ActionableList
 from app.platform.base.schemas import BaseSchema, EntityRef
-from app.platform.form_dsl.schema import FormDefinition
+from app.platform.form_dsl.schema import TemplateDefinition
 from app.utils.sqids import Sqid
 
 
@@ -46,19 +46,19 @@ class SurveyTemplateDetail(ActionableDetail):
     id: Sqid
     name: str
     tags: list[str]
-    definition: FormDefinition
+    definition: TemplateDefinition
 
 
 class CreateSurveyTemplateData(BaseSchema):
     name: str
     tags: list[str]
-    definition: FormDefinition
+    definition: TemplateDefinition
 
 
 class UpdateSurveyTemplateData(BaseSchema):
     name: str
     tags: list[str]
-    definition: FormDefinition
+    definition: TemplateDefinition
 
 
 class SaveSurveyResponseData(BaseSchema):

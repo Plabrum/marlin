@@ -20,7 +20,7 @@ from app.platform.base.schemas import EntityRef
 from app.platform.clients.s3 import BaseS3Client, LocalS3Client, S3Client
 from app.platform.data.enums import FieldType
 from app.platform.data.service import FieldConfig
-from app.platform.form_dsl.schema import FormDefinition
+from app.platform.form_dsl.schema import TemplateDefinition
 
 
 def _to_survey_list_item(survey: Survey, user: User) -> SurveyListItem:
@@ -102,7 +102,7 @@ def _to_template_detail(template: SurveyTemplate, user: User) -> SurveyTemplateD
         id=template.id,
         name=template.name,
         tags=template.tags,
-        definition=msgspec.convert(template.definition, FormDefinition),
+        definition=msgspec.convert(template.definition, TemplateDefinition),
     )
 
 

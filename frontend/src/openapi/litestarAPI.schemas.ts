@@ -438,6 +438,7 @@ export interface ClientDetail {
   license_number?: ClientDetailLicenseNumber;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ClientListItemEmail = string | null;
@@ -452,6 +453,7 @@ export interface ClientListItem {
   email?: ClientListItemEmail;
   phone?: ClientListItemPhone;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ClientType = typeof ClientType[keyof typeof ClientType];
@@ -464,6 +466,12 @@ export const ClientType = {
   lender: 'lender',
   broker: 'broker',
 } as const;
+
+export type ColumnRuleSince = string | null;
+
+export interface ColumnRule {
+  since?: ColumnRuleSince;
+}
 
 export interface CompleteCalendarEventAction {
   data: EmptyActionData;
@@ -1157,6 +1165,7 @@ export interface InvoiceDetail {
   line_items: InvoiceLineItemSchema[];
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export interface InvoiceLineItemSchema {
@@ -1188,6 +1197,7 @@ export interface InvoiceListItem {
   due_at?: InvoiceListItemDueAt;
   total_cents: number;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type InvoiceState = typeof InvoiceState[keyof typeof InvoiceState];
@@ -1241,6 +1251,7 @@ export interface ManufacturerDetail {
   website?: ManufacturerDetailWebsite;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ManufacturerListItemCountry = string | null;
@@ -1251,6 +1262,7 @@ export interface ManufacturerListItem {
   name: string;
   country?: ManufacturerListItemCountry;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ManufacturerUpdateDataCountry = string | null;
@@ -1367,6 +1379,7 @@ export interface MessageDetail {
   body_text?: MessageDetailBodyText;
   to_emails: string[];
   attachments: AttachmentRef[];
+  actions?: ActionDTO[];
 }
 
 export type MessageDirection = typeof MessageDirection[keyof typeof MessageDirection];
@@ -1407,6 +1420,7 @@ export interface MessageListItem {
   sent_at?: MessageListItemSentAt;
   read_at?: MessageListItemReadAt;
   archived_at?: MessageListItemArchivedAt;
+  actions?: ActionDTO[];
 }
 
 export interface MessageListResponse {
@@ -1639,6 +1653,7 @@ export interface PartDetail {
   manufacturer_id?: PartDetailManufacturerId;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type PartListItemPartNumber = string | null;
@@ -1655,6 +1670,7 @@ export interface PartListItem {
   category?: PartListItemCategory;
   manufacturer_id?: PartListItemManufacturerId;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type PartUpdateDataPartNumber = string | null;
@@ -1689,6 +1705,7 @@ export interface PaymentMethodDetail {
   is_default: boolean;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export interface PaymentMethodListItem {
@@ -1700,6 +1717,7 @@ export interface PaymentMethodListItem {
   exp_year: number;
   is_default: boolean;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export interface PricingGuideDetail {
@@ -1710,6 +1728,7 @@ export interface PricingGuideDetail {
   tiers: PricingTierOutput[];
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export interface PricingGuideListItem {
@@ -1718,6 +1737,7 @@ export interface PricingGuideListItem {
   name: string;
   is_active: boolean;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type PricingTierOutputServiceType = string | null;
@@ -1912,6 +1932,7 @@ export interface ReportDetail {
   released_at?: ReportDetailReleasedAt;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ReportListItemTitle = string | null;
@@ -1924,6 +1945,7 @@ export interface ReportListItem {
   survey_id: string;
   title?: ReportListItemTitle;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type ReportState = typeof ReportState[keyof typeof ReportState];
@@ -2089,6 +2111,7 @@ export interface SubscriptionDetail {
   cancelled_at?: SubscriptionDetailCancelledAt;
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type SubscriptionListItemTrialEndsAt = string | null;
@@ -2103,6 +2126,7 @@ export interface SubscriptionListItem {
   trial_ends_at?: SubscriptionListItemTrialEndsAt;
   current_period_end?: SubscriptionListItemCurrentPeriodEnd;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type SubscriptionPlan = typeof SubscriptionPlan[keyof typeof SubscriptionPlan];
@@ -2175,6 +2199,7 @@ export interface SurveyMediaDetail {
   mime_type: string;
   view_url: string;
   thumbnail_url?: SurveyMediaDetailThumbnailUrl;
+  actions?: ActionDTO[];
 }
 
 export type SurveyMediaListItemFieldId = string | null;
@@ -2198,6 +2223,7 @@ export interface SurveyMediaListItem {
   mime_type: string;
   view_url: string;
   thumbnail_url?: SurveyMediaListItemThumbnailUrl;
+  actions?: ActionDTO[];
 }
 
 export type SurveyState = typeof SurveyState[keyof typeof SurveyState];
@@ -2217,6 +2243,7 @@ export interface SurveyTemplateDetail {
   name: string;
   tags: string[];
   definition: FormDefinition;
+  actions?: ActionDTO[];
 }
 
 export interface SurveyTemplateListItem {
@@ -2272,6 +2299,7 @@ export interface ThreadDetail {
   archived_at?: ThreadDetailArchivedAt;
   client_id?: ThreadDetailClientId;
   survey_id?: ThreadDetailSurveyId;
+  actions?: ActionDTO[];
 }
 
 export type ThreadListItemSubject = string | null;
@@ -2300,6 +2328,7 @@ export interface ThreadListItem {
   archived_at?: ThreadListItemArchivedAt;
   client_id?: ThreadListItemClientId;
   survey_id?: ThreadListItemSurveyId;
+  actions?: ActionDTO[];
 }
 
 export interface ThreadListPage {
@@ -2680,6 +2709,7 @@ export interface UserListItem {
   id: string;
   name: string;
   email: string;
+  actions?: ActionDTO[];
 }
 
 export type VesselCreateDataHin = string | null;
@@ -2789,6 +2819,7 @@ export interface VesselDetail {
   engines: EngineSchema[];
   created_at: string;
   updated_at: string;
+  actions?: ActionDTO[];
 }
 
 export type VesselListItemVesselType = VesselType | null;
@@ -2808,6 +2839,7 @@ export interface VesselListItem {
   hull_material?: VesselListItemHullMaterial;
   year_built?: VesselListItemYearBuilt;
   created_at: string;
+  actions?: ActionDTO[];
 }
 
 export type VesselType = typeof VesselType[keyof typeof VesselType];
@@ -2911,6 +2943,12 @@ export type WidgetQueryColor = WidgetColor | null;
 
 export type WidgetQueryHref = string | null;
 
+export type WidgetQueryAllowedColumns = string[] | null;
+
+export type WidgetQueryColumnRulesOneOf = {[key: string]: ColumnRule};
+
+export type WidgetQueryColumnRules = WidgetQueryColumnRulesOneOf | null;
+
 export interface WidgetQuery {
   resource: ResourceType;
   field?: WidgetQueryField;
@@ -2922,6 +2960,8 @@ export interface WidgetQuery {
   limit?: WidgetQueryLimit;
   color?: WidgetQueryColor;
   href?: WidgetQueryHref;
+  allowed_columns?: WidgetQueryAllowedColumns;
+  column_rules?: WidgetQueryColumnRules;
 }
 
 export type WidgetReadDescription = string | null;

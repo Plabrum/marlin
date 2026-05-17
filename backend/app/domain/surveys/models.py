@@ -11,6 +11,7 @@ from app.domain.vessels.models import Vessel
 from app.platform.base.models import BaseDBModel
 from app.platform.base.rls_mixins import OrgScopedMixin
 from app.platform.base.search import SearchMixin
+from app.platform.form_dsl.mixin import FormResponseMixin
 from app.platform.media.models import Media
 from app.platform.sequences.enums import SequenceType
 from app.platform.sequences.mixins import SequenceMixin
@@ -39,6 +40,7 @@ class SurveyTemplate(OrgScopedMixin, SearchMixin, BaseDBModel):
 class Survey(
     OrgScopedMixin,
     SearchMixin,
+    FormResponseMixin,
     SequenceMixin(sequence_type=SequenceType.survey_identifier, prefix="SUR"),
     StateMachineMixin(state_enum=SurveyState, initial_state=SurveyState.scheduled),
 ):
@@ -66,6 +68,7 @@ class Survey(
     template_id: Mapped[Sqid | None] = mapped_column(
         SqidType, sa.ForeignKey("survey_templates.id", ondelete="SET NULL"), index=True
     )
+    template_version: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
     form_response: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
     vessel: Mapped[Vessel] = relationship("Vessel", foreign_keys=[vessel_id], lazy="raise")

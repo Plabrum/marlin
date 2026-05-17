@@ -104,6 +104,68 @@ The shared JSON contract for templates and responses lives in [`template-schema.
 - **Photo bulk-import UX** on web vs. mobile — drag-from-rail works on desktop, but on a tablet we may need a "Pick a target" sheet after multi-select.
 - **AI surveyor entry placement** — bottom of the right rail (current sketch) vs. ⌘K-style global command bar in the header. Lean: rail for v1 (discoverable), add ⌘K later.
 
+## Implementation status
+
+### Done
+- **Platform form-response engine** in `app/platform/form_dsl/`:
+  - `FormNode` model — generic node tree owned polymorphically via `(owner_type, owner_id)` (mirrors the `threadable_type/_id` pattern).
+  - `FormNodeKind` — `section | subsection | field | repeater_instance | annotation`.
+  - `TemplateDefinition` Structs (metadata fields, sections → subsections → fields, repeaters, conditions, expanded `FieldType`, version).
+  - `materialize_form_response(transaction, owner, owner_type, definition)` — walks the tree, inserts nodes, snapshots `config`, returns the template version for the caller to pin.
+  - `FormResponseMixin` — gives any owner a `.form_nodes` relationship via the polymorphic key.
+- **Survey consumer**: `Survey` uses `FormResponseMixin`; `CreateSurvey` calls the platform service and pins `template_version`. Survey-specific node kinds (e.g. `finding`) will be modeled as `kind='annotation'` with a discriminator in `value`.
+
+### Milestones
+
+Sequenced so each milestone is independently shippable and unblocks the next. The flat bullet lists below feed into these.
+
+1. **M1 — Node read + write.** `UpdateNodeValue` action (per-`FieldType` msgspec validation against `config`), node-tree read path on `SurveyDetail` (or `GET /surveys/:id/nodes`), `pnpm codegen`. Unblocks UI scaffolding.
+2. **M2 — Media on nodes.** Swap `survey_media.field_id` → `node_id` (FK, nullable = Unassigned), caption defaults from node label, soft-delete listener that NULLs `node_id` on the node's media. Unblocks the photo rail.
+3. **M3 — Runtime nodes.** `AddRepeaterInstance`, `AddAdHocField`, `AddAdHocSection`, `AddFinding`, `DeleteNode`. Unblocks findings + ad-hoc UI.
+4. **M4 — Conditions + completion.** Condition resolver (section + field), per-section `n/m`, "Skipped — …" placeholder support.
+5. **M5 — Workspace shell.** Doc column with sticky section headers, peek ToC, right rail (Photos / Unassigned / Vessel / Findings / AI surveyor), breadcrumb with state badge + completion %. Auto-save wired to M1.
+6. **M6 — Photo flows.** In-context capture (auto-assign), bulk import → Unassigned grid, drag-onto-section/field, `From Unassigned` picker in finding popover.
+7. **M7 — Repeaters + findings UI.** `+ Add another` / per-instance delete, inline finding badge on linked fields, finding popover with severity + photos.
+8. **M8 — Ad-hoc builders + conditional sections.** `+ Add field` / `+ Add section` builders, "Skipped — sea trial not performed" placeholder with "Mark as performed" toggle.
+9. **M9 — Cleanup.** Drop `surveys.form_response`, `SaveSurveyResponse` action, `build_response_struct`.
+10. **M10 — Report + template editor.** "Generate report" → state-machine transition + block-based export reader over `survey_nodes`; settings-side template editor round-tripping `TemplateDefinition`. "Promote ad-hoc → template" prompt lands here.
+
+### Outstanding — backend
+- **Media → nodes:** swap `survey_media.field_id` for `node_id` (nullable = Unassigned). Update `AttachSurveyMedia`, list schema, caption-defaults-from-node.
+- **Soft-delete listener:** when a node is soft-deleted, cascade-UPDATE `survey_media.node_id = NULL` (photos return to Unassigned, not vanish).
+- **Runtime node actions:**
+  - `AddRepeaterInstance` — clones repeater child field defs into a `repeater_instance` + child `field` nodes.
+  - `AddAdHocField` / `AddAdHocSection` — `schema_ref=null`, `config` carries the FieldDef.
+  - `AddFinding` — `kind='finding'`, `value = {severity, summary, detail, recommended_action, originating_value_snapshot}`.
+  - `UpdateNodeValue` — per-field auto-save (single-row UPDATE).
+  - `DeleteNode` — soft-delete + the photo-detach side-effect above.
+- **Read paths:**
+  - Node tree for the workspace renderer (nested in `SurveyDetail` or dedicated `GET /surveys/:id/nodes`).
+  - Findings list projection for the right rail (`kind='finding' AND survey_id=?`).
+  - Unassigned-media query (`survey_media WHERE node_id IS NULL`).
+  - Per-section completion `n/m` (non-null values / visible fields, respecting conditions).
+- **Validation:** per-node value validated against `config.type` on update (msgspec dispatch by `FieldType`).
+- **Condition resolver:** section- and field-level — reads `survey_metadata_fields` / siblings and returns visible/skipped status.
+- **Cleanup:** drop dead `surveys.form_response` column, `SaveSurveyResponse` action, and `build_response_struct` once node-based save lands.
+
+### Outstanding — frontend
+- Workspace page replacing the current survey detail: doc column, sticky section headers, inline field cards per type, peek ToC, right rail (Photos/Unassigned/Vessel/Findings/AI surveyor), breadcrumb with state badge + completion %.
+- Per-field auto-save (blur → `UpdateNodeValue`) + "Saved 2s ago" indicator.
+- Finding popover + inline finding badge on linked fields.
+- Photo flows: in-context capture (auto-assign), bulk import → Unassigned grid, drag-onto-section/field, `From Unassigned` picker in finding popover.
+- Repeater UI (`+ Add another`, per-instance delete).
+- Ad-hoc `+ Add field` / `+ Add section` builders.
+- Conditional sections render as "Skipped — …" placeholder with "Mark as performed" toggle.
+- Deep-link scroll-to-section (`#section-id`); persist last-section on scroll-snap for "Resume" flow.
+- Tablet/mobile right rail collapses to bottom sheet (Photos · Findings · Vessel tabs).
+- `pnpm codegen` after each new backend endpoint (no hand-written Orval hooks).
+
+### Outstanding — cross-cutting
+- Settings-side template editor that round-trips `TemplateDefinition`.
+- "Generate report" → state-machine transition + block-based export reader over `survey_nodes`.
+- "Promote ad-hoc field to template" prompt (threshold TBD).
+- Seed/factory: realistic marine-survey template so the workspace has something to render in dev.
+
 ## Data model deltas
 
 Detail lives in [`template-schema.md`](./template-schema.md). Summary:

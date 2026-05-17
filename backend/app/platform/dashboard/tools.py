@@ -118,7 +118,7 @@ class AddWidgetTool(SloopTool):
         f"time_range options: {_TIME_RANGES}. "
         f"granularity options: {_GRANULARITIES}. "
         f"color options: {_WIDGET_COLORS}. "
-        "kanban widgets group rows by state on a state-machine resource (currently: surveys) "
+        "kanban widgets group rows by state on a state-machine resource "
         "and let the user drag cards between columns to trigger state transitions; "
         "they're wide — prefer size_w=4 size_h=4."
     )
