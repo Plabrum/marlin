@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AnchorGlyph, StarMark, Wordmark } from "./marks";
+import { AnchorGlyph, Wordmark } from "./marks";
+import { SectionLabel } from "./section-label";
 
 const columns = [
   {
@@ -38,22 +39,13 @@ export function Footer() {
   return (
     <footer className="border-t border-paper-edge/60 bg-paper-warm/40">
       <div className="mx-auto max-w-[1440px] px-6 py-20 md:px-10">
-        {/* Top: newsletter signup */}
+        {/* Newsletter signup */}
         <div className="grid grid-cols-12 gap-x-10 gap-y-10 border-b border-paper-edge/70 pb-14">
           <div className="col-span-12 md:col-span-7">
-            <div className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.28em] text-brass-deep">
-              <StarMark size={9} />
-              Field Notes &middot; quarterly
-            </div>
-            <h3
-              className="font-display text-[clamp(2rem,4.4vw,3.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink"
-              style={{ fontVariationSettings: '"opsz" 144, "SOFT" 30' }}
-            >
+            <SectionLabel title="Field Notes · quarterly" className="mb-4" />
+            <h3 className="fv-display-soft font-display text-[clamp(2rem,4.4vw,3.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink">
               Dispatches from{" "}
-              <span
-                className="italic text-brass-deep"
-                style={{ fontVariationSettings: '"opsz" 144, "SOFT" 100, "WONK" 1' }}
-              >
+              <span className="fv-display-italic italic text-brass-deep">
                 the dock.
               </span>
             </h3>
@@ -90,9 +82,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Middle: link columns */}
+        {/* Link columns */}
         <div className="grid grid-cols-12 gap-x-10 gap-y-12 py-14">
-          {/* Brand block */}
           <div className="col-span-12 md:col-span-5">
             <Wordmark className="mb-6" />
             <p className="max-w-sm font-serif text-[15px] italic leading-[1.55] text-ink-soft">
@@ -110,15 +101,13 @@ export function Footer() {
 
           {columns.map((c) => (
             <div key={c.title} className="col-span-6 md:col-span-2">
-              <div className="mb-5 font-mono text-[10px] uppercase tracking-[0.28em] text-brass-deep">
-                {c.title}
-              </div>
+              <div className="t-kicker mb-5">{c.title}</div>
               <ul className="space-y-2.5">
                 {c.links.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="font-serif text-[15px] text-ink-soft link-grow hover:text-ink"
+                      className="link-grow font-serif text-[15px] text-ink-soft hover:text-ink"
                     >
                       {l.label}
                     </Link>

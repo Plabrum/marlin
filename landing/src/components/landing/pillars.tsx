@@ -1,4 +1,5 @@
-import { StarMark } from "./marks";
+import { Plate } from "./plate";
+import { SectionLabel } from "./section-label";
 
 type Pillar = {
   numeral: string;
@@ -53,95 +54,70 @@ const pillars: Pillar[] = [
 
 export function Pillars() {
   return (
-    <section className="border-t border-paper-edge/60 bg-paper-warm/40">
-      <div className="mx-auto max-w-[1440px] px-6 py-20 md:px-10 md:py-28">
-        {/* Section header */}
-        <div className="mb-14 flex items-end justify-between gap-6 border-b border-paper-edge/70 pb-6 md:mb-20">
-          <div>
-            <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.28em] text-brass-deep">
-              <StarMark size={9} />
-              §&nbsp;II &middot; Three Acts
-            </div>
-            <h2 className="font-display text-[clamp(2.4rem,5.4vw,4.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink">
-              The arc of a survey,
-              <br />
-              <span
-                className="italic text-ink-soft"
-                style={{ fontVariationSettings: '"opsz" 144, "SOFT" 100, "WONK" 1' }}
-              >
-                in three movements.
-              </span>
-            </h2>
-          </div>
-          <span className="hidden shrink-0 font-mono text-[10px] uppercase tracking-[0.28em] text-ink-muted md:block">
-            pp. 14 — 17
-          </span>
+    <Plate tone="warm">
+      {/* Section header */}
+      <div className="mb-14 flex items-end justify-between gap-6 border-b border-paper-edge/70 pb-6 md:mb-20">
+        <div>
+          <SectionLabel numeral="II" title="Three Acts" className="mb-3" />
+          <h2 className="fv-display-soft font-display text-[clamp(2.4rem,5.4vw,4.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink">
+            The arc of a survey,
+            <br />
+            <span className="fv-display-italic italic text-ink-soft">
+              in three movements.
+            </span>
+          </h2>
         </div>
-
-        {/* Pillars grid */}
-        <div className="grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-3">
-          {pillars.map((p, i) => (
-            <article key={p.numeral} className="relative flex flex-col">
-              {/* Roman numeral */}
-              <div className="mb-6 flex items-baseline justify-between">
-                <div
-                  className="font-display text-[88px] leading-none text-brass-deep"
-                  style={{ fontVariationSettings: '"opsz" 144, "SOFT" 30, "WONK" 1' }}
-                >
-                  {p.numeral}
-                </div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-muted">
-                  ★ {String(i + 1).padStart(2, "0")}
-                </div>
-              </div>
-
-              {/* Kicker */}
-              <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.28em] text-brass-deep">
-                {p.kicker}
-              </div>
-
-              {/* Title */}
-              <h3
-                className="mb-5 font-display text-[28px] font-light leading-[1.1] tracking-[-0.01em] text-ink"
-                style={{ fontVariationSettings: '"opsz" 60, "SOFT" 30' }}
-              >
-                {p.title}{" "}
-                <span
-                  className="italic text-brass-deep"
-                  style={{ fontVariationSettings: '"opsz" 60, "SOFT" 100, "WONK" 1' }}
-                >
-                  {p.italicWord}
-                </span>
-              </h3>
-
-              {/* Body */}
-              <p className="mb-6 font-serif text-[16px] leading-[1.6] text-ink-soft">
-                {p.body}
-              </p>
-
-              {/* Bullets */}
-              <ul className="mt-auto space-y-2.5 border-t border-paper-edge/70 pt-5">
-                {p.bullets.map((b) => (
-                  <li
-                    key={b}
-                    className="flex items-baseline gap-3 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft"
-                  >
-                    <span aria-hidden className="text-brass">
-                      ✦
-                    </span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-
-        {/* Footnote */}
-        <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-muted">
-          ¹ Offline capture · forthcoming · Q3 MMXXVI
-        </p>
+        <span className="t-meta hidden shrink-0 tracking-[0.28em] md:block">
+          pp. 14 — 17
+        </span>
       </div>
-    </section>
+
+      {/* Pillars grid */}
+      <div className="grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-3">
+        {pillars.map((p, i) => (
+          <article key={p.numeral} className="relative flex flex-col">
+            <div className="mb-6 flex items-baseline justify-between">
+              <div className="fv-display-numeral font-display text-[88px] leading-none text-brass-deep">
+                {p.numeral}
+              </div>
+              <div className="t-meta tracking-[0.28em]">
+                ★ {String(i + 1).padStart(2, "0")}
+              </div>
+            </div>
+
+            <div className="t-kicker mb-4 text-[11px]">{p.kicker}</div>
+
+            <h3 className="fv-card-soft mb-5 font-display text-[28px] font-light leading-[1.1] tracking-[-0.01em] text-ink">
+              {p.title}{" "}
+              <span className="fv-card-italic italic text-brass-deep">
+                {p.italicWord}
+              </span>
+            </h3>
+
+            <p className="mb-6 font-serif text-[16px] leading-[1.6] text-ink-soft">
+              {p.body}
+            </p>
+
+            <ul className="mt-auto space-y-2.5 border-t border-paper-edge/70 pt-5">
+              {p.bullets.map((b) => (
+                <li
+                  key={b}
+                  className="flex items-baseline gap-3 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft"
+                >
+                  <span aria-hidden className="text-brass">
+                    ✦
+                  </span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <p className="t-meta mt-12 tracking-[0.18em]">
+        ¹ Offline capture · forthcoming · Q3 MMXXVI
+      </p>
+    </Plate>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "./marks";
+import { PrimaryButton } from "./primary-button";
 
 const links = [
   { href: "/field-guide", label: "Field Guide" },
@@ -20,7 +21,7 @@ export function Nav() {
             <Link
               key={l.href}
               href={l.href}
-              className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-soft link-grow hover:text-ink"
+              className="t-link link-grow hover:text-ink"
             >
               {l.label}
             </Link>
@@ -30,18 +31,14 @@ export function Nav() {
         <div className="flex items-center gap-3">
           <Link
             href="/sign-in"
-            className="hidden font-mono text-[11px] uppercase tracking-[0.22em] text-ink-soft link-grow hover:text-ink sm:inline"
+            className="t-link link-grow hidden hover:text-ink sm:inline"
           >
             Sign in
           </Link>
-          <Link
-            href="/get-started"
-            className="group relative inline-flex items-center gap-2 whitespace-nowrap border border-ink bg-ink px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-warm transition-all hover:bg-ocean-deep sm:px-4 sm:text-[11px]"
-          >
-            <span className="sm:hidden">Begin →</span>
+          <PrimaryButton href="/get-started" size="compact" showStar={false}>
+            <span className="sm:hidden">Begin</span>
             <span className="hidden sm:inline">Begin a survey</span>
-            <span className="hidden transition-transform group-hover:translate-x-1 sm:inline">→</span>
-          </Link>
+          </PrimaryButton>
         </div>
       </div>
     </header>
