@@ -24,7 +24,7 @@ export function CalendarPage() {
   const search = calendarRoute.useSearch();
   const navigate = useNavigate();
 
-  const view: CalendarViewType = isCalendarView(search.view) ? search.view : "month";
+  const view: CalendarViewType = isCalendarView(search.view) ? search.view : "week";
   const anchor = useMemo(
     () => (search.date ? parseISO(search.date) : new Date()),
     [search.date],
@@ -113,7 +113,7 @@ export function CalendarPage() {
       }
     >
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 space-y-4 p-6">
+        <div className="min-w-0 flex-1 flex flex-col gap-4 p-6 min-h-0">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setAnchor(new Date())}>
@@ -138,14 +138,16 @@ export function CalendarPage() {
             </Tabs>
           </div>
 
-          <Suspense fallback={<CalendarSkeleton />}>
-            <CalendarView
-              view={view}
-              anchor={anchor}
-              onSelectDay={(day) => setViewAndAnchor("day", day)}
-              onSelectEvent={(event) => setEvent(event.id)}
-            />
-          </Suspense>
+          <div className="flex flex-col min-h-0 flex-1">
+            <Suspense fallback={<CalendarSkeleton />}>
+              <CalendarView
+                view={view}
+                anchor={anchor}
+                onSelectDay={(day) => setViewAndAnchor("day", day)}
+                onSelectEvent={(event) => setEvent(event.id)}
+              />
+            </Suspense>
+          </div>
         </div>
 
         {search.creating && (

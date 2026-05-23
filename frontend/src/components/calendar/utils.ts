@@ -41,7 +41,9 @@ export function buildWeekDays(anchor: Date): Date[] {
 
 export const HOUR_START = 6;
 export const HOUR_END = 22;
-export const HOUR_PX = 48;
+export const HOUR_VISIBLE_START = 9;
+export const HOUR_VISIBLE_END = 17;
+export const HOUR_PX_MIN = 48;
 
 export function minutesFromDayStart(date: Date): number {
   return (date.getHours() - HOUR_START) * 60 + date.getMinutes();
