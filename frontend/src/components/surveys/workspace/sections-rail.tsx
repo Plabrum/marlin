@@ -21,7 +21,7 @@ export function SectionsRail({
   return (
     <nav
       aria-label="Sections"
-      className="group fixed left-[calc(var(--sidebar-width,16rem)+0.25rem)] top-20 z-10 hidden md:block"
+      className="group sticky top-20 z-10 hidden self-start md:block"
     >
       <ul className="flex flex-col gap-1 rounded-r-xl py-2 pl-1 pr-2 transition-colors group-hover:bg-white/95 group-hover:shadow-md group-hover:ring-1 group-hover:ring-border">
         {sections.map((s) => {

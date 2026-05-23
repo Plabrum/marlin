@@ -40,3 +40,8 @@
 - `datetime.now(tz=timezone.utc)` not `datetime.utcnow()` (deprecated)
 - 4-space indents, snake_case for modules/functions/variables, PascalCase for classes
 - f-strings in logging calls (`logger.info(f"...{var}")`), not `%`-style lazy args
+
+**Frontend:**
+- **Never mix `style={}` props with Tailwind classes.** Tailwind only. Inline styles, especially arithmetic on CSS vars (`left-[calc(var(--foo)+...)]`, `style={{ left: ... }}`), are a smell that the component is positioned in the wrong place in the tree.
+- **No layout math against another component's internals.** If you find yourself computing offsets to dodge a sidebar/header/footer, the element is in the wrong parent. Move it inside the layout container (e.g. `SidebarInset`) and use normal flow, `sticky`, or flex/grid — let the parent's width changes drive layout automatically.
+- Reach for `position: fixed` last, not first. Prefer flow → `sticky` → `absolute` (inside a positioned parent) → `fixed`.

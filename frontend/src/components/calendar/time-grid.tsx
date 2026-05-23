@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { format, isSameDay, isToday, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { CalendarEventListItem } from "@/openapi/litestarAPI.schemas";
