@@ -48,8 +48,8 @@ module "media" {
 module "inbound_emails" {
   source = "../s3_bucket"
 
-  name                 = local.inbound_emails_bucket_name
-  tags                 = merge(local.common_tags, { Name = "${local.name}-inbound-emails", Purpose = "ses-inbound" })
+  name                  = local.inbound_emails_bucket_name
+  tags                  = merge(local.common_tags, { Name = "${local.name}-inbound-emails", Purpose = "ses-inbound" })
   lifecycle_expiry_days = 365
 
   extra_bucket_policy_statements = [{
