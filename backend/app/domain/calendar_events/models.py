@@ -16,7 +16,7 @@ from app.utils.sqids import Sqid, SqidType
 
 class CalendarEvent(
     OrgScopedMixin,
-    StateMachineMixin(state_enum=CalendarEventState, initial_state=CalendarEventState.confirmed),
+    StateMachineMixin(state_enum=CalendarEventState, initial_state=CalendarEventState.tentative),
     BaseDBModel,
 ):
     __tablename__ = "calendar_events"

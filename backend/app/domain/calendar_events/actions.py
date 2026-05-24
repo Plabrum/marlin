@@ -49,6 +49,11 @@ def _validate_window(
     all_day: bool,
 ) -> tuple[datetime | None, datetime | None, date | None, date | None]:
     if all_day:
+        # Allow callers to pass start/end timestamps with all_day=True; snap to day boundaries.
+        if start_date is None and start is not None:
+            start_date = start.date()
+        if end_date is None and end is not None:
+            end_date = end.date()
         if start_date is None or end_date is None:
             raise ValidationException("start_date and end_date are required when all_day is true")
         if end_date < start_date:

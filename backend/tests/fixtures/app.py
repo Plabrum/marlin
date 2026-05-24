@@ -63,7 +63,7 @@ def test_app(test_config: TestConfig, db_session: AsyncSession) -> Litestar:
             return None
         return await get_user_by_id(db_session, user_id)
 
-    return create_app(
+    app = create_app(
         config=test_config,
         retrieve_user_handler_override=retrieve_user_handler_test,
         dependencies_overrides={
@@ -74,6 +74,8 @@ def test_app(test_config: TestConfig, db_session: AsyncSession) -> Litestar:
         plugins_overrides=[SqidSchemaPlugin()],
         stores_overrides={"sessions": MemoryStore()},
     )
+    app.state.task_queues = provide_test_task_queues()
+    return app
 
 
 @pytest.fixture

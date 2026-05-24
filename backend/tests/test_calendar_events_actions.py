@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
@@ -79,8 +79,11 @@ async def test_create_all_day_snaps_to_day_boundaries(db_session: AsyncSession, 
     event = (
         await db_session.execute(select(CalendarEvent).where(CalendarEvent.id == response.created_id))
     ).scalar_one()
-    assert event.start == datetime(2026, 5, 13, 0, 0, tzinfo=UTC)
-    assert event.end == datetime(2026, 5, 14, 0, 0, tzinfo=UTC)
+    assert event.all_day is True
+    assert event.start is None
+    assert event.end is None
+    assert event.start_date == date(2026, 5, 13)
+    assert event.end_date == date(2026, 5, 13)
 
 
 async def test_create_rejects_end_le_start(db_session: AsyncSession, user) -> None:

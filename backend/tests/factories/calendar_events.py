@@ -13,6 +13,8 @@ class CalendarEventFactory(BaseFactory):
 
     start = datetime.now(tz=UTC)
     end = datetime.now(tz=UTC) + timedelta(hours=1)
+    start_date = None
+    end_date = None
     all_day = False
     name = None
     address_id = None
