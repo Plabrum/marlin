@@ -74,6 +74,7 @@ export const ActionGroupType = {
   pricing_guide_actions: 'pricing_guide_actions',
   calendar_event_actions: 'calendar_event_actions',
   survey_media_actions: 'survey_media_actions',
+  survey_finding_actions: 'survey_finding_actions',
   form_node_actions: 'form_node_actions',
 } as const;
 
@@ -153,7 +154,7 @@ export interface AddEngineData {
 
 export interface AddFindingAction {
   data: AddFindingData;
-  action: 'form_node_actions__add_finding';
+  action: 'survey_finding_actions__add';
 }
 
 export type AddFindingDataDetail = string | null;
@@ -1155,31 +1156,6 @@ export const FormNodeKind = {
   repeater_instance: 'repeater_instance',
   annotation: 'annotation',
 } as const;
-
-export type FormNodeRefParentId = string | null;
-
-export type FormNodeRefSchemaRef = string | null;
-
-export type FormNodeRefValue = unknown | null;
-
-export type FormNodeRefConfigOneOf = {[key: string]: unknown};
-
-export type FormNodeRefConfig = FormNodeRefConfigOneOf | null;
-
-export type FormNodeRefConditionVisible = boolean | null;
-
-export interface FormNodeRef {
-  /** SQID-encoded identifier */
-  id: string;
-  parent_id?: FormNodeRefParentId;
-  kind: FormNodeKind;
-  schema_ref?: FormNodeRefSchemaRef;
-  label: string;
-  value?: FormNodeRefValue;
-  config?: FormNodeRefConfig;
-  sort_order: number;
-  condition_visible?: FormNodeRefConditionVisible;
-}
 
 export type ForwardDataBodyHtml = string | null;
 
@@ -2298,9 +2274,37 @@ export interface SurveyDetail {
   surveyor: EntityRef;
   template?: SurveyDetailTemplate;
   template_version?: SurveyDetailTemplateVersion;
-  form_nodes: FormNodeRef[];
+  form_nodes: SurveyFormNodeRef[];
+  unassigned_media: SurveyMediaListItem[];
   section_completion: SectionCompletion[];
   actions?: ActionDTO[];
+}
+
+export type SurveyFormNodeRefParentId = string | null;
+
+export type SurveyFormNodeRefSchemaRef = string | null;
+
+export type SurveyFormNodeRefValue = unknown | null;
+
+export type SurveyFormNodeRefConfigOneOf = {[key: string]: unknown};
+
+export type SurveyFormNodeRefConfig = SurveyFormNodeRefConfigOneOf | null;
+
+export type SurveyFormNodeRefConditionVisible = boolean | null;
+
+export interface SurveyFormNodeRef {
+  /** SQID-encoded identifier */
+  id: string;
+  parent_id?: SurveyFormNodeRefParentId;
+  kind: FormNodeKind;
+  schema_ref?: SurveyFormNodeRefSchemaRef;
+  label: string;
+  value?: SurveyFormNodeRefValue;
+  config?: SurveyFormNodeRefConfig;
+  sort_order: number;
+  condition_visible?: SurveyFormNodeRefConditionVisible;
+  attached_media?: SurveyMediaListItem[];
+  findings?: SurveyFormNodeRef[];
 }
 
 export interface SurveyListItem {
@@ -3300,7 +3304,7 @@ export type ActionsActionGroupListActions400 = {
   extra?: ActionsActionGroupListActions400Extra;
 };
 
-export type ActionsActionGroupExecuteActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | StartDraftAction | DeliverSurveyAction | CancelSurveyAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AssignSurveyMediaAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction | UpdateNodeValueAction | AddRepeaterInstanceAction | AddAdHocFieldAction | AddAdHocSectionAction | AddFindingAction | DeleteNodeAction;
+export type ActionsActionGroupExecuteActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | UpdateNodeValueAction | AddRepeaterInstanceAction | AddAdHocFieldAction | AddAdHocSectionAction | DeleteNodeAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | StartDraftAction | DeliverSurveyAction | CancelSurveyAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AssignSurveyMediaAction | AddFindingAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
 
 export type ActionsActionGroupExecuteAction400ExtraAnyOf = {[key: string]: unknown};
 
@@ -3328,7 +3332,7 @@ export type ActionsActionGroupObjectIdListObjectActions400 = {
   extra?: ActionsActionGroupObjectIdListObjectActions400Extra;
 };
 
-export type ActionsActionGroupObjectIdExecuteObjectActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | StartDraftAction | DeliverSurveyAction | CancelSurveyAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AssignSurveyMediaAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction | UpdateNodeValueAction | AddRepeaterInstanceAction | AddAdHocFieldAction | AddAdHocSectionAction | AddFindingAction | DeleteNodeAction;
+export type ActionsActionGroupObjectIdExecuteObjectActionBody = CreateClientAction | UpdateClientAction | DeleteClientAction | CreateVesselAction | UpdateVesselAction | DeleteVesselAction | AddEngineAction | UpdateEngineAction | RemoveEngineAction | ComposeNewEmailAction | ArchiveThreadAction | UnarchiveThreadAction | MarkThreadReadAction | MarkThreadUnreadAction | AttachToClientAction | AttachToSurveyAction | ReplyToThreadAction | MarkReadAction | MarkUnreadAction | ArchiveMessageAction | UnarchiveMessageAction | ResendMessageAction | ForwardMessageAction | CreateInvoiceAction | UpdateInvoiceAction | DeleteInvoiceAction | SendInvoiceAction | CopyPayLinkAction | MarkInvoicePaidAction | VoidInvoiceAction | RefundAction | AddLineItemAction | UpdateLineItemAction | RemoveLineItemAction | CreateSubscriptionAction | UpdateSubscriptionAction | PauseSubscriptionAction | ResumeSubscriptionAction | CancelSubscriptionAction | CreatePricingGuideAction | UpdatePricingGuideAction | DeletePricingGuideAction | AddPricingTierAction | UpdatePricingTierAction | RemovePricingTierAction | CreateCalendarEventAction | UpdateCalendarEventAction | ConfirmCalendarEventAction | CompleteCalendarEventAction | CancelCalendarEventAction | DeleteCalendarEventAction | StartConnectOnboardingAction | ClaimInboxAction | CreateManufacturerAction | UpdateManufacturerAction | DeleteManufacturerAction | CreatePartAction | UpdatePartAction | DeletePartAction | UpdateNodeValueAction | AddRepeaterInstanceAction | AddAdHocFieldAction | AddAdHocSectionAction | DeleteNodeAction | CreateSurveyAction | UpdateSurveyAction | DeleteSurveyAction | StartDraftAction | DeliverSurveyAction | CancelSurveyAction | CreateSurveyTemplateAction | UpdateSurveyTemplateAction | DeleteSurveyTemplateAction | AttachSurveyMediaAction | DetachSurveyMediaAction | SetSurveyMediaCaptionAction | AssignSurveyMediaAction | AddFindingAction | AttachPaymentMethodAction | SetDefaultPaymentMethodAction | RemovePaymentMethodAction | CreateReportAction | UpdateReportAction | DeleteReportAction | SubmitReportForReviewAction | DeliverWatermarkedAction | ReleaseReportAction | CreateWidgetAction | UpdateWidgetAction | DeleteWidgetAction;
 
 export type ActionsActionGroupObjectIdExecuteObjectAction400ExtraAnyOf = {[key: string]: unknown};
 

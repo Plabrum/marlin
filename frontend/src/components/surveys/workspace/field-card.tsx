@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 
 type FieldDef = {
   type: string;
@@ -19,7 +19,7 @@ type FieldDef = {
   config?: { options?: string[] };
 };
 
-function fieldDef(node: FormNodeRef): FieldDef {
+function fieldDef(node: SurveyFormNodeRef): FieldDef {
   return (node.config ?? { type: "text", label: node.label }) as FieldDef;
 }
 
@@ -34,7 +34,7 @@ export function FieldCard({
   onSave,
   photoActionRow,
 }: {
-  node: FormNodeRef;
+  node: SurveyFormNodeRef;
   fieldIndex: number;
   fieldTotal: number;
   onSave: (value: unknown) => Promise<void> | void;

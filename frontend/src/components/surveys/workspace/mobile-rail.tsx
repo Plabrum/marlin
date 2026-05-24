@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { FormNodeRef, SurveyDetail, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef, SurveyDetail, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
 import { FindingsList } from "./findings-list";
 import { PhotosRail } from "./photos-rail";
 import { VesselCard } from "./vessel-card";
@@ -17,7 +17,7 @@ export function MobileRail({
   mediaItems: SurveyMediaListItem[];
   unassignedMedia: SurveyMediaListItem[];
   data: SurveyDetail;
-  findings: FormNodeRef[];
+  findings: SurveyFormNodeRef[];
   sectionAncestor: Map<string, string>;
 }) {
   const [open, setOpen] = useState(false);

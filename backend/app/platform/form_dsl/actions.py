@@ -22,12 +22,9 @@ from app.platform.form_dsl.schema import FieldDef, FieldType
 from app.platform.form_dsl.schemas import (
     AddAdHocFieldData,
     AddAdHocSectionData,
-    AddFindingData,
     UpdateNodeValueData,
 )
 from app.platform.form_dsl.validate import validate_field_value
-
-_VALID_FINDING_SEVERITIES = {"info", "advisory", "critical"}
 
 
 class FormNodeActionKey(StrEnum):
@@ -35,7 +32,6 @@ class FormNodeActionKey(StrEnum):
     ADD_REPEATER_INSTANCE = auto()
     ADD_AD_HOC_FIELD = auto()
     ADD_AD_HOC_SECTION = auto()
-    ADD_FINDING = auto()
     DELETE = auto()
 
 
@@ -45,11 +41,11 @@ form_node_actions = action_group_factory(
 )
 
 
-def _invalidate(node: FormNode) -> list[str]:
+def invalidate_owner(node: FormNode) -> list[str]:
     return [f"/{node.owner_type}/{node.owner_id}"] if node.owner_type else []
 
 
-async def _next_sort_order(transaction: AsyncSession, parent_id: int | None, owner_type: str, owner_id: int) -> int:
+async def next_sort_order(transaction: AsyncSession, parent_id: int | None, owner_type: str, owner_id: int) -> int:
     stmt = sa.select(sa.func.coalesce(sa.func.max(FormNode.sort_order), -1)).where(
         FormNode.owner_type == owner_type,
         FormNode.owner_id == owner_id,
@@ -75,7 +71,7 @@ class UpdateNodeValue(BaseObjectAction[FormNode, UpdateNodeValueData]):
 
         obj.value = validate_field_value(obj.config, data.value)
 
-        return ActionExecutionResponse(message="Saved", invalidate_queries=_invalidate(obj))
+        return ActionExecutionResponse(message="Saved", invalidate_queries=invalidate_owner(obj))
 
 
 @form_node_actions
@@ -130,7 +126,7 @@ class AddRepeaterInstance(BaseObjectAction[FormNode, EmptyActionData]):
             )
 
         return ActionExecutionResponse(
-            message="Instance added", created_id=instance.id, invalidate_queries=_invalidate(obj)
+            message="Instance added", created_id=instance.id, invalidate_queries=invalidate_owner(obj)
         )
 
 
@@ -158,7 +154,7 @@ class AddAdHocField(BaseTopLevelAction[AddAdHocFieldData]):
             required=data.required,
             config={"options": data.options} if data.options else {},
         )
-        sort_order = await _next_sort_order(transaction, parent.id, parent.owner_type, parent.owner_id)
+        sort_order = await next_sort_order(transaction, parent.id, parent.owner_type, parent.owner_id)
         node = FormNode(
             organization_id=parent.organization_id,
             owner_type=parent.owner_type,
@@ -174,7 +170,7 @@ class AddAdHocField(BaseTopLevelAction[AddAdHocFieldData]):
         transaction.add(node)
         await transaction.flush()
         return ActionExecutionResponse(
-            message="Field added", created_id=node.id, invalidate_queries=_invalidate(parent)
+            message="Field added", created_id=node.id, invalidate_queries=invalidate_owner(parent)
         )
 
 
@@ -189,7 +185,7 @@ class AddAdHocSection(BaseTopLevelAction[AddAdHocSectionData]):
     async def execute(
         cls, data: AddAdHocSectionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
-        sort_order = await _next_sort_order(transaction, None, data.owner_type, data.owner_id)
+        sort_order = await next_sort_order(transaction, None, data.owner_type, data.owner_id)
         node = FormNode(
             organization_id=deps.user.organization_id,
             owner_type=data.owner_type,
@@ -210,54 +206,6 @@ class AddAdHocSection(BaseTopLevelAction[AddAdHocSectionData]):
 
 
 @form_node_actions
-class AddFinding(BaseTopLevelAction[AddFindingData]):
-    action_key = FormNodeActionKey.ADD_FINDING
-    label = "Add finding"
-    icon = ActionIcon.ADD
-    is_hidden = True
-
-    @classmethod
-    async def execute(
-        cls, data: AddFindingData, transaction: AsyncSession, deps: ActionDeps
-    ) -> ActionExecutionResponse:
-        if data.severity not in _VALID_FINDING_SEVERITIES:
-            raise ValidationException(f"Invalid severity '{data.severity}'")
-
-        parent = await transaction.get(FormNode, data.parent_id)
-        if parent is None:
-            raise NotFoundException("Parent node not found")
-
-        originating_snapshot: str | None = None
-        if parent.kind == FormNodeKind.field and parent.value is not None:
-            originating_snapshot = str(parent.value)
-
-        sort_order = await _next_sort_order(transaction, parent.id, parent.owner_type, parent.owner_id)
-        node = FormNode(
-            organization_id=parent.organization_id,
-            owner_type=parent.owner_type,
-            owner_id=parent.owner_id,
-            parent_id=parent.id,
-            kind=FormNodeKind.annotation,
-            schema_ref=None,
-            label=data.summary,
-            value={
-                "type": "finding",
-                "severity": data.severity,
-                "summary": data.summary,
-                "detail": data.detail,
-                "recommended_action": data.recommended_action,
-                "originating_value_snapshot": originating_snapshot,
-            },
-            sort_order=sort_order,
-        )
-        transaction.add(node)
-        await transaction.flush()
-        return ActionExecutionResponse(
-            message="Finding added", created_id=node.id, invalidate_queries=_invalidate(parent)
-        )
-
-
-@form_node_actions
 class DeleteNode(BaseObjectAction[FormNode, EmptyActionData]):
     action_key = FormNodeActionKey.DELETE
     label = "Delete"
@@ -271,4 +219,4 @@ class DeleteNode(BaseObjectAction[FormNode, EmptyActionData]):
         # Soft-delete via the BaseDBModel helper. The session-level listener
         # in app/domain/surveys/listeners.py detaches survey_media node_ids.
         obj.soft_delete()
-        return ActionExecutionResponse(message="Deleted", invalidate_queries=_invalidate(obj))
+        return ActionExecutionResponse(message="Deleted", invalidate_queries=invalidate_owner(obj))

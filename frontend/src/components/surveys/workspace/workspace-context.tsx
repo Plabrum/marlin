@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { FormNodeRef, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
 import type { SurveyActions } from "./use-survey-actions";
 
 export type WorkspaceCtx = {
@@ -7,7 +7,7 @@ export type WorkspaceCtx = {
   actions: SurveyActions;
   mediaByNode: Map<string, SurveyMediaListItem[]>;
   unassignedMedia: SurveyMediaListItem[];
-  findingsByParent: Map<string, FormNodeRef[]>;
+  findingsByParent: Map<string, SurveyFormNodeRef[]>;
 };
 
 const WorkspaceContext = createContext<WorkspaceCtx | null>(null);

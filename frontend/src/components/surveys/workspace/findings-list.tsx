@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { jumpToHash } from "@/lib/scroll";
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 import { getFindingValue } from "./node-helpers";
 import { SEVERITY_DOT, SEVERITY_RANK, SEVERITY_TEXT, asSeverity } from "./severity";
 
@@ -10,7 +10,7 @@ export function FindingsList({
   findings,
   sectionAncestor,
 }: {
-  findings: FormNodeRef[];
+  findings: SurveyFormNodeRef[];
   sectionAncestor: Map<string, string>;
 }) {
   const sorted = useMemo(

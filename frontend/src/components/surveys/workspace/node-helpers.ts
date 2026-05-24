@@ -1,20 +1,20 @@
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 
-export type Tree = FormNodeRef & { children: Tree[] };
+export type Tree = SurveyFormNodeRef & { children: Tree[] };
 
 export const DRAG_MEDIA_TYPE = "application/x-sloopquest-media-id";
 
-export function getFieldType(node: FormNodeRef): string | undefined {
+export function getFieldType(node: SurveyFormNodeRef): string | undefined {
   return (node.config as { type?: string } | null)?.type;
 }
 
 export type FindingValue = { severity?: string; summary?: string; type?: string };
 
-export function getFindingValue(node: FormNodeRef): FindingValue | null {
+export function getFindingValue(node: SurveyFormNodeRef): FindingValue | null {
   return node.value as FindingValue | null;
 }
 
-export function isFinding(node: FormNodeRef): boolean {
+export function isFinding(node: SurveyFormNodeRef): boolean {
   return node.kind === "annotation" && getFindingValue(node)?.type === "finding";
 }
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum, auto
 
 import msgspec
-from litestar.exceptions import NotFoundException
+from litestar.exceptions import NotFoundException, ValidationException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.reports.builder import build_report_blocks
@@ -11,6 +11,7 @@ from app.domain.reports.models import Report
 from app.domain.surveys.enums import SurveyState
 from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
+    AddFindingData,
     AssignSurveyMediaData,
     AttachSurveyMediaData,
     CreateSurveyData,
@@ -24,6 +25,8 @@ from app.platform.actions.base import BaseObjectAction, BaseTopLevelAction, Empt
 from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType, ActionIcon
 from app.platform.actions.schemas import ActionExecutionResponse
+from app.platform.form_dsl.actions import invalidate_owner, next_sort_order
+from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.materialize import materialize_form_response
 from app.platform.form_dsl.models import FormNode
 from app.platform.sequences.service import assign_identifier_if_missing
@@ -379,4 +382,68 @@ class AssignSurveyMedia(BaseObjectAction[SurveyMedia, AssignSurveyMediaData]):
         return ActionExecutionResponse(
             message="Media assigned",
             invalidate_queries=["/survey-media", f"/surveys/{obj.survey_id}"],
+        )
+
+
+# ── Findings ───────────────────────────────────────────────────────────────────
+
+
+_VALID_FINDING_SEVERITIES = {"info", "advisory", "critical"}
+
+
+class SurveyFindingActionKey(StrEnum):
+    ADD = auto()
+
+
+survey_finding_actions = action_group_factory(
+    group_type=ActionGroupType.SURVEY_FINDING_ACTIONS,
+    model_type=FormNode,
+)
+
+
+@survey_finding_actions
+class AddFinding(BaseTopLevelAction[AddFindingData]):
+    action_key = SurveyFindingActionKey.ADD
+    label = "Add finding"
+    icon = ActionIcon.ADD
+    is_hidden = True
+
+    @classmethod
+    async def execute(
+        cls, data: AddFindingData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        if data.severity not in _VALID_FINDING_SEVERITIES:
+            raise ValidationException(f"Invalid severity '{data.severity}'")
+
+        parent = await transaction.get(FormNode, data.parent_id)
+        if parent is None:
+            raise NotFoundException("Parent node not found")
+
+        originating_snapshot: str | None = None
+        if parent.kind == FormNodeKind.field and parent.value is not None:
+            originating_snapshot = str(parent.value)
+
+        sort_order = await next_sort_order(transaction, parent.id, parent.owner_type, parent.owner_id)
+        node = FormNode(
+            organization_id=parent.organization_id,
+            owner_type=parent.owner_type,
+            owner_id=parent.owner_id,
+            parent_id=parent.id,
+            kind=FormNodeKind.annotation,
+            schema_ref=None,
+            label=data.summary,
+            value={
+                "type": "finding",
+                "severity": data.severity,
+                "summary": data.summary,
+                "detail": data.detail,
+                "recommended_action": data.recommended_action,
+                "originating_value_snapshot": originating_snapshot,
+            },
+            sort_order=sort_order,
+        )
+        transaction.add(node)
+        await transaction.flush()
+        return ActionExecutionResponse(
+            message="Finding added", created_id=node.id, invalidate_queries=invalidate_owner(parent)
         )

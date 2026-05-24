@@ -10,6 +10,7 @@ from app.config import config
 from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
     SurveyDetail,
+    SurveyFormNodeRef,
     SurveyListItem,
     SurveyMediaDetail,
     SurveyMediaListItem,
@@ -23,9 +24,10 @@ from app.platform.clients.s3 import BaseS3Client, LocalS3Client, S3Client
 from app.platform.data.enums import FieldType
 from app.platform.data.service import FieldConfig
 from app.platform.form_dsl.conditions import resolve_visibility, section_completion
+from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.models import FormNode
 from app.platform.form_dsl.schema import TemplateDefinition
-from app.platform.form_dsl.schemas import FormNodeRef, SectionCompletion
+from app.platform.form_dsl.schemas import SectionCompletion
 from app.utils.sqids import Sqid
 
 
@@ -47,8 +49,13 @@ def _to_survey_list_item(survey: Survey, user: User) -> SurveyListItem:
     )
 
 
-def _to_form_node_ref(node: FormNode, visibility: dict[int, bool]) -> FormNodeRef:
-    return FormNodeRef(
+def _to_form_node_ref(
+    node: FormNode,
+    visibility: dict[int, bool],
+    media_by_node: dict[int, list[SurveyMediaListItem]],
+    findings_by_parent: dict[int, list[SurveyFormNodeRef]],
+) -> SurveyFormNodeRef:
+    return SurveyFormNodeRef(
         id=node.id,
         parent_id=node.parent_id,
         kind=node.kind,
@@ -58,6 +65,8 @@ def _to_form_node_ref(node: FormNode, visibility: dict[int, bool]) -> FormNodeRe
         config=node.config,
         sort_order=node.sort_order,
         condition_visible=visibility.get(node.id),
+        attached_media=media_by_node.get(node.id, []),
+        findings=findings_by_parent.get(node.id, []),
     )
 
 
@@ -72,6 +81,27 @@ def _to_survey_detail(survey: Survey, user: User) -> SurveyDetail:
         else None
     )
     visibility = resolve_visibility(survey.form_nodes)
+
+    media_by_node: dict[int, list[SurveyMediaListItem]] = {}
+    unassigned_media: list[SurveyMediaListItem] = []
+    for sm in survey.survey_media:
+        item = _survey_media_to_item(sm, user)
+        if sm.node_id is None:
+            unassigned_media.append(item)
+        else:
+            media_by_node.setdefault(sm.node_id, []).append(item)
+
+    # First pass: build refs for annotation (finding) nodes so structural nodes
+    # can embed them in a second pass.
+    annotations = [n for n in survey.form_nodes if n.kind == FormNodeKind.annotation]
+    structural = [n for n in survey.form_nodes if n.kind != FormNodeKind.annotation]
+    findings_by_parent: dict[int, list[SurveyFormNodeRef]] = {}
+    for n in sorted(annotations, key=lambda n: n.sort_order):
+        if n.parent_id is None:
+            continue
+        ref = _to_form_node_ref(n, visibility, media_by_node, {})
+        findings_by_parent.setdefault(n.parent_id, []).append(ref)
+
     return SurveyDetail(
         id=survey.id,
         state=survey.state,
@@ -88,9 +118,10 @@ def _to_survey_detail(survey: Survey, user: User) -> SurveyDetail:
         template=template_ref,
         template_version=survey.template_version,
         form_nodes=[
-            _to_form_node_ref(n, visibility)
-            for n in sorted(survey.form_nodes, key=lambda n: (n.parent_id or 0, n.sort_order))
+            _to_form_node_ref(n, visibility, media_by_node, findings_by_parent)
+            for n in sorted(structural, key=lambda n: (n.parent_id or 0, n.sort_order))
         ],
+        unassigned_media=unassigned_media,
         section_completion=[
             SectionCompletion(section_id=Sqid(sid), filled=v["filled"], total=v["total"])
             for sid, v in section_completion(survey.form_nodes).items()
@@ -108,6 +139,7 @@ _survey_config = CRUDConfig(
         joinedload(Survey.assigned_surveyor),
         joinedload(Survey.template),
         joinedload(Survey.form_nodes),
+        joinedload(Survey.survey_media).joinedload(SurveyMedia.media),
     ],
     filterable_columns={"state", "vessel_id", "assigned_surveyor_id", "created_at"},
     sortable_columns={"created_at"},

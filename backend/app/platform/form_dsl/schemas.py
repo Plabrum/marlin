@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import msgspec
-
 from app.platform.base.schemas import BaseSchema
 from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.schema import FieldType
@@ -51,15 +49,3 @@ class AddAdHocSectionData(BaseSchema):
     owner_type: str
     owner_id: Sqid
     title: str
-
-
-class FindingSeverity(msgspec.Struct):
-    pass
-
-
-class AddFindingData(BaseSchema):
-    parent_id: Sqid  # section or field node
-    severity: str  # 'info' | 'advisory' | 'critical'
-    summary: str
-    detail: str | None = None
-    recommended_action: str | None = None

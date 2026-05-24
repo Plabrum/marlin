@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 
 import { useSurveysAdHocSuggestionsListAdHocSuggestions } from "@/openapi/surveys/surveys";
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 
-export function PromoteAdHocBanner({ formNodes }: { formNodes: FormNodeRef[] }) {
+export function PromoteAdHocBanner({ formNodes }: { formNodes: SurveyFormNodeRef[] }) {
   const { data } = useSurveysAdHocSuggestionsListAdHocSuggestions();
   if (!data) return null;
 

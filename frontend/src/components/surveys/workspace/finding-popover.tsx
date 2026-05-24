@@ -55,9 +55,9 @@ export function AddFindingButton({
   async function submit() {
     if (!summary.trim()) return;
     const res = await execute.mutateAsync({
-      actionGroup: "form_node_actions",
+      actionGroup: "survey_finding_actions",
       data: {
-        action: "form_node_actions__add_finding",
+        action: "survey_finding_actions__add",
         data: {
           parent_id: parentNodeId,
           severity,

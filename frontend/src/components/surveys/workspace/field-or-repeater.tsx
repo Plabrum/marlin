@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDropTarget } from "@/hooks/use-drop-target";
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 import { FieldCard } from "./field-card";
 import { DRAG_MEDIA_TYPE, getFieldType, getFindingValue, type Tree } from "./node-helpers";
 import { PhotoActionRow } from "./photo-action-row";
@@ -79,7 +79,7 @@ function FieldWithExtras({
   fieldIndex,
   fieldTotal,
 }: {
-  node: FormNodeRef;
+  node: SurveyFormNodeRef;
   fieldIndex: number;
   fieldTotal: number;
 }) {

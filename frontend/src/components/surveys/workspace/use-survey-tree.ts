@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import type { FormNodeRef, SectionCompletion } from "@/openapi/litestarAPI.schemas";
-import { isFinding, type Tree } from "./node-helpers";
+import type { SurveyFormNodeRef, SectionCompletion } from "@/openapi/litestarAPI.schemas";
+import { type Tree } from "./node-helpers";
 
-function buildTree(nodes: FormNodeRef[]): Tree[] {
+function buildTree(nodes: SurveyFormNodeRef[]): Tree[] {
   const byId = new Map<string, Tree>();
   for (const n of nodes) byId.set(n.id, { ...n, children: [] });
   const roots: Tree[] = [];
@@ -26,13 +26,13 @@ export type SurveyTree = {
   tree: Tree[];
   sections: Tree[];
   completion: Map<string, SectionCompletion>;
-  findings: FormNodeRef[];
-  findingsByParent: Map<string, FormNodeRef[]>;
+  findings: SurveyFormNodeRef[];
+  findingsByParent: Map<string, SurveyFormNodeRef[]>;
   sectionAncestor: Map<string, string>;
 };
 
 export function useSurveyTree(
-  nodes: FormNodeRef[],
+  nodes: SurveyFormNodeRef[],
   sectionCompletion: SectionCompletion[],
 ): SurveyTree {
   return useMemo(() => {
@@ -40,17 +40,16 @@ export function useSurveyTree(
     const sections = tree.filter((n) => n.kind === "section");
     const completion = new Map(sectionCompletion.map((c) => [c.section_id, c]));
 
-    const findings = nodes.filter(isFinding);
-    const findingsByParent = new Map<string, FormNodeRef[]>();
-    for (const f of findings) {
-      if (!f.parent_id) continue;
-      const list = findingsByParent.get(f.parent_id) ?? [];
-      list.push(f);
-      findingsByParent.set(f.parent_id, list);
+    const findings: SurveyFormNodeRef[] = [];
+    const findingsByParent = new Map<string, SurveyFormNodeRef[]>();
+    for (const n of nodes) {
+      if (!n.findings?.length) continue;
+      findingsByParent.set(n.id, n.findings);
+      findings.push(...n.findings);
     }
 
     // Build section-ancestor map in O(n) using a node lookup
-    const byId = new Map<string, FormNodeRef>();
+    const byId = new Map<string, SurveyFormNodeRef>();
     for (const n of nodes) byId.set(n.id, n);
     const sectionAncestor = new Map<string, string>();
     const findSectionId = (startId: string): string | undefined => {

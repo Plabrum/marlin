@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useActionsActionGroupObjectIdExecuteObjectAction } from "@/openapi/actions/actions";
-import type { FormNodeRef } from "@/openapi/litestarAPI.schemas";
+import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
 
 export type SurveyActions = {
   invalidate: () => Promise<unknown>;
-  saveField: (node: FormNodeRef, value: unknown) => Promise<void>;
+  saveField: (node: SurveyFormNodeRef, value: unknown) => Promise<void>;
   assignMedia: (mediaId: string, nodeId: string | null) => Promise<void>;
   addRepeaterInstance: (nodeId: string) => Promise<void>;
   deleteNode: (nodeId: string) => Promise<void>;
@@ -26,7 +26,7 @@ export function useSurveyActions(surveyId: string): SurveyActions {
   );
 
   const saveField = useCallback(
-    async (node: FormNodeRef, value: unknown) => {
+    async (node: SurveyFormNodeRef, value: unknown) => {
       await execute({
         actionGroup: "form_node_actions",
         objectId: node.id,

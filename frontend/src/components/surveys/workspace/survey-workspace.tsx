@@ -19,7 +19,7 @@ export function SurveyWorkspace({ data }: { data: SurveyDetail }) {
     data.section_completion,
   );
   const actions = useSurveyActions(data.id);
-  const media = useSurveyMedia(data.id);
+  const media = useSurveyMedia(data);
 
   const [currentSectionId, setCurrentSectionId] = useState<string | null>(
     sections[0]?.id ?? null,
@@ -43,14 +43,13 @@ export function SurveyWorkspace({ data }: { data: SurveyDetail }) {
 
   return (
     <WorkspaceProvider value={workspaceValue}>
-      <div className="bg-muted/30">
-        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-[auto_1fr_320px]">
-          <SectionsRail
-            sections={sections}
-            completion={completion}
-            currentSectionId={currentSectionId}
-          />
-
+      <div className="relative bg-muted/30">
+        <SectionsRail
+          sections={sections}
+          completion={completion}
+          currentSectionId={currentSectionId}
+        />
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-[1fr_320px]">
           <main className="space-y-6 min-w-0">
             {sections.map((section, idx) => (
               <SectionBlock

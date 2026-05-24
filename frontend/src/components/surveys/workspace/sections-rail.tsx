@@ -19,11 +19,12 @@ export function SectionsRail({
   currentSectionId: string | null;
 }) {
   return (
-    <nav
-      aria-label="Sections"
-      className="group sticky top-20 z-10 hidden self-start md:block"
-    >
-      <ul className="flex flex-col gap-1 rounded-r-xl py-2 pl-1 pr-2 transition-colors group-hover:bg-white/95 group-hover:shadow-md group-hover:ring-1 group-hover:ring-border">
+    <div className="pointer-events-none absolute inset-y-0 left-0 z-20 hidden md:block">
+      <nav
+        aria-label="Sections"
+        className="group pointer-events-auto sticky top-20"
+      >
+        <ul className="flex flex-col gap-1 rounded-r-xl py-2 pl-2 pr-2 transition-colors group-hover:bg-white group-hover:shadow-md group-hover:ring-1 group-hover:ring-border">
         {sections.map((s) => {
           const c = completion.get(s.id);
           const active = currentSectionId === s.id;
@@ -54,7 +55,8 @@ export function SectionsRail({
             </li>
           );
         })}
-      </ul>
-    </nav>
+        </ul>
+      </nav>
+    </div>
   );
 }

@@ -23,6 +23,7 @@ class ActionGroupType(StrEnum):
     PRICING_GUIDE_ACTIONS = auto()
     CALENDAR_EVENT_ACTIONS = auto()
     SURVEY_MEDIA_ACTIONS = auto()
+    SURVEY_FINDING_ACTIONS = auto()
     FORM_NODE_ACTIONS = auto()
 
 
