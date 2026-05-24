@@ -146,6 +146,11 @@ module "vercel_landing" {
       value  = "https://api.${var.domain}"
       target = ["production"]
     },
+    {
+      key    = "NEXT_PUBLIC_APP_URL"
+      value  = "https://app.${var.domain}"
+      target = ["production"]
+    },
   ]
 }
 
