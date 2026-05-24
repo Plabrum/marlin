@@ -55,7 +55,7 @@ variable "aws_region" {
 variable "domain" {
   description = "Root domain. Used for ACM cert, Route53 zone, CORS, SES."
   type        = string
-  default     = "sloopquest.app"
+  default     = "sloopquest.com"
 }
 
 variable "ecr_repository" {
