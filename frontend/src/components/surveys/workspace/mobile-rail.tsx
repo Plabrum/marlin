@@ -8,17 +8,25 @@ import { PhotosRail } from "./photos-rail";
 import { VesselCard } from "./vessel-card";
 
 export function MobileRail({
+  surveyId,
+  onUploaded,
   mediaItems,
   unassignedMedia,
+  sectionLabel,
   data,
   findings,
   sectionAncestor,
+  goToSection,
 }: {
+  surveyId: string;
+  onUploaded: () => Promise<unknown> | void;
   mediaItems: SurveyMediaListItem[];
   unassignedMedia: SurveyMediaListItem[];
+  sectionLabel: string | null;
   data: SurveyDetail;
   findings: SurveyFormNodeRef[];
   sectionAncestor: Map<string, string>;
+  goToSection: (sectionId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -43,10 +51,20 @@ export function MobileRail({
           </TabsList>
           <div className="flex-1 overflow-y-auto p-3">
             <TabsContent value="photos" className="space-y-3">
-              <PhotosRail items={mediaItems} unassigned={unassignedMedia} sectionLabel={null} />
+              <PhotosRail
+                surveyId={surveyId}
+                onUploaded={onUploaded}
+                items={mediaItems}
+                unassigned={unassignedMedia}
+                sectionLabel={sectionLabel}
+              />
             </TabsContent>
             <TabsContent value="findings" className="space-y-3">
-              <FindingsList findings={findings} sectionAncestor={sectionAncestor} />
+              <FindingsList
+                findings={findings}
+                sectionAncestor={sectionAncestor}
+                goToSection={goToSection}
+              />
             </TabsContent>
             <TabsContent value="vessel" className="space-y-3">
               <VesselCard data={data} />

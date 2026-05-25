@@ -108,11 +108,15 @@ export function SurveyWorkspace({ data }: { data: SurveyDetail }) {
       </div>
 
       <MobileRail
-        mediaItems={media.items}
+        surveyId={data.id}
+        onUploaded={actions.invalidate}
+        mediaItems={sectionMediaItems}
         unassignedMedia={media.unassigned}
+        sectionLabel={currentSection?.label ?? null}
         data={data}
         findings={findings}
         sectionAncestor={sectionAncestor}
+        goToSection={goToSection}
       />
     </div>
   );

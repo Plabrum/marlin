@@ -351,6 +351,8 @@ export function GalleryPage() {
             </div>
             <div className="rounded-sm border border-ink/10 bg-card p-4">
               <PhotosRail
+                surveyId={MOCK_SURVEY_DETAIL.id}
+                onUploaded={() => {}}
                 items={MOCK_MEDIA.slice(0, 6)}
                 unassigned={MOCK_MEDIA.slice(6)}
                 sectionLabel="Hull"
@@ -428,16 +430,17 @@ const MOCK_SURVEY_DETAIL: SurveyDetail = {
 
 const MOCK_MEDIA: SurveyMediaListItem[] = Array.from({ length: 10 }, (_, i) => ({
   id: `med_${i}`,
+  survey_id: "svy_001",
+  media_id: `med_${i}`,
   view_url: `https://picsum.photos/seed/sloop-${i}/200/200`,
   thumbnail_url: `https://picsum.photos/seed/sloop-${i}/120/120`,
   caption: null,
   node_id: i < 6 ? "node_hull" : null,
-  filename: `photo-${i}.jpg`,
-  content_type: "image/jpeg",
-  size_bytes: 100_000,
-  created_at: "2026-05-20T12:00:00Z",
-  uploaded_by: { id: "usr_001", label: "P. Labrum", href: "/objects/user/usr_001" },
-} as SurveyMediaListItem));
+  sort_order: i,
+  file_name: `photo-${i}.jpg`,
+  file_type: "image",
+  mime_type: "image/jpeg",
+}));
 
 const MOCK_FIELD_NODES: SurveyFormNodeRef[] = [
   {
