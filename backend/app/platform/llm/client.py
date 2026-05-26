@@ -47,6 +47,17 @@ class BaseLLMClient(ABC):
     @abstractmethod
     def model(self) -> str: ...
 
+    @property
+    def embedding_model(self) -> str:
+        raise NotImplementedError(f"{type(self).__name__} does not support embeddings")
+
+    @property
+    def embedding_dim(self) -> int:
+        raise NotImplementedError(f"{type(self).__name__} does not support embeddings")
+
+    async def embed(self, texts: list[str]) -> list[list[float]]:
+        raise NotImplementedError(f"{type(self).__name__} does not support embeddings")
+
     async def chat(
         self,
         messages: list[dict],
@@ -248,16 +259,54 @@ _END_SESSION_TOOL: dict = {
 }
 
 
-class OpenAIRealtimeLLMClient(BaseLLMClient):
-    """OpenAI Realtime API client — implements the voice capability."""
+class OpenAILLMClient(BaseLLMClient):
+    """OpenAI client — implements the voice (Realtime) and embedding capabilities."""
 
-    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
+    EMBEDDING_DIM_BY_MODEL: dict[str, int] = {
+        "text-embedding-3-small": 1536,
+        "text-embedding-3-large": 3072,
+    }
+
+    def __init__(
+        self,
+        api_key: str | None = None,
+        model: str | None = None,
+        embedding_model_name: str | None = None,
+    ) -> None:
         self._api_key = api_key or config.OPENAI_API_KEY
         self._model = model or config.OPENAI_REALTIME_MODEL
+        self._embedding_model = embedding_model_name or config.EMBEDDING_MODEL
+        self._client: AsyncOpenAI | None = None
+
+    def _get_client(self) -> AsyncOpenAI:
+        # Defer AsyncOpenAI() — its constructor errors when the key is empty,
+        # which would break module import on hosts without OPENAI_API_KEY (CI).
+        if self._client is None:
+            self._client = AsyncOpenAI(api_key=self._api_key)
+        return self._client
 
     @property
     def model(self) -> str:
         return self._model
+
+    @property
+    def embedding_model(self) -> str:
+        return self._embedding_model
+
+    @property
+    def embedding_dim(self) -> int:
+        return self.EMBEDDING_DIM_BY_MODEL.get(self._embedding_model, 1536)
+
+    async def embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        client = self._get_client()
+        out: list[list[float]] = []
+        for i in range(0, len(texts), 100):
+            batch = texts[i : i + 100]
+            resp = await client.embeddings.create(model=self._embedding_model, input=batch)
+            out.extend(item.embedding for item in resp.data)
+        return out
 
     async def voice_stream(  # type: ignore[override]
         self,
@@ -282,7 +331,7 @@ class OpenAIRealtimeLLMClient(BaseLLMClient):
         def txn() -> Any:
             return rls_transaction(db_session, user_id=user_id, organization_id=organization_id)
 
-        openai_client = AsyncOpenAI(api_key=self._api_key)
+        openai_client = self._get_client()
 
         async with openai_client.realtime.connect(model=self._model) as conn:
             # GA Realtime session shape: audio I/O config is nested under

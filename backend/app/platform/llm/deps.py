@@ -7,7 +7,7 @@ from app.platform.llm.client import (
     AnthropicLLMClient,
     BaseLLMClient,
     LocalLLMClient,
-    OpenAIRealtimeLLMClient,
+    OpenAILLMClient,
 )
 from app.platform.llm.service import LLMService
 from app.utils.deps import dep
@@ -15,7 +15,7 @@ from app.utils.deps import dep
 _use_anthropic = (not app_config.IS_DEV) or (app_config.USE_REAL_LLM and bool(app_config.ANTHROPIC_API_KEY))
 _llm_client: BaseLLMClient = AnthropicLLMClient() if _use_anthropic else LocalLLMClient()
 
-_voice_client: BaseLLMClient = OpenAIRealtimeLLMClient()
+_voice_client: BaseLLMClient = OpenAILLMClient()
 
 
 @dep("llm_client")

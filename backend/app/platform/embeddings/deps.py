@@ -3,13 +3,14 @@
 from app.config import config as app_config
 from app.platform.embeddings.client import (
     BaseEmbeddingClient,
+    LLMEmbeddingClient,
     LocalEmbeddingClient,
-    OpenAIEmbeddingClient,
 )
+from app.platform.llm.deps import _voice_client
 from app.utils.deps import dep
 
 _use_openai = (not app_config.IS_DEV) or (app_config.USE_REAL_EMBEDDINGS and bool(app_config.OPENAI_API_KEY))
-_embedding_client: BaseEmbeddingClient = OpenAIEmbeddingClient() if _use_openai else LocalEmbeddingClient()
+_embedding_client: BaseEmbeddingClient = LLMEmbeddingClient(_voice_client) if _use_openai else LocalEmbeddingClient()
 
 
 @dep("embedding_client")

@@ -5,9 +5,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 
-from openai import AsyncOpenAI
-
-from app.config import config
+from app.platform.llm.client import BaseLLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -31,29 +29,18 @@ class LocalEmbeddingClient(BaseEmbeddingClient):
         return [[0.0] * self.dim for _ in texts]
 
 
-class OpenAIEmbeddingClient(BaseEmbeddingClient):
-    """OpenAI text-embedding-3-small (1536 dims).
+class LLMEmbeddingClient(BaseEmbeddingClient):
+    """Delegates to a BaseLLMClient's embed capability.
 
-    Batches up to OpenAI's 2048-input limit; we cap at 100 to keep payloads
-    small. text-embedding-3-large is a single-class change here if we upgrade.
+    Keeps the embeddings module's surface narrow (model/dim/embed) while letting
+    provider selection live entirely in llm/deps.py — swap the underlying LLM
+    client and embeddings follow.
     """
 
-    DIM_BY_MODEL: dict[str, int] = {
-        "text-embedding-3-small": 1536,
-        "text-embedding-3-large": 3072,
-    }
-
-    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
-        self._client = AsyncOpenAI(api_key=api_key or config.OPENAI_API_KEY)
-        self.model = model or config.EMBEDDING_MODEL
-        self.dim = self.DIM_BY_MODEL.get(self.model, 1536)
+    def __init__(self, llm_client: BaseLLMClient) -> None:
+        self._llm = llm_client
+        self.model = llm_client.embedding_model
+        self.dim = llm_client.embedding_dim
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        if not texts:
-            return []
-        out: list[list[float]] = []
-        for i in range(0, len(texts), 100):
-            batch = texts[i : i + 100]
-            resp = await self._client.embeddings.create(model=self.model, input=batch)
-            out.extend(item.embedding for item in resp.data)
-        return out
+        return await self._llm.embed(texts)

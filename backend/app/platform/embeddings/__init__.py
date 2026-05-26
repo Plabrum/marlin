@@ -2,8 +2,8 @@
 
 from app.platform.embeddings.client import (
     BaseEmbeddingClient,
+    LLMEmbeddingClient,
     LocalEmbeddingClient,
-    OpenAIEmbeddingClient,
 )
 from app.platform.embeddings.mixin import EmbeddableMixin
 from app.platform.embeddings.query import nearest
@@ -11,7 +11,7 @@ from app.platform.embeddings.query import nearest
 __all__ = [
     "BaseEmbeddingClient",
     "EmbeddableMixin",
+    "LLMEmbeddingClient",
     "LocalEmbeddingClient",
-    "OpenAIEmbeddingClient",
     "nearest",
 ]

@@ -11,7 +11,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.surveys.models import SurveyTemplate
-from app.platform.embeddings.client import LocalEmbeddingClient, OpenAIEmbeddingClient
+from app.platform.embeddings.client import LLMEmbeddingClient, LocalEmbeddingClient
 from app.platform.embeddings.events import (
     _PENDING_KEY,
     set_queue_resolver,
@@ -22,6 +22,7 @@ from app.platform.embeddings.hash import sha256_bytes
 from app.platform.embeddings.mixin import EmbeddableMixin
 from app.platform.embeddings.query import nearest
 from app.platform.embeddings.tasks import embed_row_task
+from app.platform.llm.client import OpenAILLMClient
 from tests.factories.surveys import SurveyTemplateFactory
 from tests.fixtures.app import make_ctx
 
@@ -213,7 +214,7 @@ class _UnitClient(LocalEmbeddingClient):
     reason="set USE_REAL_EMBEDDINGS=1 and OPENAI_API_KEY to run",
 )
 async def test_openai_client_embeds_live():
-    client = OpenAIEmbeddingClient()
+    client = LLMEmbeddingClient(OpenAILLMClient())
     [vec] = await client.embed(["the hull is sound"])
     assert len(vec) == client.dim == 1536
     # not all zero
