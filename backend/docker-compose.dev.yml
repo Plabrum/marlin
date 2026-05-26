@@ -2,7 +2,7 @@ name: sloopquest
 
 services:
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: sloopquest-db
     environment:
       POSTGRES_DB: sloopquest
@@ -20,7 +20,7 @@ services:
       retries: 5
 
   test-db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: sloopquest-test-db
     environment:
       POSTGRES_DB: sloopquest

@@ -11,6 +11,7 @@ from app.domain.vessels.models import Vessel
 from app.platform.base.models import BaseDBModel
 from app.platform.base.rls_mixins import OrgScopedMixin
 from app.platform.base.search import SearchMixin
+from app.platform.embeddings.mixin import EmbeddableMixin
 from app.platform.form_dsl.mixin import FormResponseMixin
 from app.platform.media.models import Media
 from app.platform.sequences.enums import SequenceType
@@ -19,11 +20,13 @@ from app.platform.state_machine.models import StateMachineMixin
 from app.utils.sqids import Sqid, SqidType
 
 
-class SurveyTemplate(OrgScopedMixin, SearchMixin, BaseDBModel):
+class SurveyTemplate(OrgScopedMixin, SearchMixin, EmbeddableMixin, BaseDBModel):
     trgm_columns = ["name"]
     search_label_field = "name"
     search_entity_type = "survey_template"
     search_detail_prefix = "/surveys/templates"
+    embedding_columns = ["name"]
+    embedding_dim = 1536
     __tablename__ = "survey_templates"
 
     organization_id: Mapped[int] = mapped_column(

@@ -3,6 +3,7 @@
 from typing import Any
 
 from faker import Faker
+from pgvector.sqlalchemy import Vector
 from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +20,14 @@ class BaseFactory[T: BaseDBModel](SQLAlchemyFactory[T]):
     __set_primary_key__ = False  # Let PostgreSQL sequences assign IDs
 
     deleted_at = None
+    # pgvector embeddings are populated by the embed_row_task, not by factories.
+    embedding = None
+
+    @classmethod
+    def get_sqlalchemy_types(cls) -> dict[Any, Any]:
+        types = dict(super().get_sqlalchemy_types())
+        types[Vector] = list
+        return types
 
     @classmethod
     async def create_async(cls, session: AsyncSession, **kwargs: Any) -> T:  # type: ignore[override]

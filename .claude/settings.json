@@ -16,6 +16,10 @@
           {
             "type": "command",
             "command": "cd /Users/phil/repos/sloopquest && git diff --name-only --diff-filter=d -- '*.py' | grep -q . && (cd backend && uv run basedpyright 2>&1 | tail -20) || true; true"
+          },
+          {
+            "type": "command",
+            "command": "cd /Users/phil/repos/sloopquest && git diff --name-only --diff-filter=d -- 'frontend/**/*.ts' 'frontend/**/*.tsx' | grep -q . && (cd frontend && pnpm exec tsc -b --noEmit 2>&1 | tail -30) || true; true"
           }
         ]
       }

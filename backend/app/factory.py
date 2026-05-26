@@ -51,6 +51,7 @@ from app.platform.billing import billing_router, billing_webhook_router, connect
 from app.platform.comms.webhook_routes import comms_webhook_router
 from app.platform.dashboard.routes import dashboard_router
 from app.platform.documents import document_router
+from app.platform.embeddings.events import set_queue_resolver
 from app.platform.llm.routes import llm_router
 from app.platform.media import local_files_router, media_router
 from app.platform.queue.config import queue_config
@@ -123,6 +124,7 @@ def create_app(
 
     async def _setup_task_queues(app: Litestar) -> None:
         app.state.task_queues = saq_config.get_queues()
+        set_queue_resolver(lambda: app.state.task_queues.get("default"))
 
     channels_plugin = ChannelsPlugin(
         backend=MemoryChannelsBackend(),

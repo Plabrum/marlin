@@ -10,6 +10,8 @@ class TaskName(StrEnum):
     SEND_UNKNOWN_RECIPIENT_BOUNCE = auto()
     RUN_EVENT_CONSUMER = auto()
     GENERATE_THUMBNAIL = auto()
+    EMBED_ROW = auto()
+    SWEEP_EMBEDDINGS = auto()
 
 
 class TaskRoleType(StrEnum):

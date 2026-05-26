@@ -81,6 +81,11 @@ class Config:
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_REALTIME_MODEL: str = os.getenv("OPENAI_REALTIME_MODEL", "gpt-realtime-2025-08-28")
 
+    # ─── Embeddings ───────────────────────────────────────────────────────────
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "openai")
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+    USE_REAL_EMBEDDINGS: bool = os.getenv("USE_REAL_EMBEDDINGS", "").lower() in {"1", "true", "yes"}
+
     @property
     def IS_DEV(self) -> bool:
         return self.ENV == "development"

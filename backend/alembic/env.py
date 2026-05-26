@@ -56,18 +56,23 @@ def include_object(object, name, type_, reflected, compare_to):
 
 def render_item(type_: str, obj: object, autogen_context: object) -> str | bool:
     """Tell Alembic how to render custom TypeDecorators in migration files."""
-    if type_ == "type" and isinstance(obj, TypeDecorator):
+    if type_ == "type":
         class_name = obj.__class__.__name__
-        if class_name == "SqidType":
-            autogen_context.imports.add("from app.utils.sqids import SqidType")  # type: ignore[union-attr]
-            return "SqidType()"
-        if class_name == "TextEnum":
-            autogen_context.imports.add("from app.utils.textenum import TextEnum")  # type: ignore[union-attr]
-            enum_cls = obj.enum_class  # type: ignore[attr-defined]
-            module = enum_cls.__module__
-            name = enum_cls.__qualname__
-            autogen_context.imports.add(f"from {module} import {name}")  # type: ignore[union-attr]
-            return f"TextEnum({name})"
+        if class_name == "Vector":
+            autogen_context.imports.add("from pgvector.sqlalchemy import Vector")  # type: ignore[union-attr]
+            dim = getattr(obj, "dim", None)
+            return f"Vector({dim})" if dim is not None else "Vector()"
+        if isinstance(obj, TypeDecorator):
+            if class_name == "SqidType":
+                autogen_context.imports.add("from app.utils.sqids import SqidType")  # type: ignore[union-attr]
+                return "SqidType()"
+            if class_name == "TextEnum":
+                autogen_context.imports.add("from app.utils.textenum import TextEnum")  # type: ignore[union-attr]
+                enum_cls = obj.enum_class  # type: ignore[attr-defined]
+                module = enum_cls.__module__
+                name = enum_cls.__qualname__
+                autogen_context.imports.add(f"from {module} import {name}")  # type: ignore[union-attr]
+                return f"TextEnum({name})"
     return False
 
 
