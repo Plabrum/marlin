@@ -7,12 +7,12 @@ import { SectionLabel } from "./section-label";
 export function Cta() {
   return (
     <Plate size="lg" className="overflow-hidden">
-      <div className="relative grid grid-cols-12 items-center gap-x-10">
+      <div className="relative grid grid-cols-1 items-center gap-x-10 lg:grid-cols-12">
         <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 md:block">
           <CompassRose size={420} className="opacity-20 drift" />
         </div>
 
-        <div className="relative col-span-12 lg:col-span-9">
+        <div className="relative lg:col-span-9">
           <SectionLabel numeral="VII" title="The Invitation" className="mb-6" />
 
           <h2 className="fv-display-soft font-display text-[clamp(3rem,8vw,7.4rem)] font-light leading-[0.92] tracking-[-0.025em] text-ink">

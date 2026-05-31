@@ -3,7 +3,8 @@
   "env": {
     "PROJECT_ROOT": "/Users/phil/repos/sloopquest",
     "PYTHONPATH": "/Users/phil/repos/sloopquest/backend",
-    "NODE_ENV": "development"
+    "NODE_ENV": "development",
+    "PLAYWRIGHT_MCP_OUTPUT_DIR": "/Users/phil/repos/sloopquest/.playwright-mcp"
   },
   "hooks": {
     "Stop": [

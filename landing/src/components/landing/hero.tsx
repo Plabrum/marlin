@@ -49,7 +49,7 @@ export function Hero() {
           <div className="relative col-span-12 mt-12 lg:col-span-4 lg:mt-0">
             <Soundings
               count={160}
-              className="absolute -inset-y-12 left-[-40%] right-[-50vw] hidden opacity-40 md:block"
+              className="absolute -inset-y-12 left-[-40%] right-[-50vw] opacity-40"
               style={{
                 WebkitMaskImage:
                   "radial-gradient(ellipse 55% 55% at 35% 30%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.55) 45%, transparent 85%)",

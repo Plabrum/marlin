@@ -23,8 +23,8 @@ export function Footer() {
     <footer className="border-t border-paper-edge/60 bg-paper-warm/40">
       <div className="mx-auto max-w-[1440px] px-6 py-20 md:px-10">
         {/* Newsletter signup */}
-        <div className="grid grid-cols-12 gap-x-10 gap-y-10 border-b border-paper-edge/70 pb-14">
-          <div className="col-span-12 md:col-span-7">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 border-b border-paper-edge/70 pb-14 md:grid-cols-12">
+          <div className="md:col-span-7">
             <SectionLabel title="The Almanac · blog & newsletter" className="mb-4" />
             <h3 className="fv-display-soft font-display text-[clamp(2rem,4.4vw,3.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink">
               The{" "}
@@ -41,7 +41,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="col-span-12 md:col-span-5">
+          <div className="md:col-span-5">
             <form className="flex flex-col gap-3 sm:flex-row">
               <label htmlFor="newsletter" className="sr-only">
                 Email
@@ -68,8 +68,8 @@ export function Footer() {
         </div>
 
         {/* Link columns */}
-        <div className="grid grid-cols-12 gap-x-10 gap-y-12 py-14">
-          <div className="col-span-12 md:col-span-5">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-12 py-14 md:grid-cols-12">
+          <div className="md:col-span-5">
             <Wordmark className="mb-6" />
             <p className="max-w-sm font-serif text-[15px] italic leading-[1.55] text-ink-soft">
               A workspace for marine surveyors who care about their craft.
@@ -85,7 +85,7 @@ export function Footer() {
           </div>
 
           {columns.map((c) => (
-            <div key={c.title} className="col-span-6 md:col-span-2">
+            <div key={c.title} className="md:col-span-2">
               <div className="t-kicker mb-5">{c.title}</div>
               <ul className="space-y-2.5">
                 {c.links.map((l) => (
@@ -102,7 +102,7 @@ export function Footer() {
             </div>
           ))}
 
-          <div className="col-span-12 md:col-span-1" />
+          <div className="hidden md:col-span-1 md:block" />
         </div>
 
         {/* Bottom strip */}

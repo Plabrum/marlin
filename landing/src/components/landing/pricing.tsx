@@ -77,11 +77,11 @@ export function Pricing() {
       </div>
 
       {/* Fee schedule — two columns, like a posted ledger */}
-      <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-12">
+      <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
         {tiers.map((t, i) => (
           <article
             key={t.numeral}
-            className={`relative col-span-12 flex flex-col border-paper-edge/70 md:col-span-6 ${
+            className={`relative flex flex-col border-paper-edge/70 ${
               i === 0
                 ? "md:border-r md:pr-12"
                 : "md:pl-2"

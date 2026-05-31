@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -27,6 +27,11 @@ export const metadata: Metadata = {
   title: "Sloopquest — a workspace for marine surveyors",
   description:
     "Capture findings on the dock. Ship polished reports the same day. An almanac-grade workspace built for marine surveyors who care about their craft.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
