@@ -5,14 +5,11 @@ import time
 from dataclasses import dataclass
 
 from litestar import Request, Router, post
-from litestar.connection import ASGIConnection
-from litestar.exceptions import NotAuthorizedException, NotFoundException
-from litestar.handlers.base import BaseRouteHandler
+from litestar.exceptions import NotFoundException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import undefer
 
-from app.config import config
 from app.domain.onboarding.models import Onboarding
 from app.domain.users.models import User
 from app.domain.users.roles import Role
@@ -33,12 +30,7 @@ class SwitchRoleBody:
     role: str
 
 
-def _requires_dev(connection: ASGIConnection, _: BaseRouteHandler) -> None:
-    if not config.IS_DEV:
-        raise NotAuthorizedException("Demo endpoints are only available in development")
-
-
-@post("/switch-role", guards=[_requires_dev], tags=["demo"])
+@post("/switch-role", tags=["demo"], exclude_from_auth=True)
 async def switch_role(
     data: SwitchRoleBody,
     request: Request,

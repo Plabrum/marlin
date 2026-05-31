@@ -3,6 +3,7 @@
 from faker import Faker
 from polyfactory import Use
 
+from app.domain.surveys.enums import SurveySource
 from app.domain.surveys.models import Survey, SurveyTemplate
 
 from .base import BaseFactory
@@ -22,6 +23,9 @@ class SurveyFactory(BaseFactory):
     __model__ = Survey
 
     template_id = None
+    source = SurveySource.MANUAL
+    source_message_id = None
+    source_attachment_index = None
 
     vessel = None
     assigned_surveyor = None

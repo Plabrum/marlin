@@ -14,6 +14,7 @@ class TaskName(StrEnum):
     SWEEP_EMBEDDINGS = auto()
     IMPORT_SURVEY_FROM_PDF = auto()
     IMPORT_SURVEYS_FROM_EMAIL = auto()
+    RESET_DEMO_ORG = auto()
 
 
 class TaskRoleType(StrEnum):
