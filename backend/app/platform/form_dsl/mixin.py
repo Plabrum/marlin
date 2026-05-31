@@ -1,12 +1,9 @@
-"""Mixin for models that own a form-response node tree."""
-
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Mapped, declared_attr, relationship
 
-if TYPE_CHECKING:
-    from app.platform.form_dsl.models import FormNode
+from app.platform.form_dsl.models import FormNode
 
 
 class FormResponseMixin:
@@ -21,7 +18,6 @@ class FormResponseMixin:
     @declared_attr
     @classmethod
     def form_nodes(cls: Any) -> Mapped[list["FormNode"]]:
-        from app.platform.form_dsl.models import FormNode  # noqa: PLC0415
 
         tablename: str = cls.__tablename__
 
