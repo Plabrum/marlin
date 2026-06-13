@@ -80,7 +80,6 @@ export function LlmDock() {
     <>
       <LlmMinimizedIcon isOpen={isOpen} />
       <aside
-        role="complementary"
         aria-label="LLM assistant"
         aria-hidden={!isOpen}
         style={{ width: isOpen ? DOCK_WIDTH : 0 }}

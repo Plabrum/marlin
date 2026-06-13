@@ -112,7 +112,6 @@ export function Combobox({
       <PopoverTrigger asChild>
         <button
           type="button"
-          role="combobox"
           aria-expanded={open}
           disabled={disabled}
           className={cn(

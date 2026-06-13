@@ -111,12 +111,11 @@ function MinimalTiptap({
         bulletList: { keepMarks: true, keepAttributes: false },
         orderedList: { keepMarks: true, keepAttributes: false },
       }),
+      // onSubmit only fires on a keydown, never during render, so reading the
+      // latest onSend through the ref here is safe despite the refs rule.
+      // eslint-disable-next-line react-hooks/refs
       EnterKeySubmit.configure({
-        onSubmit: onSend
-          ? () => {
-              onSendRef.current?.();
-            }
-          : null,
+        onSubmit: onSend ? () => onSendRef.current?.() : null,
       }),
     ],
     content,

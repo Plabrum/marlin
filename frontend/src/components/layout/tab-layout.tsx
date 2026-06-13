@@ -30,7 +30,7 @@ export function TabLayout({
         className
       )}
     >
-      <nav className="flex h-12 overflow-x-auto border-b" role="tablist">
+      <div className="flex h-12 overflow-x-auto border-b" role="tablist">
         {tabs.map((tab) => {
           const href = tab.path ? `${basePath}/${tab.path}` : basePath;
           const isActive = tab.path
@@ -60,7 +60,7 @@ export function TabLayout({
             </button>
           );
         })}
-      </nav>
+      </div>
       <div className="bg-muted/30 flex flex-col gap-4 p-6">{children}</div>
     </div>
   );

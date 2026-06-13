@@ -36,7 +36,6 @@ export function ThreadPanel({
 
   return (
     <aside
-      role="complementary"
       aria-label="Thread"
       aria-hidden={!open}
       style={{ width: open ? PANEL_WIDTH : 0 }}

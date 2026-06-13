@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import { addMinutes, format, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { AddressFields } from '@/components/calendar/address-fields';
@@ -14,6 +13,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
+import { useSyncedDraft } from '@/hooks/use-synced-draft';
 import { EntityCombobox } from '@/lib/forms/entity-combobox';
 import { cn } from '@/lib/utils';
 import type {
@@ -174,8 +174,7 @@ export function TextField({
   placeholder?: string;
   onCommit: (value: string) => void;
 }) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
+  const [draft, setDraft] = useSyncedDraft(value);
   return (
     <Input
       value={draft}
@@ -197,8 +196,7 @@ export function TextAreaField({
   placeholder?: string;
   onCommit: (value: string) => void;
 }) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
+  const [draft, setDraft] = useSyncedDraft(value);
   return (
     <Textarea
       value={draft}
@@ -219,12 +217,7 @@ export function AttendeesField({
   value: string[];
   onCommit: (value: string[]) => void;
 }) {
-  const [draft, setDraft] = useState(value.join(', '));
-  const last = useRef(value);
-  useEffect(() => {
-    last.current = value;
-    setDraft(value.join(', '));
-  }, [value]);
+  const [draft, setDraft] = useSyncedDraft(value, (v) => v.join(', '));
   return (
     <Input
       value={draft}
@@ -235,7 +228,7 @@ export function AttendeesField({
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean);
-        if (parts.join(',') !== last.current.join(',')) onCommit(parts);
+        if (parts.join(',') !== value.join(',')) onCommit(parts);
       }}
     />
   );

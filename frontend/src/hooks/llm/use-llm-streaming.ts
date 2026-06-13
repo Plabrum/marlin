@@ -199,12 +199,14 @@ export function useLlmStreaming(
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const threadIdRef = useRef(threadId);
-  threadIdRef.current = threadId;
   const onThreadCreatedRef = useRef(onThreadCreated);
-  onThreadCreatedRef.current = onThreadCreated;
   const threadable = useThreadableFromRoute();
   const threadableRef = useRef(threadable);
-  threadableRef.current = threadable;
+  useEffect(() => {
+    threadIdRef.current = threadId;
+    onThreadCreatedRef.current = onThreadCreated;
+    threadableRef.current = threadable;
+  });
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();

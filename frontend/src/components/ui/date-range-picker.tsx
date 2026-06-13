@@ -129,13 +129,16 @@ function CalendarBody({
   );
   const [touched, setTouched] = useState(false);
 
-  // Commit on unmount (popover dismissed); ref keeps the cleanup fresh.
+  // Commit on unmount (popover dismissed); the effect below keeps the cleanup
+  // closure fresh so it sees the latest draft/touched on unmount.
   const commitOnUnmount = useRef<() => void>(() => {});
-  commitOnUnmount.current = () => {
-    if (!touched) return;
-    // If user only clicked once, treat it as a single-day range.
-    onCommit(fromDate(draft?.from), fromDate(draft?.to ?? draft?.from));
-  };
+  useEffect(() => {
+    commitOnUnmount.current = () => {
+      if (!touched) return;
+      // If user only clicked once, treat it as a single-day range.
+      onCommit(fromDate(draft?.from), fromDate(draft?.to ?? draft?.from));
+    };
+  });
   useEffect(() => () => commitOnUnmount.current(), []);
 
   const handleSelect = (clicked: Date) => {

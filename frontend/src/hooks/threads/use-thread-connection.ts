@@ -73,6 +73,9 @@ export function useThreadConnection({
 
     switch (message.message_type) {
       case ThreadSocketMessageType.USER_JOINED:
+        // Applying the server's authoritative viewer snapshot — a wholesale
+        // replace from an external event, not derived from prior state.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setViewers(message.viewers.map(getViewerFromId));
         break;
 

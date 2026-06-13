@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useSyncedDraft } from '@/hooks/use-synced-draft';
 
 interface ResourceTableSearchProps {
   value: string;
@@ -16,11 +17,7 @@ export function ResourceTableSearch({
   placeholder = 'Search...',
   debounceMs = 300,
 }: ResourceTableSearchProps) {
-  const [localValue, setLocalValue] = useState(value);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+  const [localValue, setLocalValue] = useSyncedDraft(value);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

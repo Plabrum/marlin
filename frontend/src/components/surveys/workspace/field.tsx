@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -121,17 +121,18 @@ export function FieldCard({
 }) {
   const def = fieldDef(node);
   const [draft, setDraft] = useState<unknown>(node.value ?? '');
-  const lastSaved = useRef<unknown>(node.value);
-
-  useEffect(() => {
+  const [lastSaved, setLastSaved] = useState<unknown>(node.value);
+  const [synced, setSynced] = useState(node.value);
+  if (!Object.is(node.value, synced)) {
+    setSynced(node.value);
     setDraft(node.value ?? '');
-    lastSaved.current = node.value;
-  }, [node.value]);
+    setLastSaved(node.value);
+  }
 
   async function flush(value: unknown) {
-    if (Object.is(value, lastSaved.current)) return;
+    if (Object.is(value, lastSaved)) return;
     await onSave(value);
-    lastSaved.current = value;
+    setLastSaved(value);
   }
 
   const options = def.config?.options ?? [];

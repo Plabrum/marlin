@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useSyncedDraft } from '@/hooks/use-synced-draft';
 import type { AddressInput } from '@/openapi/litestarAPI.schemas';
 
 const EMPTY_ADDRESS: AddressInput = {
@@ -113,8 +114,7 @@ function BlurInput({
   placeholder?: string;
   onCommit: (value: string) => void;
 }) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
+  const [draft, setDraft] = useSyncedDraft(value);
   return (
     <Input
       value={draft}
