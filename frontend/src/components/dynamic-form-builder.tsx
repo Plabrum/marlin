@@ -1,23 +1,23 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { X, Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { FieldTypeEnum } from "@/lib/form-dsl/types";
+} from '@/components/ui/select';
+import { FieldTypeEnum } from '@/lib/form-dsl/types';
 import type {
   FormDefinition,
   FormField,
   FormSection,
   FormSubsection,
-} from "@/lib/form-dsl/types";
-import { X, Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
-import { useState } from "react";
+} from '@/lib/form-dsl/types';
 
 interface Props {
   value: FormDefinition;
@@ -25,19 +25,25 @@ interface Props {
 }
 
 function newId(prefix: string) {
-  return prefix + crypto.randomUUID().replace(/-/g, "");
+  return prefix + crypto.randomUUID().replace(/-/g, '');
 }
 
 function newField(): FormField {
-  return { id: newId("f"), type: FieldTypeEnum.text, label: "", required: false, config: {} };
+  return {
+    id: newId('f'),
+    type: FieldTypeEnum.text,
+    label: '',
+    required: false,
+    config: {},
+  };
 }
 
 function newSubsection(): FormSubsection {
-  return { id: newId("ss"), title: "", fields: [] };
+  return { id: newId('ss'), title: '', fields: [] };
 }
 
 function newSection(): FormSection {
-  return { id: newId("s"), title: "", subsections: [newSubsection()] };
+  return { id: newId('s'), title: '', subsections: [newSubsection()] };
 }
 
 export function DynamicFormBuilder({ value, onChange }: Props) {
@@ -72,26 +78,37 @@ export function DynamicFormBuilder({ value, onChange }: Props) {
   }
 
   function addSubsection(si: number) {
-    updateSubsections(si, [...(sections[si].subsections ?? []), newSubsection()]);
+    updateSubsections(si, [
+      ...(sections[si].subsections ?? []),
+      newSubsection(),
+    ]);
   }
 
   function deleteSubsection(si: number, ssi: number) {
     updateSubsections(
       si,
-      (sections[si].subsections ?? []).filter((_, i) => i !== ssi),
+      (sections[si].subsections ?? []).filter((_, i) => i !== ssi)
     );
   }
 
-  function updateSubsection(si: number, ssi: number, patch: Partial<FormSubsection>) {
+  function updateSubsection(
+    si: number,
+    ssi: number,
+    patch: Partial<FormSubsection>
+  ) {
     updateSubsections(
       si,
-      (sections[si].subsections ?? []).map((s, i) => (i === ssi ? { ...s, ...patch } : s)),
+      (sections[si].subsections ?? []).map((s, i) =>
+        i === ssi ? { ...s, ...patch } : s
+      )
     );
   }
 
   function addField(si: number, ssi: number) {
     const subs = sections[si].subsections ?? [];
-    updateSubsection(si, ssi, { fields: [...(subs[ssi].fields ?? []), newField()] });
+    updateSubsection(si, ssi, {
+      fields: [...(subs[ssi].fields ?? []), newField()],
+    });
   }
 
   function deleteField(si: number, ssi: number, fi: number) {
@@ -101,9 +118,16 @@ export function DynamicFormBuilder({ value, onChange }: Props) {
     });
   }
 
-  function updateField(si: number, ssi: number, fi: number, patch: Partial<FormField>) {
+  function updateField(
+    si: number,
+    ssi: number,
+    fi: number,
+    patch: Partial<FormField>
+  ) {
     const subs = sections[si].subsections ?? [];
-    const fields = (subs[ssi].fields ?? []).map((f, i) => (i === fi ? { ...f, ...patch } : f));
+    const fields = (subs[ssi].fields ?? []).map((f, i) =>
+      i === fi ? { ...f, ...patch } : f
+    );
     updateSubsection(si, ssi, { fields });
   }
 
@@ -120,13 +144,21 @@ export function DynamicFormBuilder({ value, onChange }: Props) {
           onUpdateTitle={(title) => updateSection(si, { title })}
           onAddSubsection={() => addSubsection(si)}
           onDeleteSubsection={(ssi) => deleteSubsection(si, ssi)}
-          onUpdateSubsectionTitle={(ssi, t) => updateSubsection(si, ssi, { title: t })}
+          onUpdateSubsectionTitle={(ssi, t) =>
+            updateSubsection(si, ssi, { title: t })
+          }
           onAddField={(ssi) => addField(si, ssi)}
           onDeleteField={(ssi, fi) => deleteField(si, ssi, fi)}
           onUpdateField={(ssi, fi, patch) => updateField(si, ssi, fi, patch)}
         />
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={addSection} className="w-full">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={addSection}
+        className="w-full"
+      >
         <Plus className="mr-1 h-4 w-4" /> Add Section
       </Button>
     </div>
@@ -164,7 +196,7 @@ function SectionEditor({
 }: SectionEditorProps) {
   const subsections = section.subsections ?? [];
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+    <div className="border-border bg-card space-y-3 rounded-lg border p-4">
       <div className="flex items-center gap-2">
         <Input
           value={section.title}
@@ -172,26 +204,47 @@ function SectionEditor({
           placeholder="Section title"
           className="flex-1"
         />
-        <Button type="button" variant="ghost" size="icon" onClick={() => onMove(-1)} disabled={index === 0}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+        >
           <ChevronUp className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="icon" onClick={() => onMove(1)} disabled={index === total - 1}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => onMove(1)}
+          disabled={index === total - 1}
+        >
           <ChevronDown className="h-4 w-4" />
         </Button>
-        <Button type="button" variant="ghost" size="icon" onClick={onDelete} className="text-destructive hover:text-destructive">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onDelete}
+          className="text-destructive hover:text-destructive"
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="space-y-3 pl-2">
         {subsections.map((sub, ssi) => (
-          <div key={sub.id} className="rounded border border-border/60 bg-background p-3 space-y-2">
+          <div
+            key={sub.id}
+            className="border-border/60 bg-background space-y-2 rounded border p-3"
+          >
             <div className="flex items-center gap-2">
               <Input
                 value={sub.title}
                 onChange={(e) => onUpdateSubsectionTitle(ssi, e.target.value)}
                 placeholder="Subsection title"
-                className="flex-1 h-8 text-sm"
+                className="h-8 flex-1 text-sm"
               />
               <Button
                 type="button"
@@ -224,7 +277,13 @@ function SectionEditor({
             </div>
           </div>
         ))}
-        <Button type="button" variant="ghost" size="sm" onClick={onAddSubsection} className="text-muted-foreground">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onAddSubsection}
+          className="text-muted-foreground"
+        >
           <Plus className="mr-1 h-3 w-3" /> Add Subsection
         </Button>
       </div>
@@ -239,7 +298,7 @@ interface FieldEditorProps {
 }
 
 function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
-  const [newOption, setNewOption] = useState("");
+  const [newOption, setNewOption] = useState('');
   const config = field.config ?? {};
   const options = (config.options as string[] | undefined) ?? [];
   const unit = config.unit as string | undefined;
@@ -252,7 +311,7 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
     const trimmed = newOption.trim();
     if (!trimmed) return;
     updateConfig({ options: [...options, trimmed] });
-    setNewOption("");
+    setNewOption('');
   }
 
   function removeOption(opt: string) {
@@ -265,7 +324,7 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
     field.type === FieldTypeEnum.segmented;
 
   return (
-    <div className="rounded border border-border/50 bg-background p-3 space-y-2">
+    <div className="border-border/50 bg-background space-y-2 rounded border p-3">
       <div className="flex items-center gap-2">
         <Input
           value={field.label}
@@ -275,14 +334,18 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
         />
         <Select
           value={field.type}
-          onValueChange={(v) => onChange({ type: v as typeof field.type, config: {} })}
+          onValueChange={(v) =>
+            onChange({ type: v as typeof field.type, config: {} })
+          }
         >
           <SelectTrigger className="w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {Object.values(FieldTypeEnum).map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -292,9 +355,20 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
             checked={field.required ?? false}
             onCheckedChange={(v) => onChange({ required: !!v })}
           />
-          <Label htmlFor={`req-${field.id}`} className="text-xs text-muted-foreground whitespace-nowrap">Required</Label>
+          <Label
+            htmlFor={`req-${field.id}`}
+            className="text-muted-foreground text-xs whitespace-nowrap"
+          >
+            Required
+          </Label>
         </div>
-        <Button type="button" variant="ghost" size="icon" onClick={onDelete} className="text-destructive hover:text-destructive shrink-0">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onDelete}
+          className="text-destructive hover:text-destructive shrink-0"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -303,9 +377,16 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
         <div className="space-y-1">
           <div className="flex flex-wrap gap-1">
             {options.map((opt) => (
-              <span key={opt} className="flex items-center gap-0.5 rounded bg-muted px-2 py-0.5 text-xs">
+              <span
+                key={opt}
+                className="bg-muted flex items-center gap-0.5 rounded px-2 py-0.5 text-xs"
+              >
                 {opt}
-                <button type="button" onClick={() => removeOption(opt)} className="ml-1 text-muted-foreground hover:text-foreground">
+                <button
+                  type="button"
+                  onClick={() => removeOption(opt)}
+                  className="text-muted-foreground hover:text-foreground ml-1"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -314,7 +395,12 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
           <Input
             value={newOption}
             onChange={(e) => setNewOption(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOption(); } }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addOption();
+              }
+            }}
             placeholder="Add option, press Enter"
             className="h-7 text-xs"
           />
@@ -323,10 +409,10 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
 
       {field.type === FieldTypeEnum.number && (
         <Input
-          value={unit ?? ""}
+          value={unit ?? ''}
           onChange={(e) => updateConfig({ unit: e.target.value || undefined })}
           placeholder="Unit (e.g. ft, lbs)"
-          className="h-7 text-xs w-40"
+          className="h-7 w-40 text-xs"
         />
       )}
     </div>

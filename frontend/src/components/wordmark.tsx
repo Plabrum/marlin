@@ -4,7 +4,7 @@ type StarMarkProps = {
   style?: React.CSSProperties;
 };
 
-export function StarMark({ size = 14, className = "", style }: StarMarkProps) {
+export function StarMark({ size = 14, className = '', style }: StarMarkProps) {
   return (
     <svg
       viewBox="-12 -12 24 24"
@@ -23,30 +23,30 @@ export function StarMark({ size = 14, className = "", style }: StarMarkProps) {
 }
 
 export function Wordmark({
-  className = "",
-  size = "md",
+  className = '',
+  size = 'md',
 }: {
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
 }) {
   const dims =
-    size === "sm"
-      ? { text: "12px", star: 9, gap: "gap-2" }
-      : size === "lg"
-        ? { text: "20px", star: 14, gap: "gap-3" }
-        : { text: "15px", star: 11, gap: "gap-2.5" };
+    size === 'sm'
+      ? { text: '12px', star: 9, gap: 'gap-2' }
+      : size === 'lg'
+        ? { text: '20px', star: 14, gap: 'gap-3' }
+        : { text: '15px', star: 11, gap: 'gap-2.5' };
 
   return (
     <span
-      className={`inline-flex items-center uppercase text-foreground ${dims.gap} ${className}`}
+      className={`text-foreground inline-flex items-center uppercase ${dims.gap} ${className}`}
       style={{
         fontFamily: "'Fraunces', Georgia, 'Times New Roman', serif",
         fontSize: dims.text,
-        letterSpacing: "0.32em",
+        letterSpacing: '0.32em',
         fontWeight: 500,
       }}
     >
-      <StarMark size={dims.star} style={{ color: "#b8845c" }} />
+      <StarMark size={dims.star} style={{ color: '#b8845c' }} />
       <span>Sloopquest</span>
     </span>
   );

@@ -1,14 +1,14 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
 interface DetailHeaderProps {
-  avatar?: React.ReactNode
-  title: string
-  status?: React.ReactNode
-  tags?: React.ReactNode
-  subtitle?: string
-  meta?: React.ReactNode
-  actions?: React.ReactNode
-  className?: string
+  avatar?: React.ReactNode;
+  title: string;
+  status?: React.ReactNode;
+  tags?: React.ReactNode;
+  subtitle?: string;
+  meta?: React.ReactNode;
+  actions?: React.ReactNode;
+  className?: string;
 }
 
 export function DetailHeader({
@@ -24,8 +24,8 @@ export function DetailHeader({
   return (
     <div
       className={cn(
-        "flex items-start gap-4 rounded-2xl border bg-card p-6 shadow-sm",
-        className,
+        'bg-card flex items-start gap-4 rounded-2xl border p-6 shadow-sm',
+        className
       )}
     >
       {avatar}
@@ -38,11 +38,11 @@ export function DetailHeader({
           {tags}
         </div>
         {subtitle && (
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>
         )}
         {meta && <div className="mt-1.5">{meta}</div>}
       </div>
       {actions && <div className="shrink-0">{actions}</div>}
     </div>
-  )
+  );
 }

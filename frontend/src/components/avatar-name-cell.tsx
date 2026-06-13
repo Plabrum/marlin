@@ -1,4 +1,4 @@
-import { getInitials, getColorByHash } from "@/lib/format";
+import { getInitials, getColorByHash } from '@/lib/format';
 
 interface AvatarNameCellProps {
   id: string;
@@ -19,7 +19,7 @@ export function AvatarNameCell({ id, name, subtitle }: AvatarNameCellProps) {
       <div className="min-w-0">
         <p className="truncate font-medium">{name}</p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="text-muted-foreground text-xs">{subtitle}</p>
         )}
       </div>
     </div>

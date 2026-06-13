@@ -2,7 +2,6 @@ import { Suspense, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { addDays, addMonths, addWeeks, format, parseISO } from "date-fns";
 import { ChevronLeft, ChevronRight, PencilLine, Plus } from "lucide-react";
-
 import { CalendarSkeleton } from "@/components/calendar/calendar-skeleton";
 import { CalendarView } from "@/components/calendar/calendar-view";
 import { EventCreatePanel } from "@/components/calendar/event-create-panel";
@@ -16,7 +15,6 @@ import {
   type InboxSearch,
   type InboxView,
 } from "@/router/authenticated.routes";
-
 import { ComposeDrawer } from "./components/compose-drawer";
 import { FilterChips } from "./components/filter-chips";
 import { InboxTopBar } from "./components/inbox-topbar";

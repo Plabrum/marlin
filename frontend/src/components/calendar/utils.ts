@@ -6,12 +6,15 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
-} from "date-fns";
-import type { CalendarView } from "./types";
+} from 'date-fns';
+import type { CalendarView } from './types';
 
-export function getVisibleRange(view: CalendarView, anchor: Date): { start: Date; end: Date } {
+export function getVisibleRange(
+  view: CalendarView,
+  anchor: Date
+): { start: Date; end: Date } {
   switch (view) {
-    case "month": {
+    case 'month': {
       const monthStart = startOfMonth(anchor);
       const monthEnd = endOfMonth(anchor);
       return {
@@ -19,23 +22,23 @@ export function getVisibleRange(view: CalendarView, anchor: Date): { start: Date
         end: endOfWeek(monthEnd, { weekStartsOn: 0 }),
       };
     }
-    case "week":
+    case 'week':
       return {
         start: startOfWeek(anchor, { weekStartsOn: 0 }),
         end: endOfWeek(anchor, { weekStartsOn: 0 }),
       };
-    case "day":
+    case 'day':
       return { start: startOfDay(anchor), end: endOfDay(anchor) };
   }
 }
 
 export function buildMonthGrid(anchor: Date): Date[] {
-  const { start } = getVisibleRange("month", anchor);
+  const { start } = getVisibleRange('month', anchor);
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
 
 export function buildWeekDays(anchor: Date): Date[] {
-  const { start } = getVisibleRange("week", anchor);
+  const { start } = getVisibleRange('week', anchor);
   return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
 

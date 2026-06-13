@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ThreadSocketMessageType,
   type ServerMessage,
   type ClientMessage,
   type Viewer,
-} from "@/types/thread-websocket";
-import { useWebSocket } from "./use-websocket";
+} from '@/types/thread-websocket';
+import { useWebSocket } from './use-websocket';
 
 interface UseThreadConnectionOptions {
   threadableType: string;
@@ -21,23 +21,29 @@ export function useThreadConnection({
   onMessageUpdate,
 }: UseThreadConnectionOptions) {
   const wsUrl = useMemo(() => {
-    const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-    const protocol = backendUrl.startsWith("https") ? "wss:" : "ws:";
-    const host = backendUrl.replace(/^https?:\/\//, "");
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const protocol = backendUrl.startsWith('https') ? 'wss:' : 'ws:';
+    const host = backendUrl.replace(/^https?:\/\//, '');
     return `${protocol}//${host}/ws/threads/${threadableType}/${threadableId}`;
   }, [threadableType, threadableId]);
 
   const [viewers, setViewers] = useState<Viewer[]>([]);
-  const [userNameCache, setUserNameCache] = useState<Map<string, string>>(new Map());
+  const [userNameCache, setUserNameCache] = useState<Map<string, string>>(
+    new Map()
+  );
   const [isPageVisible, setIsPageVisible] = useState(
-    typeof document !== "undefined" ? document.visibilityState === "visible" : true,
+    typeof document !== 'undefined'
+      ? document.visibilityState === 'visible'
+      : true
   );
 
   const { isConnected, lastMessage, send } = useWebSocket({
     url: wsUrl,
     enabled,
     onOpen: () => {
-      send({ message_type: ThreadSocketMessageType.MARK_READ } as ClientMessage);
+      send({
+        message_type: ThreadSocketMessageType.MARK_READ,
+      } as ClientMessage);
     },
     onClose: () => {
       setViewers([]);
@@ -46,11 +52,11 @@ export function useThreadConnection({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setIsPageVisible(document.visibilityState === "visible");
+      setIsPageVisible(document.visibilityState === 'visible');
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -72,7 +78,9 @@ export function useThreadConnection({
 
       case ThreadSocketMessageType.USER_LEFT:
         if (message.user_id) {
-          setViewers((prev) => prev.filter((v) => v.user_id !== message.user_id));
+          setViewers((prev) =>
+            prev.filter((v) => v.user_id !== message.user_id)
+          );
         }
         break;
 
@@ -80,8 +88,8 @@ export function useThreadConnection({
         if (message.user_id) {
           setViewers((prev) =>
             prev.map((v) =>
-              v.user_id === message.user_id ? { ...v, is_typing: true } : v,
-            ),
+              v.user_id === message.user_id ? { ...v, is_typing: true } : v
+            )
           );
         }
         break;
@@ -90,8 +98,8 @@ export function useThreadConnection({
         if (message.user_id) {
           setViewers((prev) =>
             prev.map((v) =>
-              v.user_id === message.user_id ? { ...v, is_typing: false } : v,
-            ),
+              v.user_id === message.user_id ? { ...v, is_typing: false } : v
+            )
           );
         }
         break;
@@ -100,8 +108,13 @@ export function useThreadConnection({
       case ThreadSocketMessageType.MESSAGE_UPDATED:
       case ThreadSocketMessageType.MESSAGE_DELETED:
         onMessageUpdate?.();
-        if (message.message_type === ThreadSocketMessageType.MESSAGE_CREATED && isPageVisible) {
-          send({ message_type: ThreadSocketMessageType.MARK_READ } as ClientMessage);
+        if (
+          message.message_type === ThreadSocketMessageType.MESSAGE_CREATED &&
+          isPageVisible
+        ) {
+          send({
+            message_type: ThreadSocketMessageType.MARK_READ,
+          } as ClientMessage);
         }
         break;
     }

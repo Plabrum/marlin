@@ -1,12 +1,12 @@
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface MessageActionsProps {
   onEdit: () => void;
@@ -14,9 +14,18 @@ interface MessageActionsProps {
   className?: string;
 }
 
-export function MessageActions({ onEdit, onDelete, className }: MessageActionsProps) {
+export function MessageActions({
+  onEdit,
+  onDelete,
+  className,
+}: MessageActionsProps) {
   return (
-    <div className={cn("opacity-0 transition-opacity group-hover:opacity-100", className)}>
+    <div
+      className={cn(
+        'opacity-0 transition-opacity group-hover:opacity-100',
+        className
+      )}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">

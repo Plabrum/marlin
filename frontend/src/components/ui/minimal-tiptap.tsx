@@ -1,7 +1,7 @@
-import * as React from "react";
-import { Extension } from "@tiptap/core";
-import { EditorContent, useEditor } from "@tiptap/react";
-import { StarterKit } from "@tiptap/starter-kit";
+import * as React from 'react';
+import { Extension } from '@tiptap/core';
+import { EditorContent, useEditor } from '@tiptap/react';
+import { StarterKit } from '@tiptap/starter-kit';
 import {
   Bold,
   Italic,
@@ -16,18 +16,18 @@ import {
   Minus,
   Undo,
   Redo,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Toggle } from "@/components/ui/toggle";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Toggle } from '@/components/ui/toggle';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { type TiptapContent, hasContentText } from "@/lib/tiptap";
+} from '@/components/ui/tooltip';
+import { type TiptapContent, hasContentText } from '@/lib/tiptap';
+import { cn } from '@/lib/utils';
 
 interface MinimalTiptapProps {
   content?: TiptapContent | null;
@@ -37,11 +37,11 @@ interface MinimalTiptapProps {
   className?: string;
   editorClassName?: string;
   showToolbar?: boolean;
-  toolbar?: "full" | "minimal";
+  toolbar?: 'full' | 'minimal';
   showToolbarToggle?: boolean;
   onSend?: () => void | Promise<void>;
   isSending?: boolean;
-  mode?: "new" | "edit";
+  mode?: 'new' | 'edit';
   onCancel?: () => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -52,7 +52,7 @@ interface EnterKeySubmitOptions {
 }
 
 const EnterKeySubmit = Extension.create<EnterKeySubmitOptions>({
-  name: "enterKeySubmit",
+  name: 'enterKeySubmit',
 
   addOptions() {
     return { onSubmit: null };
@@ -65,14 +65,14 @@ const EnterKeySubmit = Extension.create<EnterKeySubmitOptions>({
 
         const { state } = this.editor;
         const { $from } = state.selection;
-        const isInList = $from.node(-1)?.type.name === "listItem";
+        const isInList = $from.node(-1)?.type.name === 'listItem';
 
         if (isInList) return false;
 
         this.options.onSubmit();
         return true;
       },
-      "Shift-Enter": () => false,
+      'Shift-Enter': () => false,
     };
   },
 });
@@ -80,16 +80,16 @@ const EnterKeySubmit = Extension.create<EnterKeySubmitOptions>({
 function MinimalTiptap({
   content = null,
   onChange,
-  placeholder = "Start typing...",
+  placeholder = 'Start typing...',
   editable = true,
   className,
   editorClassName,
   showToolbar: initialShowToolbar = false,
-  toolbar = "full",
+  toolbar = 'full',
   showToolbarToggle = true,
   onSend,
   isSending = false,
-  mode = "new",
+  mode = 'new',
   onCancel,
   onFocus,
   onBlur,
@@ -101,7 +101,7 @@ function MinimalTiptap({
     onSendRef.current = onSend;
   }, [onSend]);
 
-  const isEditMode = mode === "edit";
+  const isEditMode = mode === 'edit';
   const hasText = hasContentText(content);
   const showSendButton = onSend !== undefined;
 
@@ -112,7 +112,11 @@ function MinimalTiptap({
         orderedList: { keepMarks: true, keepAttributes: false },
       }),
       EnterKeySubmit.configure({
-        onSubmit: onSend ? () => { onSendRef.current?.(); } : null,
+        onSubmit: onSend
+          ? () => {
+              onSendRef.current?.();
+            }
+          : null,
       }),
     ],
     content,
@@ -121,17 +125,21 @@ function MinimalTiptap({
     onUpdate: ({ editor }) => {
       onChange?.(editor.getJSON());
     },
-    onFocus: () => { onFocus?.(); },
-    onBlur: () => { onBlur?.(); },
+    onFocus: () => {
+      onFocus?.();
+    },
+    onBlur: () => {
+      onBlur?.();
+    },
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
-          "p-0 border-0",
+          'prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none',
+          'p-0 border-0'
         ),
       },
       handleKeyDown: (_view, event) => {
-        if ((event.metaKey || event.ctrlKey) && event.key === "b") {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'b') {
           event.stopPropagation();
         }
         return false;
@@ -143,7 +151,7 @@ function MinimalTiptap({
     if (editor && content !== undefined) {
       const currentContent = editor.getJSON();
       if (JSON.stringify(currentContent) !== JSON.stringify(content)) {
-        editor.commands.setContent(content || "");
+        editor.commands.setContent(content || '');
       }
     }
   }, [content, editor]);
@@ -151,12 +159,12 @@ function MinimalTiptap({
   if (!editor) return null;
 
   const renderToolbar = () => {
-    if (toolbar === "minimal") {
+    if (toolbar === 'minimal') {
       return (
         <div className="flex flex-wrap items-center gap-1 border-b p-2">
           <Toggle
             size="sm"
-            pressed={editor.isActive("bold")}
+            pressed={editor.isActive('bold')}
             onPressedChange={() => editor.chain().focus().toggleBold().run()}
             disabled={!editor.can().chain().focus().toggleBold().run()}
           >
@@ -164,7 +172,7 @@ function MinimalTiptap({
           </Toggle>
           <Toggle
             size="sm"
-            pressed={editor.isActive("italic")}
+            pressed={editor.isActive('italic')}
             onPressedChange={() => editor.chain().focus().toggleItalic().run()}
             disabled={!editor.can().chain().focus().toggleItalic().run()}
           >
@@ -173,15 +181,19 @@ function MinimalTiptap({
           <Separator orientation="vertical" className="h-6" />
           <Toggle
             size="sm"
-            pressed={editor.isActive("bulletList")}
-            onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+            pressed={editor.isActive('bulletList')}
+            onPressedChange={() =>
+              editor.chain().focus().toggleBulletList().run()
+            }
           >
             <List className="h-4 w-4" />
           </Toggle>
           <Toggle
             size="sm"
-            pressed={editor.isActive("orderedList")}
-            onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+            pressed={editor.isActive('orderedList')}
+            onPressedChange={() =>
+              editor.chain().focus().toggleOrderedList().run()
+            }
           >
             <ListOrdered className="h-4 w-4" />
           </Toggle>
@@ -193,7 +205,7 @@ function MinimalTiptap({
       <div className="flex flex-wrap items-center gap-1 border-b p-2">
         <Toggle
           size="sm"
-          pressed={editor.isActive("bold")}
+          pressed={editor.isActive('bold')}
           onPressedChange={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
         >
@@ -201,7 +213,7 @@ function MinimalTiptap({
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("italic")}
+          pressed={editor.isActive('italic')}
           onPressedChange={() => editor.chain().focus().toggleItalic().run()}
           disabled={!editor.can().chain().focus().toggleItalic().run()}
         >
@@ -209,7 +221,7 @@ function MinimalTiptap({
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("strike")}
+          pressed={editor.isActive('strike')}
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}
           disabled={!editor.can().chain().focus().toggleStrike().run()}
         >
@@ -217,7 +229,7 @@ function MinimalTiptap({
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("code")}
+          pressed={editor.isActive('code')}
           onPressedChange={() => editor.chain().focus().toggleCode().run()}
           disabled={!editor.can().chain().focus().toggleCode().run()}
         >
@@ -226,44 +238,56 @@ function MinimalTiptap({
         <Separator orientation="vertical" className="h-6" />
         <Toggle
           size="sm"
-          pressed={editor.isActive("heading", { level: 1 })}
-          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          pressed={editor.isActive('heading', { level: 1 })}
+          onPressedChange={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
         >
           <Heading1 className="h-4 w-4" />
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("heading", { level: 2 })}
-          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          pressed={editor.isActive('heading', { level: 2 })}
+          onPressedChange={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
         >
           <Heading2 className="h-4 w-4" />
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("heading", { level: 3 })}
-          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          pressed={editor.isActive('heading', { level: 3 })}
+          onPressedChange={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
         >
           <Heading3 className="h-4 w-4" />
         </Toggle>
         <Separator orientation="vertical" className="h-6" />
         <Toggle
           size="sm"
-          pressed={editor.isActive("bulletList")}
-          onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+          pressed={editor.isActive('bulletList')}
+          onPressedChange={() =>
+            editor.chain().focus().toggleBulletList().run()
+          }
         >
           <List className="h-4 w-4" />
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("orderedList")}
-          onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+          pressed={editor.isActive('orderedList')}
+          onPressedChange={() =>
+            editor.chain().focus().toggleOrderedList().run()
+          }
         >
           <ListOrdered className="h-4 w-4" />
         </Toggle>
         <Toggle
           size="sm"
-          pressed={editor.isActive("blockquote")}
-          onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
+          pressed={editor.isActive('blockquote')}
+          onPressedChange={() =>
+            editor.chain().focus().toggleBlockquote().run()
+          }
         >
           <Quote className="h-4 w-4" />
         </Toggle>
@@ -297,10 +321,10 @@ function MinimalTiptap({
   };
 
   return (
-    <div className={cn("overflow-hidden rounded-lg border", className)}>
+    <div className={cn('overflow-hidden rounded-lg border', className)}>
       {editable && showToolbar && renderToolbar()}
 
-      <div className={cn("p-3", editorClassName)}>
+      <div className={cn('p-3', editorClassName)}>
         <EditorContent editor={editor} placeholder={placeholder} />
       </div>
 
@@ -319,7 +343,11 @@ function MinimalTiptap({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  <p>{showToolbar ? "Hide formatting toolbar" : "Show formatting toolbar"}</p>
+                  <p>
+                    {showToolbar
+                      ? 'Hide formatting toolbar'
+                      : 'Show formatting toolbar'}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -363,4 +391,4 @@ function MinimalTiptap({
 }
 
 export { MinimalTiptap, type MinimalTiptapProps };
-export type { TiptapContent } from "@/lib/tiptap";
+export type { TiptapContent } from '@/lib/tiptap';

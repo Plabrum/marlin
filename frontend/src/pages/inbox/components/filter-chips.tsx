@@ -1,5 +1,5 @@
-import type { InboxView } from "@/router/authenticated.routes";
 import { cn } from "@/lib/utils";
+import type { InboxView } from "@/router/authenticated.routes";
 
 const CHIPS: { value: InboxView; label: string }[] = [
   { value: "all", label: "All" },

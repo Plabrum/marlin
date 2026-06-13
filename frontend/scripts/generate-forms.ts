@@ -6,15 +6,15 @@
  * Triggered automatically after Orval via the "codegen" npm script.
  */
 
-import { writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
+import { writeFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 const OPENAPI_URL =
-  process.env.OPENAPI_URL ?? "http://localhost:8000/schema/openapi.json";
+  process.env.OPENAPI_URL ?? 'http://localhost:8000/schema/openapi.json';
 const ACTION_METADATA_URL =
   process.env.ACTION_METADATA_URL ??
-  "http://localhost:8000/schema/action-metadata";
-const OUTPUT_DIR = join(import.meta.dirname, "../src/openapi/actions");
+  'http://localhost:8000/schema/action-metadata';
+const OUTPUT_DIR = join(import.meta.dirname, '../src/openapi/actions');
 
 // ---------------------------------------------------------------------------
 // Types
@@ -79,21 +79,21 @@ interface FormFieldInfo {
 // ---------------------------------------------------------------------------
 
 function resolveRef(spec: OpenAPISchema, ref: string): SchemaObject {
-  const name = ref.split("/").pop()!;
+  const name = ref.split('/').pop()!;
   return spec.components.schemas[name];
 }
 
 function refName(ref: string): string {
-  return ref.split("/").pop()!;
+  return ref.split('/').pop()!;
 }
 
 function humanizeLabel(key: string): string {
-  if (key === "dob") return "Date of Birth";
-  if (key === "is_qmb") return "QMB Status";
+  if (key === 'dob') return 'Date of Birth';
+  if (key === 'is_qmb') return 'QMB Status';
   return key
-    .replace(/_id$/, "")
-    .replace(/_at$/, "")
-    .replace(/_/g, " ")
+    .replace(/_id$/, '')
+    .replace(/_at$/, '')
+    .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -102,7 +102,7 @@ function humanizeLabel(key: string): string {
  */
 function unwrapNullable(prop: RefOrSchema): RefOrSchema {
   if (prop.oneOf) {
-    const nonNull = prop.oneOf.filter((s) => s.type !== "null");
+    const nonNull = prop.oneOf.filter((s) => s.type !== 'null');
     if (nonNull.length === 1) return nonNull[0];
   }
   return prop;
@@ -116,7 +116,7 @@ function inferFormField(
   prop: RefOrSchema,
   spec: OpenAPISchema,
   fieldMeta: ActionFieldMeta | undefined,
-  isRequired: boolean,
+  isRequired: boolean
 ): FormFieldInfo | null {
   // Skip ID fields
   if (fieldMeta?.is_id_field) return null;
@@ -127,10 +127,10 @@ function inferFormField(
   const required = isRequired;
 
   // Entity ref: model-backed combobox
-  if (fieldMeta?.type === "entity_ref" && fieldMeta.model) {
+  if (fieldMeta?.type === 'entity_ref' && fieldMeta.model) {
     return {
       name: key,
-      component: "FormEntityCombobox",
+      component: 'FormEntityCombobox',
       label,
       required,
       placeholder,
@@ -145,7 +145,7 @@ function inferFormField(
     if (resolved.enum) {
       return {
         name: key,
-        component: "FormSelect",
+        component: 'FormSelect',
         label,
         required,
         placeholder,
@@ -155,15 +155,15 @@ function inferFormField(
   }
 
   // Email (by field name)
-  if (key === "email" || key.endsWith("_email")) {
-    return { name: key, component: "FormEmail", label, required, placeholder };
+  if (key === 'email' || key.endsWith('_email')) {
+    return { name: key, component: 'FormEmail', label, required, placeholder };
   }
 
   // Phone (by field name)
-  if (key === "phone" || key.endsWith("_phone")) {
+  if (key === 'phone' || key.endsWith('_phone')) {
     return {
       name: key,
-      component: "FormString",
+      component: 'FormString',
       label,
       required,
       placeholder,
@@ -173,14 +173,14 @@ function inferFormField(
 
   // Date (by metadata type, format, or name)
   if (
-    fieldMeta?.type === "date" ||
-    schema.format === "date" ||
-    key.endsWith("_date") ||
-    key === "dob"
+    fieldMeta?.type === 'date' ||
+    schema.format === 'date' ||
+    key.endsWith('_date') ||
+    key === 'dob'
   ) {
     return {
       name: key,
-      component: "FormDatetime",
+      component: 'FormDatetime',
       label,
       required,
       placeholder,
@@ -189,25 +189,25 @@ function inferFormField(
 
   // Datetime
   if (
-    fieldMeta?.type === "datetime" ||
-    schema.format === "date-time" ||
-    key.endsWith("_at")
+    fieldMeta?.type === 'datetime' ||
+    schema.format === 'date-time' ||
+    key.endsWith('_at')
   ) {
     return {
       name: key,
-      component: "FormDatetime",
+      component: 'FormDatetime',
       label,
       required,
       placeholder,
-      extraProps: "includeTime",
+      extraProps: 'includeTime',
     };
   }
 
   // Boolean
-  if (schema.type === "boolean" || fieldMeta?.type === "boolean") {
+  if (schema.type === 'boolean' || fieldMeta?.type === 'boolean') {
     return {
       name: key,
-      component: "FormCheckbox",
+      component: 'FormCheckbox',
       label,
       required,
       placeholder,
@@ -215,10 +215,10 @@ function inferFormField(
   }
 
   // Currency — money input. Stored as integer cents but displayed/entered as dollars.
-  if (fieldMeta?.type === "currency") {
+  if (fieldMeta?.type === 'currency') {
     return {
       name: key,
-      component: "FormCurrency",
+      component: 'FormCurrency',
       label,
       required,
       placeholder,
@@ -227,13 +227,13 @@ function inferFormField(
 
   // Number
   if (
-    schema.type === "integer" ||
-    schema.type === "number" ||
-    fieldMeta?.type === "number"
+    schema.type === 'integer' ||
+    schema.type === 'number' ||
+    fieldMeta?.type === 'number'
   ) {
     return {
       name: key,
-      component: "FormNumber",
+      component: 'FormNumber',
       label,
       required,
       placeholder,
@@ -241,10 +241,10 @@ function inferFormField(
   }
 
   // Array of strings → comma-separated list field
-  if (schema.type === "array") {
+  if (schema.type === 'array') {
     return {
       name: key,
-      component: "FormStringList",
+      component: 'FormStringList',
       label,
       required,
       placeholder,
@@ -253,11 +253,11 @@ function inferFormField(
 
   // Textarea (long text fields by name heuristic)
   if (/notes|description|background|diagnosis|reason/.test(key)) {
-    return { name: key, component: "FormText", label, required, placeholder };
+    return { name: key, component: 'FormText', label, required, placeholder };
   }
 
   // Default: string
-  return { name: key, component: "FormString", label, required, placeholder };
+  return { name: key, component: 'FormString', label, required, placeholder };
 }
 
 // ---------------------------------------------------------------------------
@@ -266,20 +266,20 @@ function inferFormField(
 
 function pascalCase(str: string): string {
   return str
-    .split("_")
+    .split('_')
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
+    .join('');
 }
 
 function actionKeyToFormName(actionKey: string): string {
   // "patient_actions__add_contact" → "PatientActionsAddContactForm"
-  return pascalCase(actionKey) + "Form";
+  return pascalCase(actionKey) + 'Form';
 }
 
 function generateFormComponent(
   actionKey: string,
   schemaName: string,
-  fields: FormFieldInfo[],
+  fields: FormFieldInfo[]
 ): string {
   const formName = actionKeyToFormName(actionKey);
   const varPrefix = `_${actionKey}`;
@@ -287,22 +287,22 @@ function generateFormComponent(
   // Build JSX for each field — scoped to the action's typed components
   const fieldLines = fields.map((f) => {
     const props: string[] = [`name="${f.name}"`, `label="${f.label}"`];
-    if (f.required) props.push("required");
+    if (f.required) props.push('required');
     if (f.placeholder) props.push(`placeholder="${f.placeholder}"`);
     if (f.extraProps) props.push(f.extraProps);
 
-    if (f.component === "FormSelect" && f.enumRef) {
+    if (f.component === 'FormSelect' && f.enumRef) {
       props.push(
-        `options={(Object.values(${f.enumRef}) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\\b\\w/g, c => c.toUpperCase()) }))}`,
+        `options={(Object.values(${f.enumRef}) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\\b\\w/g, c => c.toUpperCase()) }))}`
       );
     }
 
-    if (f.component === "FormEntityCombobox" && f.modelName) {
+    if (f.component === 'FormEntityCombobox' && f.modelName) {
       props.push(`modelName="${f.modelName}"`);
       if (f.createAction) props.push(`createAction="${f.createAction}"`);
     }
 
-    return `      <${varPrefix}.${f.component} ${props.join(" ")} />`;
+    return `      <${varPrefix}.${f.component} ${props.join(' ')} />`;
   });
 
   return `// --- ${actionKey} ---
@@ -318,7 +318,7 @@ export function ${formName}(props: GeneratedFormProps<${schemaName}>) {
       defaultValues={props.defaultValues}
       isSubmitting={props.isSubmitting}
     >
-${fieldLines.join("\n")}
+${fieldLines.join('\n')}
     </${varPrefix}.FormSheet>
   );
 }`;
@@ -329,7 +329,7 @@ function generateFormsFile(
     actionKey: string;
     schemaName: string;
     fields: FormFieldInfo[];
-  }>,
+  }>
 ): string {
   // Collect all schema type imports and enum value imports
   const typeImports = new Set<string>();
@@ -344,16 +344,16 @@ function generateFormsFile(
 
   const typeImportLine =
     typeImports.size > 0
-      ? `import type { ${[...typeImports].sort().join(", ")} } from "@/openapi/litestarAPI.schemas";`
-      : "";
+      ? `import type { ${[...typeImports].sort().join(', ')} } from "@/openapi/litestarAPI.schemas";`
+      : '';
   const valueImportLine =
     valueImports.size > 0
-      ? `import { ${[...valueImports].sort().join(", ")} } from "@/openapi/litestarAPI.schemas";`
-      : "";
+      ? `import { ${[...valueImports].sort().join(', ')} } from "@/openapi/litestarAPI.schemas";`
+      : '';
 
   const formComponents = actions
     .map((a) => generateFormComponent(a.actionKey, a.schemaName, a.fields))
-    .join("\n\n");
+    .join('\n\n');
 
   return `/**
  * Generated by generate-forms.ts — DO NOT EDIT
@@ -368,20 +368,19 @@ ${formComponents}
 }
 
 function generateRegistryFile(
-  actions: Array<{ actionKey: string; schemaName: string }>,
+  actions: Array<{ actionKey: string; schemaName: string }>
 ): string {
   const imports = actions
     .map((a) => `  ${actionKeyToFormName(a.actionKey)},`)
-    .join("\n");
+    .join('\n');
 
   const entries = actions
     .map(
-
       (a) => `  "${a.actionKey}": {
     render: (params) => <${actionKeyToFormName(a.actionKey)} {...params} />,
-  }`,
+  }`
     )
-    .join(",\n");
+    .join(',\n');
 
   return `/**
  * Generated by generate-forms.ts — DO NOT EDIT
@@ -454,7 +453,7 @@ async function main() {
         prop,
         spec,
         fieldMeta,
-        isRequired,
+        isRequired
       );
       if (!field) continue;
 
@@ -470,7 +469,7 @@ async function main() {
 
     if (fields.length === 0) {
       console.warn(
-        `  ⚠ No form fields for ${actionKey} (all ID fields?), skipping`,
+        `  ⚠ No form fields for ${actionKey} (all ID fields?), skipping`
       );
       continue;
     }
@@ -479,7 +478,7 @@ async function main() {
   }
 
   if (formActions.length === 0) {
-    console.log("  No actions with forms found, nothing to generate");
+    console.log('  No actions with forms found, nothing to generate');
     return;
   }
 
@@ -487,21 +486,21 @@ async function main() {
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
   const formsContent = generateFormsFile(formActions);
-  const formsPath = join(OUTPUT_DIR, "forms.gen.tsx");
+  const formsPath = join(OUTPUT_DIR, 'forms.gen.tsx');
   writeFileSync(formsPath, formsContent);
-  console.log(`  ✓ ${formsPath.replace(process.cwd() + "/", "")}`);
+  console.log(`  ✓ ${formsPath.replace(process.cwd() + '/', '')}`);
 
   const registryContent = generateRegistryFile(formActions);
-  const registryPath = join(OUTPUT_DIR, "registry.gen.tsx");
+  const registryPath = join(OUTPUT_DIR, 'registry.gen.tsx');
   writeFileSync(registryPath, registryContent);
-  console.log(`  ✓ ${registryPath.replace(process.cwd() + "/", "")}`);
+  console.log(`  ✓ ${registryPath.replace(process.cwd() + '/', '')}`);
 
   console.log(
-    `\n  Generated ${formActions.length} form component(s) + registry`,
+    `\n  Generated ${formActions.length} form component(s) + registry`
   );
 }
 
 main().catch((err) => {
-  console.error("Form codegen failed:", err);
+  console.error('Form codegen failed:', err);
   process.exit(1);
 });

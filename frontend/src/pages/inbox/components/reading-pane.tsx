@@ -2,17 +2,15 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Archive, ClipboardList, Users } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getErrorMessage } from "@/lib/error-handler";
 import { useActionsActionGroupObjectIdExecuteObjectAction } from "@/openapi/actions/actions";
 import { useEmailThreadsIdDetailHandlerSuspense } from "@/openapi/emailthread/emailthread";
 import { useListMessageSuspense } from "@/openapi/inbox/inbox";
-import type { TextFilter } from "@/openapi/litestarAPI.schemas";
-import { getErrorMessage } from "@/lib/error-handler";
-
 import { MessageBubble } from "./message-bubble";
 import { ReplyComposer } from "./reply-composer";
+import type { TextFilter } from "@/openapi/litestarAPI.schemas";
 
 interface Props {
   threadId: string;

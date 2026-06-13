@@ -1,11 +1,21 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { SurveyFormNodeRef, SurveyDetail, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
-import { FindingsList } from "./findings-list";
-import { PhotosRail } from "./photos-rail";
-import { VesselCard } from "./vessel-card";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FindingsList } from './findings-list';
+import { PhotosRail } from './photos-rail';
+import { VesselCard } from './vessel-card';
+import type {
+  SurveyFormNodeRef,
+  SurveyDetail,
+  SurveyMediaListItem,
+} from '@/openapi/litestarAPI.schemas';
 
 export function MobileRail({
   surveyId,
@@ -32,7 +42,7 @@ export function MobileRail({
       <SheetTrigger asChild>
         <Button
           size="sm"
-          className="fixed bottom-4 right-4 z-30 rounded-full shadow-lg md:hidden"
+          className="fixed right-4 bottom-4 z-30 rounded-full shadow-lg md:hidden"
         >
           Rail
         </Button>

@@ -1,44 +1,39 @@
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { useActionsActionGroupObjectIdExecuteObjectAction } from "@/openapi/actions/actions";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useActionsActionGroupObjectIdExecuteObjectAction } from '@/openapi/actions/actions';
 import type {
   FieldDef,
   Section,
   Subsection,
   SurveyTemplateDetail,
   TemplateDefinition,
-} from "@/openapi/litestarAPI.schemas";
+} from '@/openapi/litestarAPI.schemas';
 
 const FIELD_TYPES = [
-  "text",
-  "longtext",
-  "select",
-  "multiselect",
-  "segmented",
-  "number",
-  "currency",
-  "date",
-  "boolean",
-  "photo",
-  "static_text",
-  "signature",
+  'text',
+  'longtext',
+  'select',
+  'multiselect',
+  'segmented',
+  'number',
+  'currency',
+  'date',
+  'boolean',
+  'photo',
+  'static_text',
+  'signature',
 ] as const;
 
 type EditableTemplate = TemplateDefinition & {
@@ -60,19 +55,27 @@ function normalizeDefinition(def: TemplateDefinition): EditableTemplate {
   };
 }
 
-export function TemplateEditor({ template }: { template: SurveyTemplateDetail }) {
-  const [draft, setDraft] = useState<EditableTemplate>(() => normalizeDefinition(template.definition));
-  const [rawJson, setRawJson] = useState(() => JSON.stringify(template.definition, null, 2));
+export function TemplateEditor({
+  template,
+}: {
+  template: SurveyTemplateDetail;
+}) {
+  const [draft, setDraft] = useState<EditableTemplate>(() =>
+    normalizeDefinition(template.definition)
+  );
+  const [rawJson, setRawJson] = useState(() =>
+    JSON.stringify(template.definition, null, 2)
+  );
   const [rawError, setRawError] = useState<string | null>(null);
   const execute = useActionsActionGroupObjectIdExecuteObjectAction();
   const queryClient = useQueryClient();
 
   async function save(next: EditableTemplate) {
     await execute.mutateAsync({
-      actionGroup: "survey_template_actions",
+      actionGroup: 'survey_template_actions',
       objectId: template.id,
       data: {
-        action: "survey_template_actions__update",
+        action: 'survey_template_actions__update',
         data: {
           name: template.name,
           tags: template.tags,
@@ -82,7 +85,9 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
     });
     await queryClient.invalidateQueries({
       predicate: (q) =>
-        String(q.queryKey[0] ?? "").startsWith(`/survey-templates/${template.id}`),
+        String(q.queryKey[0] ?? '').startsWith(
+          `/survey-templates/${template.id}`
+        ),
     });
   }
 
@@ -94,8 +99,8 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
   function addSection() {
     const next = clone(draft);
     next.sections.push({
-      id: randomId("sec"),
-      title: "New section",
+      id: randomId('sec'),
+      title: 'New section',
       fields: [],
       subsections: [],
     });
@@ -120,21 +125,19 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
       setRawError(null);
       setDraft(normalizeDefinition(parsed));
     } catch (err) {
-      setRawError(err instanceof Error ? err.message : "Invalid JSON");
+      setRawError(err instanceof Error ? err.message : 'Invalid JSON');
     }
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Sections render in order; surveyors can override per-survey via the workspace.
+        <p className="text-muted-foreground text-sm">
+          Sections render in order; surveyors can override per-survey via the
+          workspace.
         </p>
-        <Button
-          onClick={() => save(draft)}
-          disabled={execute.isPending}
-        >
-          {execute.isPending ? "Saving…" : "Save template"}
+        <Button onClick={() => save(draft)} disabled={execute.isPending}>
+          {execute.isPending ? 'Saving…' : 'Save template'}
         </Button>
       </div>
 
@@ -146,7 +149,7 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
 
         <TabsContent value="structured" className="space-y-3">
           {draft.sections.length === 0 && (
-            <p className="rounded-2xl border bg-white p-4 text-sm text-muted-foreground">
+            <p className="text-muted-foreground rounded-2xl border bg-white p-4 text-sm">
               No sections yet.
             </p>
           )}
@@ -158,7 +161,9 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
               onRemove={() => removeSection(idx)}
             />
           ))}
-          <Button variant="outline" onClick={addSection}>+ Add section</Button>
+          <Button variant="outline" onClick={addSection}>
+            + Add section
+          </Button>
         </TabsContent>
 
         <TabsContent value="raw" className="space-y-2">
@@ -169,7 +174,9 @@ export function TemplateEditor({ template }: { template: SurveyTemplateDetail })
             className="font-mono text-xs"
           />
           {rawError && <p className="text-sm text-red-600">{rawError}</p>}
-          <Button onClick={applyRaw} variant="outline">Apply JSON to editor</Button>
+          <Button onClick={applyRaw} variant="outline">
+            Apply JSON to editor
+          </Button>
         </TabsContent>
       </Tabs>
     </div>
@@ -186,14 +193,20 @@ function SectionEditor({
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-2xl border bg-white p-4 space-y-3">
+    <div className="space-y-3 rounded-2xl border bg-white p-4">
       <div className="flex items-center gap-2">
         <Input
           value={section.title}
-          onChange={(e) => onChange((s) => { s.title = e.target.value; })}
+          onChange={(e) =>
+            onChange((s) => {
+              s.title = e.target.value;
+            })
+          }
           className="font-medium"
         />
-        <Button variant="ghost" size="sm" onClick={onRemove}>Remove</Button>
+        <Button variant="ghost" size="sm" onClick={onRemove}>
+          Remove
+        </Button>
       </div>
       <div className="space-y-2 pl-4">
         <div className="space-y-2">
@@ -221,9 +234,9 @@ function SectionEditor({
               onChange((s) => {
                 if (!s.fields) s.fields = [];
                 s.fields.push({
-                  id: randomId("fld"),
-                  label: "New field",
-                  type: "text",
+                  id: randomId('fld'),
+                  label: 'New field',
+                  type: 'text',
                 });
               })
             }
@@ -255,8 +268,8 @@ function SectionEditor({
             onChange((s) => {
               if (!s.subsections) s.subsections = [];
               s.subsections.push({
-                id: randomId("sub"),
-                title: "New subsection",
+                id: randomId('sub'),
+                title: 'New subsection',
                 fields: [],
               });
             })
@@ -279,13 +292,19 @@ function SubsectionEditor({
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-dashed bg-muted/30 p-3 space-y-2">
+    <div className="bg-muted/30 space-y-2 rounded-xl border border-dashed p-3">
       <div className="flex items-center gap-2">
         <Input
           value={subsection.title}
-          onChange={(e) => onChange((s) => { s.title = e.target.value; })}
+          onChange={(e) =>
+            onChange((s) => {
+              s.title = e.target.value;
+            })
+          }
         />
-        <Button variant="ghost" size="sm" onClick={onRemove}>Remove</Button>
+        <Button variant="ghost" size="sm" onClick={onRemove}>
+          Remove
+        </Button>
       </div>
       <div className="space-y-2 pl-3">
         {(subsection.fields ?? []).map((field, idx) => (
@@ -312,9 +331,9 @@ function SubsectionEditor({
             onChange((s) => {
               if (!s.fields) s.fields = [];
               s.fields.push({
-                id: randomId("fld"),
-                label: "New field",
-                type: "text",
+                id: randomId('fld'),
+                label: 'New field',
+                type: 'text',
               });
             })
           }
@@ -335,24 +354,32 @@ function FieldEditor({
   onChange: (mutator: (f: FieldDef) => void) => void;
   onRemove: () => void;
 }) {
-  const optionsArr =
-    Array.isArray((field.config as { options?: string[] } | undefined)?.options)
-      ? ((field.config as { options?: string[] }).options as string[])
-      : [];
-  const showOptions = field.type === "select" || field.type === "multiselect" || field.type === "segmented";
+  const optionsArr = Array.isArray(
+    (field.config as { options?: string[] } | undefined)?.options
+  )
+    ? ((field.config as { options?: string[] }).options as string[])
+    : [];
+  const showOptions =
+    field.type === 'select' ||
+    field.type === 'multiselect' ||
+    field.type === 'segmented';
 
   return (
-    <div className="rounded-lg border bg-white p-2 space-y-2 text-sm">
+    <div className="space-y-2 rounded-lg border bg-white p-2 text-sm">
       <div className="flex items-center gap-2">
         <Input
           value={field.label}
-          onChange={(e) => onChange((f) => { f.label = e.target.value; })}
+          onChange={(e) =>
+            onChange((f) => {
+              f.label = e.target.value;
+            })
+          }
         />
         <Select
           value={field.type as string}
           onValueChange={(v) =>
             onChange((f) => {
-              f.type = v as FieldDef["type"];
+              f.type = v as FieldDef['type'];
             })
           }
         >
@@ -361,18 +388,26 @@ function FieldEditor({
           </SelectTrigger>
           <SelectContent>
             {FIELD_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="sm" onClick={onRemove}>×</Button>
+        <Button variant="ghost" size="sm" onClick={onRemove}>
+          ×
+        </Button>
       </div>
-      <div className="flex items-center gap-3 pl-1 text-xs text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-3 pl-1 text-xs">
         <label className="flex items-center gap-1">
           <input
             type="checkbox"
             checked={field.required ?? false}
-            onChange={(e) => onChange((f) => { f.required = e.target.checked; })}
+            onChange={(e) =>
+              onChange((f) => {
+                f.required = e.target.checked;
+              })
+            }
           />
           Required
         </label>
@@ -380,7 +415,11 @@ function FieldEditor({
           <input
             type="checkbox"
             checked={field.allow_finding ?? true}
-            onChange={(e) => onChange((f) => { f.allow_finding = e.target.checked; })}
+            onChange={(e) =>
+              onChange((f) => {
+                f.allow_finding = e.target.checked;
+              })
+            }
           />
           Allow finding
         </label>
@@ -389,12 +428,12 @@ function FieldEditor({
         <div className="space-y-1 pl-1">
           <Label className="text-xs">Options (comma-separated)</Label>
           <Input
-            value={optionsArr.join(", ")}
+            value={optionsArr.join(', ')}
             onChange={(e) =>
               onChange((f) => {
                 if (!f.config) f.config = {};
                 (f.config as Record<string, unknown>).options = e.target.value
-                  .split(",")
+                  .split(',')
                   .map((s) => s.trim())
                   .filter(Boolean);
               })

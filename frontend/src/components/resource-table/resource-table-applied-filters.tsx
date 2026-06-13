@@ -1,31 +1,31 @@
-import { X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { FilterDefinition, FilterState } from "@/lib/resource-table-types";
-import { humanize } from "@/lib/utils";
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { humanize } from '@/lib/utils';
+import type { FilterDefinition, FilterState } from '@/lib/resource-table-types';
 
 function getFilterDisplayText(filter: FilterDefinition): string {
   const col = humanize(filter.column);
 
   switch (filter.type) {
-    case "text":
+    case 'text':
       return `${col}: ${filter.operation} "${filter.value}"`;
-    case "enum":
-      return `${col}: ${filter.values.map(humanize).join(", ")}`;
-    case "range": {
-      const start = filter.start ?? "∞";
-      const finish = filter.finish ?? "∞";
+    case 'enum':
+      return `${col}: ${filter.values.map(humanize).join(', ')}`;
+    case 'range': {
+      const start = filter.start ?? '∞';
+      const finish = filter.finish ?? '∞';
       return `${col}: ${start}–${finish}`;
     }
-    case "date": {
+    case 'date': {
       const fmt = (v?: string | null) =>
-        v ? new Date(v).toLocaleDateString() : "∞";
+        v ? new Date(v).toLocaleDateString() : '∞';
       return `${col}: ${fmt(filter.start)}–${fmt(filter.finish)}`;
     }
-    case "boolean":
-      return `${col}: ${filter.value ? "Yes" : "No"}`;
-    case "null":
-      return `${col}: ${filter.is_null ? "is empty" : "is set"}`;
+    case 'boolean':
+      return `${col}: ${filter.value ? 'Yes' : 'No'}`;
+    case 'null':
+      return `${col}: ${filter.is_null ? 'is empty' : 'is set'}`;
   }
 }
 
@@ -56,12 +56,12 @@ export function ResourceTableAppliedFilters({
         <Badge
           key={`${filter.column}-${index}`}
           variant="secondary"
-          className="gap-1 border-border bg-card text-foreground"
+          className="border-border bg-card text-foreground gap-1"
         >
           {getFilterDisplayText(filter)}
           <button
             type="button"
-            className="ml-0.5 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground ml-0.5"
             onClick={() => handleRemove(index)}
           >
             <X className="h-3 w-3" />
@@ -73,7 +73,7 @@ export function ResourceTableAppliedFilters({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs"
           onClick={handleClearAll}
         >
           Clear all

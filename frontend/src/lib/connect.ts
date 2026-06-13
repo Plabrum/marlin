@@ -1,10 +1,9 @@
-import { isAxiosError } from "axios";
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-
+import { isAxiosError } from "axios";
 import { customInstance } from "@/openapi/custom-instance";
 
 export interface ConnectAccountRequirements {

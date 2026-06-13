@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/format";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/format';
 
 interface TypingUser {
   user_id: string;
@@ -26,16 +26,27 @@ export function TypingIndicator({ typingUsers }: TypingIndicatorProps) {
     <div className="text-muted-foreground flex items-center gap-2 px-4 py-2 text-sm">
       <div className="flex -space-x-2">
         {typingUsers.slice(0, 3).map((user) => (
-          <Avatar key={user.user_id} className="border-background h-6 w-6 border-2">
-            <AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback>
+          <Avatar
+            key={user.user_id}
+            className="border-background h-6 w-6 border-2"
+          >
+            <AvatarFallback className="text-xs">
+              {getInitials(user.name)}
+            </AvatarFallback>
           </Avatar>
         ))}
       </div>
       <span className="italic">{displayText}</span>
       <span className="flex gap-1">
-        <span className="animate-bounce" style={{ animationDelay: "0ms" }}>.</span>
-        <span className="animate-bounce" style={{ animationDelay: "150ms" }}>.</span>
-        <span className="animate-bounce" style={{ animationDelay: "300ms" }}>.</span>
+        <span className="animate-bounce" style={{ animationDelay: '0ms' }}>
+          .
+        </span>
+        <span className="animate-bounce" style={{ animationDelay: '150ms' }}>
+          .
+        </span>
+        <span className="animate-bounce" style={{ animationDelay: '300ms' }}>
+          .
+        </span>
       </span>
     </div>
   );

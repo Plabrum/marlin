@@ -1,14 +1,13 @@
 import { keepPreviousData } from "@tanstack/react-query";
-
 import { useListEmailThread } from "@/openapi/emailthread/emailthread";
-import type { InboxView } from "@/router/authenticated.routes";
+import { ThreadListItem } from "./thread-list-item";
 import type {
   BooleanFilter,
   ListRequest,
   NullFilter,
 } from "@/openapi/litestarAPI.schemas";
+import type { InboxView } from "@/router/authenticated.routes";
 
-import { ThreadListItem } from "./thread-list-item";
 
 interface Props {
   view: InboxView;

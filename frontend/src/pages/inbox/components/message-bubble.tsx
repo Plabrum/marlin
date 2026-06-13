@@ -1,11 +1,10 @@
 import { AlertTriangle } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useMessagesIdDetailHandler } from "@/openapi/inbox/inbox";
+import { AttachmentsList } from "./attachments-list";
 import type { MessageListItem } from "@/openapi/litestarAPI.schemas";
 
-import { AttachmentsList } from "./attachments-list";
 
 interface Props {
   messageId: string;

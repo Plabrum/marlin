@@ -2,11 +2,10 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useActionsActionGroupExecuteAction } from "@/openapi/actions/actions";
 import { getErrorMessage } from "@/lib/error-handler";
+import { useActionsActionGroupExecuteAction } from "@/openapi/actions/actions";
 
 interface Props {
   threadId: string;

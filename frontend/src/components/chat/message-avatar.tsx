@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-import { getInitials } from "@/lib/format";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 interface MessageAvatarProps {
   userName: string;
@@ -9,8 +9,10 @@ interface MessageAvatarProps {
 
 export function MessageAvatar({ userName, className }: MessageAvatarProps) {
   return (
-    <Avatar className={cn("h-8 w-8", className)}>
-      <AvatarFallback className="text-xs">{getInitials(userName)}</AvatarFallback>
+    <Avatar className={cn('h-8 w-8', className)}>
+      <AvatarFallback className="text-xs">
+        {getInitials(userName)}
+      </AvatarFallback>
     </Avatar>
   );
 }

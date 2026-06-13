@@ -1,31 +1,31 @@
-import { Suspense } from "react";
-import { format, parseISO } from "date-fns";
-import { X } from "lucide-react";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
-import { ObjectActions } from "@/components/object-detail/object-actions";
+import { Suspense } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
+import { X } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   EventFormBody,
   addressToInput,
-} from "@/components/calendar/event-fields";
-import { StateTransitionSelect } from "@/components/calendar/state-transition-select";
-import { StatusBadge } from "@/components/status-badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getErrorMessage } from "@/lib/error-handler";
-import {
-  getCalendarEventsIdDetailHandlerQueryKey,
-  useCalendarEventsIdDetailHandlerSuspense,
-} from "@/openapi/calendar-events/calendar-events";
+} from '@/components/calendar/event-fields';
+import { StateTransitionSelect } from '@/components/calendar/state-transition-select';
+import { ObjectActions } from '@/components/object-detail/object-actions';
+import { StatusBadge } from '@/components/status-badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getErrorMessage } from '@/lib/error-handler';
 import {
   useActionsActionGroupObjectIdExecuteObjectAction,
   useActionsActionGroupObjectIdListObjectActions,
-} from "@/openapi/actions/actions";
+} from '@/openapi/actions/actions';
+import {
+  getCalendarEventsIdDetailHandlerQueryKey,
+  useCalendarEventsIdDetailHandlerSuspense,
+} from '@/openapi/calendar-events/calendar-events';
+import type { ActionDTO } from '@/lib/actions/types';
 import type {
   CalendarEventDetail,
   UpdateCalendarEventData,
-} from "@/openapi/litestarAPI.schemas";
-import type { ActionDTO } from "@/lib/actions/types";
+} from '@/openapi/litestarAPI.schemas';
 
 interface Props {
   eventId: string;
@@ -35,9 +35,14 @@ interface Props {
 export function EventDetailPanel({ eventId, onClose }: Props) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <h3 className="text-sm font-semibold">Event</h3>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label="Close"
+        >
           <X className="size-4" />
         </Button>
       </div>
@@ -50,11 +55,20 @@ export function EventDetailPanel({ eventId, onClose }: Props) {
   );
 }
 
-function EventDetailContent({ eventId, onClose }: { eventId: string; onClose: () => void }) {
+function EventDetailContent({
+  eventId,
+  onClose,
+}: {
+  eventId: string;
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const { data: event } = useCalendarEventsIdDetailHandlerSuspense(eventId);
   const { data: actionsData, refetch: refetchActions } =
-    useActionsActionGroupObjectIdListObjectActions("calendar_event_actions", eventId);
+    useActionsActionGroupObjectIdListObjectActions(
+      'calendar_event_actions',
+      eventId
+    );
 
   const execute = useActionsActionGroupObjectIdExecuteObjectAction({
     mutation: {
@@ -62,10 +76,11 @@ function EventDetailContent({ eventId, onClose }: { eventId: string; onClose: ()
         queryClient.invalidateQueries({
           queryKey: getCalendarEventsIdDetailHandlerQueryKey(eventId),
         });
-        queryClient.invalidateQueries({ queryKey: ["/calendar-events"] });
+        queryClient.invalidateQueries({ queryKey: ['/calendar-events'] });
         refetchActions();
       },
-      onError: (err) => toast.error(getErrorMessage(err, "Failed to update event")),
+      onError: (err) =>
+        toast.error(getErrorMessage(err, 'Failed to update event')),
     },
   });
 
@@ -85,21 +100,21 @@ function EventDetailContent({ eventId, onClose }: { eventId: string; onClose: ()
       ...patch,
     };
     execute.mutate({
-      actionGroup: "calendar_event_actions",
+      actionGroup: 'calendar_event_actions',
       objectId: eventId,
-      data: { action: "calendar_event_actions__update", data },
+      data: { action: 'calendar_event_actions__update', data },
     });
   };
 
   const allActions = actionsData?.actions ?? [];
   const transitionActions = allActions.filter((a) => a.target_state != null);
   const otherActions = allActions.filter(
-    (a) => a.target_state == null && !a.action.endsWith("__update"),
+    (a) => a.target_state == null && !a.action.endsWith('__update')
   );
 
   const handleTransition = (action: ActionDTO) => {
     execute.mutate({
-      actionGroup: "calendar_event_actions",
+      actionGroup: 'calendar_event_actions',
       objectId: eventId,
       // `action.action` is a runtime string; the discriminated union expects a
       // literal. The shape (`{action, data: {}}`) matches every transition variant.
@@ -128,9 +143,9 @@ function EventDetailContent({ eventId, onClose }: { eventId: string; onClose: ()
             queryClient.invalidateQueries({
               queryKey: getCalendarEventsIdDetailHandlerQueryKey(eventId),
             });
-            queryClient.invalidateQueries({ queryKey: ["/calendar-events"] });
+            queryClient.invalidateQueries({ queryKey: ['/calendar-events'] });
             refetchActions();
-            if (action.action.endsWith("__delete")) onClose();
+            if (action.action.endsWith('__delete')) onClose();
           }}
         />
       </div>
@@ -159,8 +174,8 @@ function EventDetailContent({ eventId, onClose }: { eventId: string; onClose: ()
 
 function Meta({ event }: { event: CalendarEventDetail }) {
   return (
-    <div className="border-t border-border pt-3 text-xs text-muted-foreground">
-      Created {format(parseISO(event.created_at), "MMM d, yyyy")}
+    <div className="border-border text-muted-foreground border-t pt-3 text-xs">
+      Created {format(parseISO(event.created_at), 'MMM d, yyyy')}
     </div>
   );
 }

@@ -1,17 +1,17 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu';
 import {
   getStatusConfig,
   statusVariantClasses,
   statusDotClasses,
-} from "@/lib/status-colors";
-import type { ActionDTO } from "@/lib/actions/types";
+} from '@/lib/status-colors';
+import { cn } from '@/lib/utils';
+import type { ActionDTO } from '@/lib/actions/types';
 
 interface Props {
   currentState: string;
@@ -21,7 +21,7 @@ interface Props {
 }
 
 const badgeBase =
-  "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium uppercase leading-none tracking-wide";
+  'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium uppercase leading-none tracking-wide';
 
 export function StateTransitionSelect({
   currentState,
@@ -38,12 +38,15 @@ export function StateTransitionSelect({
         className={cn(
           badgeBase,
           statusVariantClasses[config.variant],
-          "transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-          "disabled:cursor-not-allowed disabled:opacity-50",
+          'focus-visible:ring-ring transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none',
+          'disabled:cursor-not-allowed disabled:opacity-50'
         )}
       >
         <span
-          className={cn("h-2 w-2 rounded-full", statusDotClasses[config.variant])}
+          className={cn(
+            'h-2 w-2 rounded-full',
+            statusDotClasses[config.variant]
+          )}
         />
         {config.label}
         <ChevronDown className="size-3.5 opacity-70" />
@@ -61,13 +64,13 @@ export function StateTransitionSelect({
                 className={cn(
                   badgeBase,
                   statusVariantClasses[target.variant],
-                  "w-full cursor-pointer transition-opacity hover:opacity-80",
+                  'w-full cursor-pointer transition-opacity hover:opacity-80'
                 )}
               >
                 <span
                   className={cn(
-                    "h-2 w-2 rounded-full",
-                    statusDotClasses[target.variant],
+                    'h-2 w-2 rounded-full',
+                    statusDotClasses[target.variant]
                   )}
                 />
                 {target.label}

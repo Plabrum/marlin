@@ -1,11 +1,17 @@
-import { useMemo } from "react";
-import type { SurveyDetail, SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
+import { useMemo } from 'react';
+import type {
+  SurveyDetail,
+  SurveyMediaListItem,
+} from '@/openapi/litestarAPI.schemas';
 
 export type SurveyMediaState = {
   items: SurveyMediaListItem[];
   unassigned: SurveyMediaListItem[];
   byNode: Map<string, SurveyMediaListItem[]>;
-  forSection: (sectionId: string | null, sectionAncestor: Map<string, string>) => SurveyMediaListItem[];
+  forSection: (
+    sectionId: string | null,
+    sectionAncestor: Map<string, string>
+  ) => SurveyMediaListItem[];
 };
 
 export function useSurveyMedia(data: SurveyDetail): SurveyMediaState {
@@ -22,10 +28,12 @@ export function useSurveyMedia(data: SurveyDetail): SurveyMediaState {
     const items = [...unassigned, ...assigned];
     const forSection = (
       sectionId: string | null,
-      sectionAncestor: Map<string, string>,
+      sectionAncestor: Map<string, string>
     ): SurveyMediaListItem[] => {
       if (!sectionId) return assigned;
-      return assigned.filter((m) => m.node_id && sectionAncestor.get(m.node_id) === sectionId);
+      return assigned.filter(
+        (m) => m.node_id && sectionAncestor.get(m.node_id) === sectionId
+      );
     };
     return { items, unassigned, byNode, forSection };
   }, [data]);

@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageItem } from "./message-item";
-import type { ThreadsSchemasMessageSchema } from "@/openapi/litestarAPI.schemas";
-import type { TiptapContent } from "@/lib/tiptap";
+import { useEffect, useRef } from 'react';
+import { Loader2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MessageItem } from './message-item';
+import type { TiptapContent } from '@/lib/tiptap';
+import type { ThreadsSchemasMessageSchema } from '@/openapi/litestarAPI.schemas';
 
 interface MessageListProps {
   messages: ThreadsSchemasMessageSchema[];
@@ -25,7 +25,7 @@ export function MessageList({
 
   useEffect(() => {
     if (messages.length > prevMessagesLengthRef.current) {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     prevMessagesLengthRef.current = messages.length;
   }, [messages.length]);
@@ -41,7 +41,9 @@ export function MessageList({
   if (messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
+        <p className="text-muted-foreground text-sm">
+          No messages yet. Start the conversation!
+        </p>
       </div>
     );
   }

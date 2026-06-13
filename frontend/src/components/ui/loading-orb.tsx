@@ -57,22 +57,23 @@ export function LoadingOrb({
         style={{
           width: size,
           height: size,
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         {showPulseRing && (
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               width: ringSize,
               height: ringSize,
-              borderRadius: "50%",
-              border: "1.5px solid color-mix(in oklch, var(--foreground) 30%, transparent)",
-              animation: "orb-pulse-ring 4s ease-in-out infinite",
-              pointerEvents: "none",
+              borderRadius: '50%',
+              border:
+                '1.5px solid color-mix(in oklch, var(--foreground) 30%, transparent)',
+              animation: 'orb-pulse-ring 4s ease-in-out infinite',
+              pointerEvents: 'none',
             }}
           />
         )}
@@ -81,94 +82,94 @@ export function LoadingOrb({
           style={{
             width: size,
             height: size,
-            borderRadius: "50%",
-            animation: "orb-breathe 6s ease-in-out infinite",
-            position: "relative",
+            borderRadius: '50%',
+            animation: 'orb-breathe 6s ease-in-out infinite',
+            position: 'relative',
           }}
         >
           <div
             style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              overflow: "hidden",
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              overflow: 'hidden',
               filter: `blur(${blur}px)`,
-              position: "relative",
+              position: 'relative',
             }}
           >
             <div
               style={{
-                position: "absolute",
-                width: "80%",
-                height: "80%",
-                top: "5%",
-                left: "5%",
-                borderRadius: "50%",
+                position: 'absolute',
+                width: '80%',
+                height: '80%',
+                top: '5%',
+                left: '5%',
+                borderRadius: '50%',
                 opacity: 0.9,
                 background:
-                  "radial-gradient(circle at 40% 40%, var(--chart-1) 0%, var(--chart-1) 70%, transparent 100%)",
-                animation: "orb-rotate-1 5s ease-in-out infinite",
-                transformOrigin: "center center",
+                  'radial-gradient(circle at 40% 40%, var(--chart-1) 0%, var(--chart-1) 70%, transparent 100%)',
+                animation: 'orb-rotate-1 5s ease-in-out infinite',
+                transformOrigin: 'center center',
               }}
             />
             <div
               style={{
-                position: "absolute",
-                width: "75%",
-                height: "75%",
-                top: "15%",
-                left: "20%",
-                borderRadius: "50%",
+                position: 'absolute',
+                width: '75%',
+                height: '75%',
+                top: '15%',
+                left: '20%',
+                borderRadius: '50%',
                 opacity: 0.6,
                 background:
-                  "radial-gradient(circle at 60% 35%, var(--chart-2) 0%, var(--chart-2) 70%, transparent 100%)",
-                animation: "orb-rotate-2 7s ease-in-out infinite",
-                transformOrigin: "center center",
+                  'radial-gradient(circle at 60% 35%, var(--chart-2) 0%, var(--chart-2) 70%, transparent 100%)',
+                animation: 'orb-rotate-2 7s ease-in-out infinite',
+                transformOrigin: 'center center',
               }}
             />
             <div
               style={{
-                position: "absolute",
-                width: "70%",
-                height: "70%",
-                top: "20%",
-                left: "8%",
-                borderRadius: "50%",
+                position: 'absolute',
+                width: '70%',
+                height: '70%',
+                top: '20%',
+                left: '8%',
+                borderRadius: '50%',
                 opacity: 0.5,
                 background:
-                  "radial-gradient(circle at 45% 55%, var(--chart-4) 0%, var(--chart-4) 70%, transparent 100%)",
-                animation: "orb-rotate-3 9s ease-in-out infinite",
-                transformOrigin: "center center",
+                  'radial-gradient(circle at 45% 55%, var(--chart-4) 0%, var(--chart-4) 70%, transparent 100%)',
+                animation: 'orb-rotate-3 9s ease-in-out infinite',
+                transformOrigin: 'center center',
               }}
             />
             <div
               style={{
-                position: "absolute",
-                width: "65%",
-                height: "65%",
-                top: "8%",
-                left: "25%",
-                borderRadius: "50%",
+                position: 'absolute',
+                width: '65%',
+                height: '65%',
+                top: '8%',
+                left: '25%',
+                borderRadius: '50%',
                 opacity: 0.6,
                 background:
-                  "radial-gradient(circle at 50% 50%, var(--chart-3) 0%, var(--chart-3) 70%, transparent 100%)",
-                animation: "orb-rotate-4 6s ease-in-out infinite",
-                transformOrigin: "center center",
+                  'radial-gradient(circle at 50% 50%, var(--chart-3) 0%, var(--chart-3) 70%, transparent 100%)',
+                animation: 'orb-rotate-4 6s ease-in-out infinite',
+                transformOrigin: 'center center',
               }}
             />
             <div
               style={{
-                position: "absolute",
-                width: "60%",
-                height: "60%",
-                top: "18%",
-                left: "15%",
-                borderRadius: "50%",
+                position: 'absolute',
+                width: '60%',
+                height: '60%',
+                top: '18%',
+                left: '15%',
+                borderRadius: '50%',
                 opacity: 0.7,
                 background:
-                  "radial-gradient(circle at 40% 40%, var(--chart-5) 0%, var(--chart-5) 70%, transparent 100%)",
-                animation: "orb-rotate-5 4s ease-in-out infinite",
-                transformOrigin: "center center",
+                  'radial-gradient(circle at 40% 40%, var(--chart-5) 0%, var(--chart-5) 70%, transparent 100%)',
+                animation: 'orb-rotate-5 4s ease-in-out infinite',
+                transformOrigin: 'center center',
               }}
             />
           </div>

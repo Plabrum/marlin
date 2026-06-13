@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { useCallback, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useSearchSearch } from "@/openapi/search/search";
+import { useCallback, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,29 +9,30 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { useShortcut } from "@/lib/shortcuts";
+} from '@/components/ui/command';
+import { useShortcut } from '@/lib/shortcuts';
+import { useSearchSearch } from '@/openapi/search/search';
 
 const ENTITY_ICONS: Record<string, string> = {
-  vessel: "⛵",
-  survey: "📋",
-  client: "👤",
-  report: "📄",
-  invoice: "🧾",
-  part: "🔧",
-  manufacturer: "🏭",
+  vessel: '⛵',
+  survey: '📋',
+  client: '👤',
+  report: '📄',
+  invoice: '🧾',
+  part: '🔧',
+  manufacturer: '🏭',
 };
 
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
   useShortcut({
-    id: "global.search",
-    keys: "mod+k",
-    scope: "global",
-    label: "Open global search",
+    id: 'global.search',
+    keys: 'mod+k',
+    scope: 'global',
+    label: 'Open global search',
     allowInFields: true,
     handler: useCallback(() => setOpen((prev) => !prev), []),
   });
@@ -44,58 +44,57 @@ export function GlobalSearch() {
 
   const results = data?.results ?? [];
 
-  const grouped = results.reduce<Record<string, typeof results>>(
-    (acc, r) => {
-      (acc[r.entity_type] ??= []).push(r);
-      return acc;
-    },
-    {}
-  );
+  const grouped = results.reduce<Record<string, typeof results>>((acc, r) => {
+    (acc[r.entity_type] ??= []).push(r);
+    return acc;
+  }, {});
 
   function handleSelect(path: string) {
     setOpen(false);
-    setQuery("");
+    setQuery('');
     navigate({ to: path });
   }
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
-        <CommandInput
-          placeholder="Search vessels, surveys, clients..."
-          value={query}
-          onValueChange={setQuery}
-        />
-        <CommandList>
-          {query.trim().length >= 2 && results.length === 0 && (
-            <CommandEmpty>No results found.</CommandEmpty>
-          )}
-          {query.trim().length < 2 && (
-            <CommandEmpty>Type at least 2 characters to search.</CommandEmpty>
-          )}
-          {Object.entries(grouped).map(([entityType, items]) => (
-            <CommandGroup
-              key={entityType}
-              heading={entityType.charAt(0).toUpperCase() + entityType.slice(1) + "s"}
-            >
-              {items.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  value={`${result.entity_type}:${result.id}`}
-                  onSelect={() => handleSelect(result.path)}
-                >
-                  <span className="mr-2 text-base">
-                    {ENTITY_ICONS[result.entity_type] ?? "•"}
+      <CommandInput
+        placeholder="Search vessels, surveys, clients..."
+        value={query}
+        onValueChange={setQuery}
+      />
+      <CommandList>
+        {query.trim().length >= 2 && results.length === 0 && (
+          <CommandEmpty>No results found.</CommandEmpty>
+        )}
+        {query.trim().length < 2 && (
+          <CommandEmpty>Type at least 2 characters to search.</CommandEmpty>
+        )}
+        {Object.entries(grouped).map(([entityType, items]) => (
+          <CommandGroup
+            key={entityType}
+            heading={
+              entityType.charAt(0).toUpperCase() + entityType.slice(1) + 's'
+            }
+          >
+            {items.map((result) => (
+              <CommandItem
+                key={result.id}
+                value={`${result.entity_type}:${result.id}`}
+                onSelect={() => handleSelect(result.path)}
+              >
+                <span className="mr-2 text-base">
+                  {ENTITY_ICONS[result.entity_type] ?? '•'}
+                </span>
+                <span className="flex-1 truncate">{result.label}</span>
+                {result.sublabel && (
+                  <span className="text-muted-foreground ml-2 truncate text-xs">
+                    {result.sublabel}
                   </span>
-                  <span className="flex-1 truncate">{result.label}</span>
-                  {result.sublabel && (
-                    <span className="ml-2 truncate text-xs text-muted-foreground">
-                      {result.sublabel}
-                    </span>
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
+                )}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        ))}
       </CommandList>
     </CommandDialog>
   );

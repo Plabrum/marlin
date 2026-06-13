@@ -1,25 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ChevronLeft, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { CheckCircle2, ChevronLeft, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { PageTopBar } from '@/components/layout/page-topbar';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PageSkeleton } from "@/components/ui/page-skeleton";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Suspense } from "react";
-import { getErrorMessage } from "@/lib/error-handler";
-import { getStripe, isStripeConfigured } from "@/lib/stripe";
+} from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { PageSkeleton } from '@/components/ui/page-skeleton';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   describeRequirement,
   useAcceptConnectTos,
@@ -28,9 +24,11 @@ import {
   useCreateConnectAccount,
   useUpdateConnectAccount,
   type UpdateConnectAccountPayload,
-} from "@/lib/connect";
+} from '@/lib/connect';
+import { getErrorMessage } from '@/lib/error-handler';
+import { getStripe, isStripeConfigured } from '@/lib/stripe';
 
-type BusinessType = "individual" | "company";
+type BusinessType = 'individual' | 'company';
 
 interface AddressForm {
   line1: string;
@@ -69,72 +67,72 @@ interface BankForm {
 }
 
 const EMPTY_ADDRESS: AddressForm = {
-  line1: "",
-  line2: "",
-  city: "",
-  state: "",
-  postal_code: "",
-  country: "US",
+  line1: '',
+  line2: '',
+  city: '',
+  state: '',
+  postal_code: '',
+  country: 'US',
 };
 
 const EMPTY_BUSINESS: BusinessForm = {
-  name: "",
-  phone: "",
-  url: "",
-  mcc: "",
-  product_description: "",
+  name: '',
+  phone: '',
+  url: '',
+  mcc: '',
+  product_description: '',
   address: { ...EMPTY_ADDRESS },
 };
 
 const EMPTY_PERSON: PersonForm = {
-  first_name: "",
-  last_name: "",
-  email: "",
-  phone: "",
-  dob_day: "",
-  dob_month: "",
-  dob_year: "",
-  ssn_last_4: "",
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  dob_day: '',
+  dob_month: '',
+  dob_year: '',
+  ssn_last_4: '',
   address: { ...EMPTY_ADDRESS },
 };
 
 const EMPTY_BANK: BankForm = {
-  account_holder_name: "",
-  routing_number: "",
-  account_number: "",
+  account_holder_name: '',
+  routing_number: '',
+  account_number: '',
 };
 
 type Step =
-  | "business-type"
-  | "business-details"
-  | "person"
-  | "bank"
-  | "tos"
-  | "confirmation";
+  | 'business-type'
+  | 'business-details'
+  | 'person'
+  | 'bank'
+  | 'tos'
+  | 'confirmation';
 
 const STEP_ORDER: Step[] = [
-  "business-type",
-  "business-details",
-  "person",
-  "bank",
-  "tos",
-  "confirmation",
+  'business-type',
+  'business-details',
+  'person',
+  'bank',
+  'tos',
+  'confirmation',
 ];
 
 function stepLabel(step: Step): string {
   switch (step) {
-    case "business-type":
-      return "Business type";
-    case "business-details":
-      return "Business details";
-    case "person":
-      return "Personal details";
-    case "bank":
-      return "Bank account";
-    case "tos":
-      return "Terms of service";
-    case "confirmation":
-      return "Confirmation";
+    case 'business-type':
+      return 'Business type';
+    case 'business-details':
+      return 'Business details';
+    case 'person':
+      return 'Personal details';
+    case 'bank':
+      return 'Bank account';
+    case 'tos':
+      return 'Terms of service';
+    case 'confirmation':
+      return 'Confirmation';
   }
 }
 
@@ -144,12 +142,12 @@ interface FieldErrors {
 
 function validateRequired(
   fields: Record<string, string>,
-  required: string[],
+  required: string[]
 ): FieldErrors {
   const errors: FieldErrors = {};
   for (const key of required) {
-    if (!fields[key] || fields[key].trim() === "") {
-      errors[key] = "Required";
+    if (!fields[key] || fields[key].trim() === '') {
+      errors[key] = 'Required';
     }
   }
   return errors;
@@ -175,7 +173,7 @@ function AddressFields({
         name={`${prefix}.line1`}
         value={value.line1}
         error={errors[`${prefix}.line1`]}
-        onChange={(v) => update("line1", v)}
+        onChange={(v) => update('line1', v)}
         className="sm:col-span-2"
       />
       <Field
@@ -183,7 +181,7 @@ function AddressFields({
         name={`${prefix}.line2`}
         value={value.line2}
         error={errors[`${prefix}.line2`]}
-        onChange={(v) => update("line2", v)}
+        onChange={(v) => update('line2', v)}
         className="sm:col-span-2"
         optional
       />
@@ -192,28 +190,28 @@ function AddressFields({
         name={`${prefix}.city`}
         value={value.city}
         error={errors[`${prefix}.city`]}
-        onChange={(v) => update("city", v)}
+        onChange={(v) => update('city', v)}
       />
       <Field
         label="State"
         name={`${prefix}.state`}
         value={value.state}
         error={errors[`${prefix}.state`]}
-        onChange={(v) => update("state", v)}
+        onChange={(v) => update('state', v)}
       />
       <Field
         label="ZIP"
         name={`${prefix}.postal_code`}
         value={value.postal_code}
         error={errors[`${prefix}.postal_code`]}
-        onChange={(v) => update("postal_code", v)}
+        onChange={(v) => update('postal_code', v)}
       />
       <Field
         label="Country"
         name={`${prefix}.country`}
         value={value.country}
         error={errors[`${prefix}.country`]}
-        onChange={(v) => update("country", v.toUpperCase())}
+        onChange={(v) => update('country', v.toUpperCase())}
         maxLength={2}
         placeholder="US"
       />
@@ -227,7 +225,7 @@ function Field({
   value,
   error,
   onChange,
-  type = "text",
+  type = 'text',
   className,
   placeholder,
   maxLength,
@@ -249,7 +247,7 @@ function Field({
       <Label htmlFor={name} className="mb-1.5">
         {label}
         {optional && (
-          <span className="text-xs text-muted-foreground">(optional)</span>
+          <span className="text-muted-foreground text-xs">(optional)</span>
         )}
       </Label>
       <Input
@@ -262,9 +260,7 @@ function Field({
         maxLength={maxLength}
         aria-invalid={Boolean(error)}
       />
-      {error && (
-        <p className="mt-1 text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-destructive mt-1 text-xs">{error}</p>}
     </div>
   );
 }
@@ -273,16 +269,16 @@ function StepHeader({ current }: { current: Step }) {
   const visible = STEP_ORDER;
   const idx = visible.indexOf(current);
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex items-center gap-2 text-xs">
       {visible.map((step, i) => (
         <div key={step} className="flex items-center gap-2">
           <span
             className={
               i === idx
-                ? "font-medium text-foreground"
+                ? 'text-foreground font-medium'
                 : i < idx
-                  ? "text-foreground/70"
-                  : ""
+                  ? 'text-foreground/70'
+                  : ''
             }
           >
             {i + 1}. {stepLabel(step)}
@@ -296,13 +292,13 @@ function StepHeader({ current }: { current: Step }) {
 
 async function fetchClientIp(): Promise<string> {
   try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    if (!res.ok) throw new Error("ipify failed");
+    const res = await fetch('https://api.ipify.org?format=json');
+    if (!res.ok) throw new Error('ipify failed');
     const data = (await res.json()) as { ip?: string };
-    if (!data.ip) throw new Error("no ip");
+    if (!data.ip) throw new Error('no ip');
     return data.ip;
   } catch {
-    return "0.0.0.0";
+    return '0.0.0.0';
   }
 }
 
@@ -314,8 +310,8 @@ function ConnectOnboardingFlow() {
   const acceptTos = useAcceptConnectTos();
   const attachBank = useAttachExternalAccount();
 
-  const [step, setStep] = useState<Step>("business-type");
-  const [businessType, setBusinessType] = useState<BusinessType>("individual");
+  const [step, setStep] = useState<Step>('business-type');
+  const [businessType, setBusinessType] = useState<BusinessType>('individual');
   const [business, setBusiness] = useState<BusinessForm>(EMPTY_BUSINESS);
   const [person, setPerson] = useState<PersonForm>(EMPTY_PERSON);
   const [bank, setBank] = useState<BankForm>(EMPTY_BANK);
@@ -354,17 +350,14 @@ function ConnectOnboardingFlow() {
           mcc: business.mcc,
           product_description: business.product_description,
         },
-        ["name", "phone", "url", "mcc", "product_description"],
+        ['name', 'phone', 'url', 'mcc', 'product_description']
       ),
       ...prefixed(
-        validateRequired(business.address as unknown as Record<string, string>, [
-          "line1",
-          "city",
-          "state",
-          "postal_code",
-          "country",
-        ]),
-        "address",
+        validateRequired(
+          business.address as unknown as Record<string, string>,
+          ['line1', 'city', 'state', 'postal_code', 'country']
+        ),
+        'address'
       ),
     };
     if (Object.keys(fieldErrors).length) {
@@ -378,7 +371,7 @@ function ConnectOnboardingFlow() {
         business_type: businessType,
         individual: null,
         company:
-          businessType === "company"
+          businessType === 'company'
             ? {
                 name: business.name,
                 phone: business.phone,
@@ -414,29 +407,29 @@ function ConnectOnboardingFlow() {
           ssn_last_4: person.ssn_last_4,
         },
         [
-          "first_name",
-          "last_name",
-          "email",
-          "phone",
-          "dob_day",
-          "dob_month",
-          "dob_year",
-          "ssn_last_4",
-        ],
+          'first_name',
+          'last_name',
+          'email',
+          'phone',
+          'dob_day',
+          'dob_month',
+          'dob_year',
+          'ssn_last_4',
+        ]
       ),
       ...prefixed(
         validateRequired(person.address as unknown as Record<string, string>, [
-          "line1",
-          "city",
-          "state",
-          "postal_code",
-          "country",
+          'line1',
+          'city',
+          'state',
+          'postal_code',
+          'country',
         ]),
-        "address",
+        'address'
       ),
     };
     if (person.ssn_last_4 && !/^\d{4}$/.test(person.ssn_last_4)) {
-      fieldErrors.ssn_last_4 = "Must be 4 digits";
+      fieldErrors.ssn_last_4 = 'Must be 4 digits';
     }
     if (Object.keys(fieldErrors).length) {
       setErrors(fieldErrors);
@@ -480,10 +473,10 @@ function ConnectOnboardingFlow() {
         routing_number: bank.routing_number,
         account_number: bank.account_number,
       },
-      ["account_holder_name", "routing_number", "account_number"],
+      ['account_holder_name', 'routing_number', 'account_number']
     );
     if (!/^\d{9}$/.test(bank.routing_number)) {
-      fieldErrors.routing_number = "Must be 9 digits";
+      fieldErrors.routing_number = 'Must be 9 digits';
     }
     if (Object.keys(fieldErrors).length) {
       setErrors(fieldErrors);
@@ -495,21 +488,21 @@ function ConnectOnboardingFlow() {
       const stripe = await getStripe();
       if (!stripe) {
         toast.error(
-          "Stripe.js is not configured. Set VITE_STRIPE_PUBLISHABLE_KEY.",
+          'Stripe.js is not configured. Set VITE_STRIPE_PUBLISHABLE_KEY.'
         );
         setSubmitting(false);
         return;
       }
-      const tokenResult = await stripe.createToken("bank_account", {
-        country: business.address.country || person.address.country || "US",
-        currency: "usd",
+      const tokenResult = await stripe.createToken('bank_account', {
+        country: business.address.country || person.address.country || 'US',
+        currency: 'usd',
         routing_number: bank.routing_number,
         account_number: bank.account_number,
         account_holder_name: bank.account_holder_name,
         account_holder_type: businessType,
       });
       if (tokenResult.error || !tokenResult.token) {
-        toast.error(tokenResult.error?.message ?? "Failed to tokenize bank");
+        toast.error(tokenResult.error?.message ?? 'Failed to tokenize bank');
         setSubmitting(false);
         return;
       }
@@ -524,7 +517,7 @@ function ConnectOnboardingFlow() {
 
   const handleTosSubmit = async () => {
     if (!tosAccepted) {
-      setErrors({ tos: "You must accept the terms" });
+      setErrors({ tos: 'You must accept the terms' });
       return;
     }
     setErrors({});
@@ -547,7 +540,7 @@ function ConnectOnboardingFlow() {
   return (
     <div className="space-y-6">
       <StepHeader current={step} />
-      {!stripeReady && step === "bank" && (
+      {!stripeReady && step === 'bank' && (
         <Card>
           <CardHeader>
             <CardTitle>Stripe.js not configured</CardTitle>
@@ -559,7 +552,7 @@ function ConnectOnboardingFlow() {
         </Card>
       )}
 
-      {step === "business-type" && (
+      {step === 'business-type' && (
         <Card>
           <CardHeader>
             <CardTitle>Business type</CardTitle>
@@ -588,7 +581,7 @@ function ConnectOnboardingFlow() {
         </Card>
       )}
 
-      {step === "business-details" && (
+      {step === 'business-details' && (
         <Card>
           <CardHeader>
             <CardTitle>Business details</CardTitle>
@@ -600,7 +593,9 @@ function ConnectOnboardingFlow() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Field
                 label={
-                  businessType === "company" ? "Legal company name" : "Business name"
+                  businessType === 'company'
+                    ? 'Legal company name'
+                    : 'Business name'
                 }
                 name="business.name"
                 value={business.name}
@@ -660,25 +655,29 @@ function ConnectOnboardingFlow() {
                 onClick={handleBusinessDetailsSubmit}
                 disabled={submitting}
               >
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {step === "person" && (
+      {step === 'person' && (
         <Card>
           <CardHeader>
             <CardTitle>
-              {businessType === "individual"
-                ? "Personal details"
-                : "Account representative"}
+              {businessType === 'individual'
+                ? 'Personal details'
+                : 'Account representative'}
             </CardTitle>
             <CardDescription>
-              {businessType === "individual"
-                ? "Required for identity verification."
-                : "Stripe needs a person who controls the account."}
+              {businessType === 'individual'
+                ? 'Required for identity verification.'
+                : 'Stripe needs a person who controls the account.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -764,14 +763,18 @@ function ConnectOnboardingFlow() {
                 <ChevronLeft className="size-4" /> Back
               </Button>
               <Button onClick={handlePersonSubmit} disabled={submitting}>
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {step === "bank" && (
+      {step === 'bank' && (
         <Card>
           <CardHeader>
             <CardTitle>Bank account</CardTitle>
@@ -786,9 +789,7 @@ function ConnectOnboardingFlow() {
               name="bank.holder"
               value={bank.account_holder_name}
               error={errors.account_holder_name}
-              onChange={(v) =>
-                setBank({ ...bank, account_holder_name: v })
-              }
+              onChange={(v) => setBank({ ...bank, account_holder_name: v })}
             />
             <Field
               label="Routing number"
@@ -814,14 +815,18 @@ function ConnectOnboardingFlow() {
                 onClick={handleBankSubmit}
                 disabled={submitting || !stripeReady}
               >
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : "Continue"}
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {step === "tos" && (
+      {step === 'tos' && (
         <Card>
           <CardHeader>
             <CardTitle>Terms of service</CardTitle>
@@ -838,7 +843,7 @@ function ConnectOnboardingFlow() {
                 aria-invalid={Boolean(errors.tos)}
               />
               <span>
-                I agree to the{" "}
+                I agree to the{' '}
                 <a
                   href="https://stripe.com/connect-account/legal"
                   target="_blank"
@@ -846,26 +851,30 @@ function ConnectOnboardingFlow() {
                   className="underline"
                 >
                   Stripe Connected Account Agreement
-                </a>{" "}
+                </a>{' '}
                 on behalf of this organization.
               </span>
             </label>
             {errors.tos && (
-              <p className="text-xs text-destructive">{errors.tos}</p>
+              <p className="text-destructive text-xs">{errors.tos}</p>
             )}
             <div className="flex justify-between">
               <Button variant="ghost" onClick={goBack}>
                 <ChevronLeft className="size-4" /> Back
               </Button>
               <Button onClick={handleTosSubmit} disabled={submitting}>
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : "Accept & finish"}
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  'Accept & finish'
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {step === "confirmation" && (
+      {step === 'confirmation' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -881,24 +890,22 @@ function ConnectOnboardingFlow() {
               <div>
                 <div className="text-muted-foreground">Charges enabled</div>
                 <div className="font-medium">
-                  {requirements?.charges_enabled ? "Yes" : "Pending"}
+                  {requirements?.charges_enabled ? 'Yes' : 'Pending'}
                 </div>
               </div>
               <div>
                 <div className="text-muted-foreground">Payouts enabled</div>
                 <div className="font-medium">
-                  {requirements?.payouts_enabled ? "Yes" : "Pending"}
+                  {requirements?.payouts_enabled ? 'Yes' : 'Pending'}
                 </div>
               </div>
             </div>
             {requirements && requirements.currently_due.length > 0 && (
               <div>
-                <div className="mb-1 text-muted-foreground">Still required</div>
+                <div className="text-muted-foreground mb-1">Still required</div>
                 <ul className="space-y-1">
                   {Array.from(
-                    new Set(
-                      requirements.currently_due.map(describeRequirement),
-                    ),
+                    new Set(requirements.currently_due.map(describeRequirement))
                   ).map((label) => (
                     <li key={label}>• {label}</li>
                   ))}
@@ -906,7 +913,7 @@ function ConnectOnboardingFlow() {
               </div>
             )}
             <div className="flex justify-end">
-              <Button onClick={() => navigate({ to: "/settings/billing" })}>
+              <Button onClick={() => navigate({ to: '/settings/billing' })}>
                 Back to billing
               </Button>
             </div>
@@ -941,7 +948,7 @@ export function ConnectOnboardingPage() {
   return (
     <PageTopBar title="Connect onboarding">
       <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           <Link to="/settings/billing" className="underline">
             ← Back to billing
           </Link>

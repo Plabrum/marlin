@@ -1,5 +1,4 @@
-import { useCallback, useState } from "react";
-
+import { useCallback, useState } from 'react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -7,35 +6,37 @@ import {
   CommandItem,
   CommandList,
   CommandShortcut,
-} from "@/components/ui/command";
-import { formatKeys, getShortcuts, useShortcut } from "@/lib/shortcuts";
-import type { ShortcutScope } from "@/lib/shortcuts";
+} from '@/components/ui/command';
+import { formatKeys, getShortcuts, useShortcut } from '@/lib/shortcuts';
+import type { ShortcutScope } from '@/lib/shortcuts';
 
 const SCOPE_LABEL: Record<ShortcutScope, string> = {
-  global: "Global",
-  dock: "LLM Assistant",
-  form: "Forms",
+  global: 'Global',
+  dock: 'LLM Assistant',
+  form: 'Forms',
 };
 
-const SCOPE_ORDER: ShortcutScope[] = ["global", "dock", "form"];
+const SCOPE_ORDER: ShortcutScope[] = ['global', 'dock', 'form'];
 
 export function ShortcutsCheatSheet() {
   const [open, setOpen] = useState(false);
 
   useShortcut({
-    id: "shortcuts.cheat-sheet",
-    keys: "shift+slash",
-    scope: "global",
-    label: "Show keyboard shortcuts",
+    id: 'shortcuts.cheat-sheet',
+    keys: 'shift+slash',
+    scope: 'global',
+    label: 'Show keyboard shortcuts',
     handler: useCallback(() => setOpen((prev) => !prev), []),
   });
 
-  const grouped = getShortcuts().reduce<Record<ShortcutScope, ReturnType<typeof getShortcuts>>>(
+  const grouped = getShortcuts().reduce<
+    Record<ShortcutScope, ReturnType<typeof getShortcuts>>
+  >(
     (acc, s) => {
       (acc[s.scope] ??= []).push(s);
       return acc;
     },
-    {} as Record<ShortcutScope, ReturnType<typeof getShortcuts>>,
+    {} as Record<ShortcutScope, ReturnType<typeof getShortcuts>>
   );
 
   return (

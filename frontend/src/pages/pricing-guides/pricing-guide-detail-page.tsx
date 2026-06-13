@@ -1,21 +1,21 @@
 import { Suspense } from "react";
 import { useParams } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { KeyValueGrid } from "@/components/layout/key-value-grid";
 import {
   ChildObjectList,
   ChildObjectRow,
 } from "@/components/layout";
+import { KeyValueGrid } from "@/components/layout/key-value-grid";
+import { PageTopBar } from "@/components/layout/page-topbar";
 import { ObjectActions } from "@/components/object-detail/object-actions";
 import { TopLevelActions } from "@/components/object-list/top-level-actions";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChildObjectList } from "@/hooks/use-child-object-list";
+import { formatCents } from "@/lib/format";
+import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
 import { usePricingGuidesIdDetailHandlerSuspense } from "@/openapi/pricing-guides/pricing-guides";
 import { useListPricingTier } from "@/openapi/pricing-tiers/pricing-tiers";
 import type { PricingTierListItem } from "@/openapi/litestarAPI.schemas";
-import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
-import { formatCents } from "@/lib/format";
 
 function PricingGuideDetailContent() {
   const { guideId } = useParams({ from: "/_authenticated/settings/pricing-guides/$guideId" });

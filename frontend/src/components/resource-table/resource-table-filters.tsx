@@ -1,21 +1,21 @@
-import { useState } from "react";
-import { Check, ChevronLeft, SlidersHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { Check, ChevronLeft, SlidersHorizontal } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { cn, humanize } from "@/lib/utils";
+} from '@/components/ui/select';
+import { cn, humanize } from '@/lib/utils';
 import type {
   BooleanFilter,
   ColumnDefinition,
@@ -25,8 +25,7 @@ import type {
   NullFilter,
   RangeFilter,
   TextFilter,
-} from "@/lib/resource-table-types";
-
+} from '@/lib/resource-table-types';
 
 // ---------------------------------------------------------------------------
 // Per-type filter panels
@@ -44,7 +43,9 @@ function EnumFilterPanel<T>({
   onRemove: (column: string) => void;
 }) {
   const options = column.filterOptions ?? [];
-  const current = filters.find((f) => f.column === column.key && f.type === "enum") as EnumFilter | undefined;
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'enum'
+  ) as EnumFilter | undefined;
   const selected = current?.values ?? [];
 
   const toggle = (value: string) => {
@@ -53,11 +54,13 @@ function EnumFilterPanel<T>({
       : [...selected, value];
     onRemove(column.key);
     if (next.length > 0) {
-      onAdd({ type: "enum", column: column.key, values: next });
+      onAdd({ type: 'enum', column: column.key, values: next });
     }
   };
 
-  const sorted = [...options].sort((a, b) => humanize(a).localeCompare(humanize(b)));
+  const sorted = [...options].sort((a, b) =>
+    humanize(a).localeCompare(humanize(b))
+  );
 
   return (
     <div className="flex flex-col gap-0.5">
@@ -68,7 +71,7 @@ function EnumFilterPanel<T>({
             key={option}
             type="button"
             onClick={() => toggle(option)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+            className="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
           >
             <span className="flex h-4 w-4 shrink-0 items-center justify-center">
               {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -92,13 +95,15 @@ function BooleanFilterPanel<T>({
   onAdd: (filter: FilterDefinition) => void;
   onRemove: (column: string) => void;
 }) {
-  const current = filters.find((f) => f.column === column.key && f.type === "boolean") as BooleanFilter | undefined;
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'boolean'
+  ) as BooleanFilter | undefined;
   const value = current?.value;
 
   const select = (v: boolean) => {
     onRemove(column.key);
     if (value !== v) {
-      onAdd({ type: "boolean", column: column.key, value: v });
+      onAdd({ type: 'boolean', column: column.key, value: v });
     }
   };
 
@@ -110,13 +115,13 @@ function BooleanFilterPanel<T>({
           type="button"
           onClick={() => select(v)}
           className={cn(
-            "flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors",
+            'flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors',
             value === v
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border hover:bg-accent",
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border hover:bg-accent'
           )}
         >
-          {v ? "Yes" : "No"}
+          {v ? 'Yes' : 'No'}
         </button>
       ))}
     </div>
@@ -134,13 +139,15 @@ function NullFilterPanel<T>({
   onAdd: (filter: FilterDefinition) => void;
   onRemove: (column: string) => void;
 }) {
-  const current = filters.find((f) => f.column === column.key && f.type === "null") as NullFilter | undefined;
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'null'
+  ) as NullFilter | undefined;
   const isNull = current?.is_null;
 
   const select = (v: boolean) => {
     onRemove(column.key);
     if (isNull !== v) {
-      onAdd({ type: "null", column: column.key, is_null: v });
+      onAdd({ type: 'null', column: column.key, is_null: v });
     }
   };
 
@@ -152,13 +159,13 @@ function NullFilterPanel<T>({
           type="button"
           onClick={() => select(v)}
           className={cn(
-            "flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors",
+            'flex-1 rounded-md border px-3 py-1.5 text-sm transition-colors',
             isNull === v
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-border hover:bg-accent",
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border hover:bg-accent'
           )}
         >
-          {v ? "Is empty" : "Is set"}
+          {v ? 'Is empty' : 'Is set'}
         </button>
       ))}
     </div>
@@ -176,14 +183,23 @@ function TextFilterPanel<T>({
   onAdd: (filter: FilterDefinition) => void;
   onRemove: (column: string) => void;
 }) {
-  const current = filters.find((f) => f.column === column.key && f.type === "text") as TextFilter | undefined;
-  const [operation, setOperation] = useState<TextFilter["operation"]>(current?.operation ?? "contains");
-  const [value, setValue] = useState(current?.value ?? "");
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'text'
+  ) as TextFilter | undefined;
+  const [operation, setOperation] = useState<TextFilter['operation']>(
+    current?.operation ?? 'contains'
+  );
+  const [value, setValue] = useState(current?.value ?? '');
 
-  const apply = (op: TextFilter["operation"], val: string) => {
+  const apply = (op: TextFilter['operation'], val: string) => {
     onRemove(column.key);
     if (val.trim()) {
-      onAdd({ type: "text", column: column.key, operation: op, value: val.trim() });
+      onAdd({
+        type: 'text',
+        column: column.key,
+        operation: op,
+        value: val.trim(),
+      });
     }
   };
 
@@ -192,7 +208,7 @@ function TextFilterPanel<T>({
       <Select
         value={operation}
         onValueChange={(v) => {
-          const op = v as TextFilter["operation"];
+          const op = v as TextFilter['operation'];
           setOperation(op);
           apply(op, value);
         }}
@@ -213,7 +229,7 @@ function TextFilterPanel<T>({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") apply(operation, value);
+          if (e.key === 'Enter') apply(operation, value);
         }}
         onBlur={() => apply(operation, value)}
       />
@@ -232,35 +248,48 @@ function DateFilterPanel<T>({
   onAdd: (filter: FilterDefinition) => void;
   onRemove: (column: string) => void;
 }) {
-  const current = filters.find((f) => f.column === column.key && f.type === "date") as DateFilter | undefined;
-  const [start, setStart] = useState(current?.start ?? "");
-  const [finish, setFinish] = useState(current?.finish ?? "");
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'date'
+  ) as DateFilter | undefined;
+  const [start, setStart] = useState(current?.start ?? '');
+  const [finish, setFinish] = useState(current?.finish ?? '');
 
   const apply = (s: string, f: string) => {
     onRemove(column.key);
     if (s || f) {
-      onAdd({ type: "date", column: column.key, start: s || null, finish: f || null });
+      onAdd({
+        type: 'date',
+        column: column.key,
+        start: s || null,
+        finish: f || null,
+      });
     }
   };
 
   return (
     <div className="flex flex-col gap-2 px-1 py-0.5">
       <div className="flex flex-col gap-1">
-        <span className="text-xs text-muted-foreground">From</span>
+        <span className="text-muted-foreground text-xs">From</span>
         <Input
           type="date"
           className="h-8 text-sm"
           value={start}
-          onChange={(e) => { setStart(e.target.value); apply(e.target.value, finish); }}
+          onChange={(e) => {
+            setStart(e.target.value);
+            apply(e.target.value, finish);
+          }}
         />
       </div>
       <div className="flex flex-col gap-1">
-        <span className="text-xs text-muted-foreground">To</span>
+        <span className="text-muted-foreground text-xs">To</span>
         <Input
           type="date"
           className="h-8 text-sm"
           value={finish}
-          onChange={(e) => { setFinish(e.target.value); apply(start, e.target.value); }}
+          onChange={(e) => {
+            setFinish(e.target.value);
+            apply(start, e.target.value);
+          }}
         />
       </div>
     </div>
@@ -278,16 +307,27 @@ function RangeFilterPanel<T>({
   onAdd: (filter: FilterDefinition) => void;
   onRemove: (column: string) => void;
 }) {
-  const current = filters.find((f) => f.column === column.key && f.type === "range") as RangeFilter | undefined;
-  const [start, setStart] = useState(current?.start != null ? String(current.start) : "");
-  const [finish, setFinish] = useState(current?.finish != null ? String(current.finish) : "");
+  const current = filters.find(
+    (f) => f.column === column.key && f.type === 'range'
+  ) as RangeFilter | undefined;
+  const [start, setStart] = useState(
+    current?.start != null ? String(current.start) : ''
+  );
+  const [finish, setFinish] = useState(
+    current?.finish != null ? String(current.finish) : ''
+  );
 
   const apply = (s: string, f: string) => {
     onRemove(column.key);
-    const startNum = s !== "" ? Number(s) : null;
-    const finishNum = f !== "" ? Number(f) : null;
+    const startNum = s !== '' ? Number(s) : null;
+    const finishNum = f !== '' ? Number(f) : null;
     if (startNum != null || finishNum != null) {
-      onAdd({ type: "range", column: column.key, start: startNum, finish: finishNum });
+      onAdd({
+        type: 'range',
+        column: column.key,
+        start: startNum,
+        finish: finishNum,
+      });
     }
   };
 
@@ -301,9 +341,11 @@ function RangeFilterPanel<T>({
           value={start}
           onChange={(e) => setStart(e.target.value)}
           onBlur={() => apply(start, finish)}
-          onKeyDown={(e) => { if (e.key === "Enter") apply(start, finish); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') apply(start, finish);
+          }}
         />
-        <span className="text-xs text-muted-foreground">–</span>
+        <span className="text-muted-foreground text-xs">–</span>
         <Input
           type="number"
           className="h-8 text-sm"
@@ -311,7 +353,9 @@ function RangeFilterPanel<T>({
           value={finish}
           onChange={(e) => setFinish(e.target.value)}
           onBlur={() => apply(start, finish)}
-          onKeyDown={(e) => { if (e.key === "Enter") apply(start, finish); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') apply(start, finish);
+          }}
         />
       </div>
     </div>
@@ -334,18 +378,60 @@ function FilterValuePanel<T>({
   onRemove: (column: string) => void;
 }) {
   switch (column.filterType) {
-    case "enum":
-      return <EnumFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
-    case "boolean":
-      return <BooleanFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
-    case "null":
-      return <NullFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
-    case "text":
-      return <TextFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
-    case "date":
-      return <DateFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
-    case "range":
-      return <RangeFilterPanel column={column} filters={filters} onAdd={onAdd} onRemove={onRemove} />;
+    case 'enum':
+      return (
+        <EnumFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
+    case 'boolean':
+      return (
+        <BooleanFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
+    case 'null':
+      return (
+        <NullFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
+    case 'text':
+      return (
+        <TextFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
+    case 'date':
+      return (
+        <DateFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
+    case 'range':
+      return (
+        <RangeFilterPanel
+          column={column}
+          filters={filters}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
+      );
     default:
       return null;
   }
@@ -364,7 +450,7 @@ interface ResourceTableFiltersProps<T> {
 }
 
 // Wider popover for filter types that need input fields
-const WIDE_FILTER_TYPES = new Set(["text", "date", "range"]);
+const WIDE_FILTER_TYPES = new Set(['text', 'date', 'range']);
 
 export function ResourceTableFilters<T>({
   columns,
@@ -394,7 +480,8 @@ export function ResourceTableFilters<T>({
     return filters.filter((f) => f.column === colKey).length;
   };
 
-  const isWide = activeCol != null && WIDE_FILTER_TYPES.has(activeCol.filterType ?? "");
+  const isWide =
+    activeCol != null && WIDE_FILTER_TYPES.has(activeCol.filterType ?? '');
 
   return (
     <Popover
@@ -408,14 +495,14 @@ export function ResourceTableFilters<T>({
         <Button
           variant="outline"
           size="sm"
-          className="h-9 gap-1.5 border-border bg-card text-foreground"
+          className="border-border bg-card text-foreground h-9 gap-1.5"
         >
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+          <SlidersHorizontal className="text-muted-foreground h-4 w-4" />
           Filter
           {activeCount > 0 && (
             <Badge
               variant="secondary"
-              className="ml-0.5 h-5 min-w-5 rounded-full bg-primary/10 px-1.5 text-xs text-primary"
+              className="bg-primary/10 text-primary ml-0.5 h-5 min-w-5 rounded-full px-1.5 text-xs"
             >
               {activeCount}
             </Badge>
@@ -423,7 +510,7 @@ export function ResourceTableFilters<T>({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={cn("p-1.5 transition-none", isWide ? "w-64" : "w-52")}
+        className={cn('p-1.5 transition-none', isWide ? 'w-64' : 'w-52')}
         align="end"
       >
         {activeCol ? (
@@ -431,7 +518,7 @@ export function ResourceTableFilters<T>({
             <button
               type="button"
               onClick={() => setSelectedColumn(null)}
-              className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
+              className="text-muted-foreground hover:bg-accent flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium"
             >
               <ChevronLeft className="h-3 w-3" />
               {activeCol.header}
@@ -453,13 +540,13 @@ export function ResourceTableFilters<T>({
                   key={col.key}
                   type="button"
                   onClick={() => setSelectedColumn(col.key)}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                  className="hover:bg-accent flex items-center justify-between rounded-md px-2 py-1.5 text-sm"
                 >
                   <span>{col.header}</span>
                   {count > 0 && (
                     <Badge
                       variant="secondary"
-                      className="h-5 min-w-5 rounded-full bg-primary/10 px-1.5 text-xs text-primary"
+                      className="bg-primary/10 text-primary h-5 min-w-5 rounded-full px-1.5 text-xs"
                     >
                       {count}
                     </Badge>
@@ -473,7 +560,7 @@ export function ResourceTableFilters<T>({
                 <button
                   type="button"
                   onClick={clearAll}
-                  className="rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent"
+                  className="text-muted-foreground hover:bg-accent rounded-md px-2 py-1.5 text-sm"
                 >
                   Clear all filters
                 </button>

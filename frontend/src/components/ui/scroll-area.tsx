@@ -1,6 +1,6 @@
-import * as React from "react";
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import { cn } from '@/lib/utils';
 
 /**
  * Cross-browser always-visible scroll container. Built on Radix so the scrollbar is
@@ -25,7 +25,7 @@ export function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       type="always"
-      className={cn("relative overflow-hidden", className)}
+      className={cn('relative overflow-hidden', className)}
       style={{ ...style, ...sizing }}
       {...props}
     >
@@ -60,23 +60,25 @@ export function ScrollArea({
 
 function ScrollBar({
   className,
-  orientation = "vertical",
+  orientation = 'vertical',
   ...props
-}: React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
+}: React.ComponentPropsWithoutRef<
+  typeof ScrollAreaPrimitive.ScrollAreaScrollbar
+>) {
   return (
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       orientation={orientation}
       className={cn(
-        "flex touch-none select-none transition-colors",
-        orientation === "vertical" &&
-          "h-full w-2.5 border-l border-l-transparent p-px",
-        orientation === "horizontal" &&
-          "h-2.5 flex-col border-t border-t-transparent p-px",
-        className,
+        'flex touch-none transition-colors select-none',
+        orientation === 'vertical' &&
+          'h-full w-2.5 border-l border-l-transparent p-px',
+        orientation === 'horizontal' &&
+          'h-2.5 flex-col border-t border-t-transparent p-px',
+        className
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border hover:bg-muted-foreground" />
+      <ScrollAreaPrimitive.ScrollAreaThumb className="bg-border hover:bg-muted-foreground relative flex-1 rounded-full" />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   );
 }

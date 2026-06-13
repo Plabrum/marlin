@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import type { AddressInput } from "@/openapi/litestarAPI.schemas";
+import { useEffect, useState } from 'react';
+import { Plus, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { AddressInput } from '@/openapi/litestarAPI.schemas';
 
 const EMPTY_ADDRESS: AddressInput = {
-  line1: "",
+  line1: '',
   line2: null,
-  city: "",
-  region: "",
-  postal_code: "",
-  country: "US",
+  city: '',
+  region: '',
+  postal_code: '',
+  country: 'US',
 };
 
 interface Props {
@@ -27,7 +27,11 @@ export function AddressFields({ value, onChange }: Props) {
   const commit = (patch: Partial<AddressInput>) => {
     const next = { ...base, ...patch };
     const empty =
-      !next.line1 && !next.city && !next.region && !next.postal_code && !next.line2;
+      !next.line1 &&
+      !next.city &&
+      !next.region &&
+      !next.postal_code &&
+      !next.line2;
     onChange(empty ? null : next);
   };
 
@@ -48,7 +52,7 @@ export function AddressFields({ value, onChange }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-xs text-muted-foreground">Address</Label>
+        <Label className="text-muted-foreground text-xs">Address</Label>
         <Button
           type="button"
           variant="ghost"
@@ -68,7 +72,7 @@ export function AddressFields({ value, onChange }: Props) {
         onCommit={(v) => commit({ line1: v })}
       />
       <BlurInput
-        value={base.line2 ?? ""}
+        value={base.line2 ?? ''}
         placeholder="Apt, suite, etc. (optional)"
         onCommit={(v) => commit({ line2: v || null })}
       />
@@ -91,9 +95,9 @@ export function AddressFields({ value, onChange }: Props) {
           onCommit={(v) => commit({ postal_code: v })}
         />
         <BlurInput
-          value={base.country ?? "US"}
+          value={base.country ?? 'US'}
           placeholder="Country"
-          onCommit={(v) => commit({ country: v || "US" })}
+          onCommit={(v) => commit({ country: v || 'US' })}
         />
       </div>
     </div>

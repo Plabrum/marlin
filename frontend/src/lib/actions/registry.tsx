@@ -1,13 +1,13 @@
-import type {
-  ActionsActionGroupExecuteActionBody,
-  ActionsActionGroupObjectIdExecuteObjectActionBody,
-} from "@/openapi/litestarAPI.schemas";
+import { CalendarEventActionsCreateForm } from "@/openapi/actions/calendar-event-forms";
 import { generatedRegistry } from "@/openapi/actions/registry.gen";
 import {
   SurveyTemplateCreateForm,
   SurveyTemplateUpdateForm,
 } from "@/openapi/actions/survey-template-forms";
-import { CalendarEventActionsCreateForm } from "@/openapi/actions/calendar-event-forms";
+import type {
+  ActionsActionGroupExecuteActionBody,
+  ActionsActionGroupObjectIdExecuteObjectActionBody,
+} from "@/openapi/litestarAPI.schemas";
 
 export type ActionBodyUnion =
   | ActionsActionGroupExecuteActionBody

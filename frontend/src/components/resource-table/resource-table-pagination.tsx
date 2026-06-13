@@ -3,8 +3,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ResourceTablePaginationProps {
   page: number;
@@ -21,14 +21,14 @@ export function ResourceTablePagination({
   total,
   pageSize,
   onPageChange,
-  resourceName = "results",
+  resourceName = 'results',
 }: ResourceTablePaginationProps) {
   const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, total);
 
   return (
     <div className="flex items-center justify-between px-1 py-2">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {total === 0
           ? `No ${resourceName}`
           : `Showing ${startItem}–${endItem} of ${total} ${resourceName}`}
@@ -38,7 +38,7 @@ export function ResourceTablePagination({
         <Button
           variant="ghost"
           size="icon"
-          className="hidden h-8 w-8 text-muted-foreground hover:bg-table-row-hover hover:text-foreground lg:flex"
+          className="text-muted-foreground hover:bg-table-row-hover hover:text-foreground hidden h-8 w-8 lg:flex"
           onClick={() => onPageChange(1)}
           disabled={page <= 1}
         >
@@ -48,7 +48,7 @@ export function ResourceTablePagination({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:bg-table-row-hover hover:text-foreground"
+          className="text-muted-foreground hover:bg-table-row-hover hover:text-foreground h-8 w-8"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
         >
@@ -56,14 +56,14 @@ export function ResourceTablePagination({
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <span className="px-3 text-sm tabular-nums text-muted-foreground/50">
+        <span className="text-muted-foreground/50 px-3 text-sm tabular-nums">
           {page} / {totalPages || 1}
         </span>
 
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:bg-table-row-hover hover:text-foreground"
+          className="text-muted-foreground hover:bg-table-row-hover hover:text-foreground h-8 w-8"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
         >
@@ -73,7 +73,7 @@ export function ResourceTablePagination({
         <Button
           variant="ghost"
           size="icon"
-          className="hidden h-8 w-8 text-muted-foreground hover:bg-table-row-hover hover:text-foreground lg:flex"
+          className="text-muted-foreground hover:bg-table-row-hover hover:text-foreground hidden h-8 w-8 lg:flex"
           onClick={() => onPageChange(totalPages)}
           disabled={page >= totalPages}
         >

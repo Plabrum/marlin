@@ -1,14 +1,14 @@
+import type { ActionBodyUnion } from '@/lib/actions/registry';
 import type {
   ActionDTO,
   ActionExecutionResponse,
   ActionMutations,
-} from "@/lib/actions/types";
+} from '@/lib/actions/types';
 import type {
   ActionsActionGroupExecuteActionBody,
   ActionsActionGroupObjectIdExecuteObjectActionBody,
   ActionGroupType,
-} from "@/openapi/litestarAPI.schemas";
-import type { ActionBodyUnion } from "@/lib/actions/registry";
+} from '@/openapi/litestarAPI.schemas';
 
 type ExecuteActionApiParams = ActionMutations & {
   action: ActionDTO;

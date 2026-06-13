@@ -1,7 +1,7 @@
-import { StatCard } from "@/components/data-display/stat-card";
-import type { NumericalTimeSeriesData } from "@/openapi/litestarAPI.schemas";
-import type { WidgetRead } from "../types";
-import { useTimeSeriesData } from "../data-sources";
+import { StatCard } from '@/components/data-display/stat-card';
+import { useTimeSeriesData } from '../data-sources';
+import type { WidgetRead } from '../types';
+import type { NumericalTimeSeriesData } from '@/openapi/litestarAPI.schemas';
 
 export function StatNumberWidget({ widget }: { widget: WidgetRead }) {
   const { data: response } = useTimeSeriesData(widget.query);

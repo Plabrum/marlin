@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { PageTopBar } from "@/components/layout/page-topbar";
-import { ResourceTable } from "@/components/resource-table/resource-table";
 import { TopLevelActions } from "@/components/object-list/top-level-actions";
+import { ResourceTable } from "@/components/resource-table/resource-table";
 import { useResourceTable } from "@/hooks/use-resource-table";
 import { useListClient } from "@/openapi/client/client";
 import { clientColumnDefs } from "@/openapi/client/columns.gen";

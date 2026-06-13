@@ -1,11 +1,11 @@
-import { X, MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MessageList } from "@/components/chat/message-list";
-import { MessageInput } from "@/components/chat/message-input";
-import { TypingIndicator } from "@/components/chat/typing-indicator";
-import { ThreadViewers } from "@/components/chat/thread-viewers";
-import { useThreadSync } from "@/hooks/threads/use-thread-sync";
-import type { AuthUser } from "@/lib/auth-loader";
+import { X, MessageSquare } from 'lucide-react';
+import { MessageInput } from '@/components/chat/message-input';
+import { MessageList } from '@/components/chat/message-list';
+import { ThreadViewers } from '@/components/chat/thread-viewers';
+import { TypingIndicator } from '@/components/chat/typing-indicator';
+import { useThreadSync } from '@/hooks/threads/use-thread-sync';
+import { cn } from '@/lib/utils';
+import type { AuthUser } from '@/lib/auth-loader';
 
 const PANEL_WIDTH = 360;
 
@@ -41,23 +41,23 @@ export function ThreadPanel({
       aria-hidden={!open}
       style={{ width: open ? PANEL_WIDTH : 0 }}
       className={cn(
-        "sticky top-0 h-svh self-start overflow-hidden bg-sidebar shrink-0 transition-[width] duration-200 ease-out",
-        "border-l border-sidebar-border",
-        open && "shadow-[-12px_0_32px_-16px_rgba(15,23,42,0.18)]",
+        'bg-sidebar sticky top-0 h-svh shrink-0 self-start overflow-hidden transition-[width] duration-200 ease-out',
+        'border-sidebar-border border-l',
+        open && 'shadow-[-12px_0_32px_-16px_rgba(15,23,42,0.18)]'
       )}
     >
       {open && (
         <div className="flex h-full flex-col" style={{ width: PANEL_WIDTH }}>
-          <header className="flex h-14 items-center gap-2 px-3 border-b border-sidebar-border shrink-0">
+          <header className="border-sidebar-border flex h-14 shrink-0 items-center gap-2 border-b px-3">
             <div
-              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-background ring-1 ring-sidebar-border"
+              className="bg-background ring-sidebar-border flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1"
               aria-hidden
             >
-              <MessageSquare className="w-4 h-4 text-muted-foreground" />
+              <MessageSquare className="text-muted-foreground h-4 w-4" />
             </div>
-            <div className="flex-1 min-w-0 leading-tight">
-              <div className="font-display text-sm font-semibold tracking-tight truncate">
-                {title ?? "Thread"}
+            <div className="min-w-0 flex-1 leading-tight">
+              <div className="font-display truncate text-sm font-semibold tracking-tight">
+                {title ?? 'Thread'}
               </div>
               <ThreadViewers viewers={thread.activeViewers} />
             </div>
@@ -65,9 +65,9 @@ export function ThreadPanel({
               type="button"
               onClick={onClose}
               aria-label="Close thread"
-              className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent/60 rounded-full p-1.5 transition-colors"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </header>
 
@@ -82,7 +82,7 @@ export function ThreadPanel({
             <TypingIndicator typingUsers={thread.typingUsers} />
           </div>
 
-          <div className="shrink-0 p-3 border-t border-sidebar-border">
+          <div className="border-sidebar-border shrink-0 border-t p-3">
             <MessageInput
               onSendMessage={thread.sendMessage}
               onFocus={thread.handleInputFocus}

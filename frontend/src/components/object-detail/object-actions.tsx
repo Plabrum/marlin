@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import {
   MoreHorizontal,
   Plus,
@@ -6,29 +7,28 @@ import {
   X,
   RefreshCw,
   Download,
-} from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
-import { ActionConfirmationDialog } from "@/components/actions/action-confirmation-dialog";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { ActionConfirmationDialog } from '@/components/actions/action-confirmation-dialog';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useActionExecutor } from "@/hooks/actions/use-action-executor";
-import { useActionFormRenderer } from "@/hooks/actions/use-action-form-renderer";
+} from '@/components/ui/tooltip';
+import { useActionExecutor } from '@/hooks/actions/use-action-executor';
+import { useActionFormRenderer } from '@/hooks/actions/use-action-form-renderer';
 import type {
   ActionDTO,
   ObjectActionData,
   TopLevelActionData,
-} from "@/lib/actions/types";
+} from '@/lib/actions/types';
 
 const ACTION_ICONS: Record<
   string,
@@ -43,24 +43,24 @@ const ACTION_ICONS: Record<
 };
 
 type ObjectActionsProps = (ObjectActionData | TopLevelActionData) & {
-    /** External edit-mode state (controlled by URL params). */
-    editMode?: {
-      isOpen: boolean;
-      onOpen: () => void;
-      onClose: () => void;
-    };
-    /** Visible buttons before overflow. Defaults to 2. */
-    maxVisible?: number;
-    /** When true, all visible buttons use the primary (default) variant. */
-    allPrimary?: boolean;
-    /** Custom trigger element for the overflow dropdown menu. */
-    trigger?: React.ReactNode;
-    /** Context values injected into form defaultValues for top-level actions. */
-    formContext?: Record<string, unknown>;
+  /** External edit-mode state (controlled by URL params). */
+  editMode?: {
+    isOpen: boolean;
+    onOpen: () => void;
+    onClose: () => void;
   };
+  /** Visible buttons before overflow. Defaults to 2. */
+  maxVisible?: number;
+  /** When true, all visible buttons use the primary (default) variant. */
+  allPrimary?: boolean;
+  /** Custom trigger element for the overflow dropdown menu. */
+  trigger?: React.ReactNode;
+  /** Context values injected into form defaultValues for top-level actions. */
+  formContext?: Record<string, unknown>;
+};
 
 export function ObjectActions(props: ObjectActionsProps) {
-  const isObjectAction = "data" in props;
+  const isObjectAction = 'data' in props;
   const navigate = useNavigate();
 
   const actionGroup = props.actionGroup;
@@ -93,7 +93,7 @@ export function ObjectActions(props: ObjectActionsProps) {
   });
 
   const availableActions = actions.filter(
-    (action: ActionDTO) => action.available !== false,
+    (action: ActionDTO) => action.available !== false
   );
 
   if (availableActions.length === 0) {
@@ -101,14 +101,14 @@ export function ObjectActions(props: ObjectActionsProps) {
   }
 
   const sortedActions = availableActions.sort(
-    (a: ActionDTO, b: ActionDTO) => (a.priority || 0) - (b.priority || 0),
+    (a: ActionDTO, b: ActionDTO) => (a.priority || 0) - (b.priority || 0)
   );
   const maxVisible = props.maxVisible ?? 1;
   const visibleActions = sortedActions.slice(0, maxVisible);
   const remainingActions = sortedActions.slice(maxVisible);
 
   const isEditModeAction = (action: ActionDTO) =>
-    action.action.endsWith("__edit");
+    action.action.endsWith('__edit');
 
   const editAction = availableActions.find(isEditModeAction);
 
@@ -133,7 +133,7 @@ export function ObjectActions(props: ObjectActionsProps) {
 
   const getActionLabel = (action: ActionDTO) => {
     if (isEditModeAction(action) && props.editMode?.isOpen) {
-      return "Finish editing";
+      return 'Finish editing';
     }
     return action.label;
   };
@@ -160,13 +160,13 @@ export function ObjectActions(props: ObjectActionsProps) {
           const button = (
             <Button
               key={action.action}
-              variant={index === 0 || props.allPrimary ? "default" : "outline"}
+              variant={index === 0 || props.allPrimary ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleActionClick(action)}
               aria-disabled={!!action.disabled_reason}
               className={
-                "hidden md:inline-flex" +
-                (action.disabled_reason ? " opacity-50" : "")
+                'hidden md:inline-flex' +
+                (action.disabled_reason ? ' opacity-50' : '')
               }
             >
               {action.icon &&
@@ -204,7 +204,7 @@ export function ObjectActions(props: ObjectActionsProps) {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ")
+              if (e.key === 'Enter' || e.key === ' ')
                 handleActionClick(singleDirectAction);
             }}
           >
@@ -217,7 +217,7 @@ export function ObjectActions(props: ObjectActionsProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={remainingActions.length === 0 ? "md:hidden" : ""}
+                  className={remainingActions.length === 0 ? 'md:hidden' : ''}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -229,10 +229,10 @@ export function ObjectActions(props: ObjectActionsProps) {
                   key={`mobile-${action.action}`}
                   onClick={() => handleActionClick(action)}
                   className={
-                    "cursor-pointer md:hidden" +
+                    'cursor-pointer md:hidden' +
                     (action.disabled_reason && !action.disabled_reason.cta
-                      ? " opacity-50"
-                      : "")
+                      ? ' opacity-50'
+                      : '')
                   }
                   title={action.disabled_reason?.message}
                 >
@@ -244,10 +244,10 @@ export function ObjectActions(props: ObjectActionsProps) {
                   key={`${action.action}-${index}`}
                   onClick={() => handleActionClick(action)}
                   className={
-                    "cursor-pointer" +
+                    'cursor-pointer' +
                     (action.disabled_reason && !action.disabled_reason.cta
-                      ? " opacity-50"
-                      : "")
+                      ? ' opacity-50'
+                      : '')
                   }
                   title={action.disabled_reason?.message}
                 >

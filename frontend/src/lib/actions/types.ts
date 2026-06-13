@@ -1,8 +1,9 @@
-export type { ActionGroupType } from "@/openapi/litestarAPI.schemas";
 import type {
   ActionsActionGroupExecuteActionBody,
   ActionsActionGroupObjectIdExecuteObjectActionBody,
 } from "@/openapi/litestarAPI.schemas";
+
+export type { ActionGroupType } from "@/openapi/litestarAPI.schemas";
 
 export interface ActionCTA {
   label: string;

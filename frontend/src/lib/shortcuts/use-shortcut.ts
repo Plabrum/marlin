@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-
 import { registerShortcut, unregisterShortcut } from "./registry";
 import type { ShortcutDef } from "./types";
 

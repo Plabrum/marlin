@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { StatusBadge } from "@/components/status-badge";
+import { formatCents } from "@/lib/format";
+import { humanize } from "@/lib/utils";
 import type {
   ColumnDefinition,
   ColumnDisplayType,
   FilterType,
 } from "@/lib/resource-table-types";
-import { formatCents } from "@/lib/format";
-import { humanize } from "@/lib/utils";
 
 export type DisplayType = ColumnDisplayType;
 

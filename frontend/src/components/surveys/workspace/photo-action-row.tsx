@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useActionExecutor } from "@/hooks/actions/use-action-executor";
-import type { ActionDTO } from "@/lib/actions/types";
-import type { SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
-import { CapturePhotoButton } from "./capture-photo-button";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { useActionExecutor } from '@/hooks/actions/use-action-executor';
+import { CapturePhotoButton } from './capture-photo-button';
+import type { ActionDTO } from '@/lib/actions/types';
+import type { SurveyMediaListItem } from '@/openapi/litestarAPI.schemas';
 
-const ASSIGN_MEDIA: ActionDTO = { action: "survey_media_actions__assign", label: "Assign media" };
+const ASSIGN_MEDIA: ActionDTO = {
+  action: 'survey_media_actions__assign',
+  label: 'Assign media',
+};
 
 type PhotoActionRowProps = {
   nodeId: string;
@@ -24,7 +31,7 @@ export function PhotoActionRow({
   const attachedCount = mediaByNode.get(nodeId)?.length ?? 0;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
       <span>{attachedCount} attached</span>
       <span aria-hidden>·</span>
       <CapturePhotoButton
@@ -47,7 +54,9 @@ function AttachPhotoButton({
   unassignedMedia: SurveyMediaListItem[];
 }) {
   const [open, setOpen] = useState(false);
-  const mediaExecutor = useActionExecutor({ actionGroup: "survey_media_actions" });
+  const mediaExecutor = useActionExecutor({
+    actionGroup: 'survey_media_actions',
+  });
   const disabled = unassignedMedia.length === 0;
 
   return (
@@ -57,7 +66,7 @@ function AttachPhotoButton({
           size="sm"
           variant="ghost"
           disabled={disabled}
-          className="h-6 px-2 text-xs text-muted-foreground"
+          className="text-muted-foreground h-6 px-2 text-xs"
         >
           + From Unassigned ({unassignedMedia.length})
         </Button>
@@ -72,16 +81,19 @@ function AttachPhotoButton({
               onClick={async () => {
                 await mediaExecutor.executeAction(
                   ASSIGN_MEDIA,
-                  { action: ASSIGN_MEDIA.action, data: { node_id: nodeId } } as never,
-                  { silent: true, objectId: m.id },
+                  {
+                    action: ASSIGN_MEDIA.action,
+                    data: { node_id: nodeId },
+                  } as never,
+                  { silent: true, objectId: m.id }
                 );
                 setOpen(false);
               }}
-              className="aspect-square overflow-hidden rounded border hover:ring-2 hover:ring-primary"
+              className="hover:ring-primary aspect-square overflow-hidden rounded border hover:ring-2"
             >
               <img
                 src={m.thumbnail_url ?? m.view_url}
-                alt={m.caption ?? ""}
+                alt={m.caption ?? ''}
                 className="h-full w-full object-cover"
               />
             </button>

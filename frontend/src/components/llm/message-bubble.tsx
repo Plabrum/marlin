@@ -6,15 +6,13 @@
  * is itself the costliest render — re-running it for unchanged messages
  * is the regression we're guarding against.
  */
-import { memo } from "react";
-
-import { LlmOrb } from "@/components/ui/loading-orb";
-import { Markdown } from "@/components/ui/markdown";
-import { cn } from "@/lib/utils";
-import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litestarAPI.schemas";
-
-import { ToolPill } from "@/components/llm/tool-pill";
-import type { ToolPill as ToolPillType } from "@/hooks/llm/use-llm-streaming";
+import { memo } from 'react';
+import { ToolPill } from '@/components/llm/tool-pill';
+import { LlmOrb } from '@/components/ui/loading-orb';
+import { Markdown } from '@/components/ui/markdown';
+import { cn } from '@/lib/utils';
+import type { ToolPill as ToolPillType } from '@/hooks/llm/use-llm-streaming';
+import type { LlmSchemasMessageSchema as MessageSchema } from '@/openapi/litestarAPI.schemas';
 
 type Props = {
   message: MessageSchema;
@@ -32,13 +30,18 @@ type Props = {
   expanded?: boolean;
 };
 
-function MessageBubbleInner({ message, isInProgress, toolPills, expanded }: Props) {
-  const isAssistant = message.role === "assistant";
+function MessageBubbleInner({
+  message,
+  isInProgress,
+  toolPills,
+  expanded,
+}: Props) {
+  const isAssistant = message.role === 'assistant';
   return (
     <div
       className={cn(
-        "flex gap-3",
-        isAssistant ? "flex-row" : "flex-row-reverse",
+        'flex gap-3',
+        isAssistant ? 'flex-row' : 'flex-row-reverse'
       )}
     >
       {isAssistant && (
@@ -46,21 +49,21 @@ function MessageBubbleInner({ message, isInProgress, toolPills, expanded }: Prop
           <LlmOrb size={32} />
         </div>
       )}
-      <div className="flex flex-col gap-2 max-w-[75%] min-w-0">
+      <div className="flex max-w-[75%] min-w-0 flex-col gap-2">
         <div
           className={cn(
-            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+            'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
             isAssistant
               ? expanded
-                ? "bg-muted text-foreground rounded-tl-sm"
-                : "bg-background border border-border text-foreground rounded-tl-sm"
-              : "bg-primary text-primary-foreground rounded-tr-sm",
+                ? 'bg-muted text-foreground rounded-tl-sm'
+                : 'bg-background border-border text-foreground rounded-tl-sm border'
+              : 'bg-primary text-primary-foreground rounded-tr-sm'
           )}
         >
           {isAssistant ? (
             <>
               {toolPills && toolPills.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-1.5">
+                <div className="mb-1.5 flex flex-wrap gap-1">
                   {toolPills.map((pill) => (
                     <ToolPill key={pill.id} pill={pill} />
                   ))}
@@ -73,9 +76,9 @@ function MessageBubbleInner({ message, isInProgress, toolPills, expanded }: Prop
                   className="inline-flex items-center gap-1.5"
                   aria-label="Assistant is typing"
                 >
-                  <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:300ms]" />
+                  <span className="bg-muted-foreground/50 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:0ms]" />
+                  <span className="bg-muted-foreground/50 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:150ms]" />
+                  <span className="bg-muted-foreground/50 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:300ms]" />
                 </span>
               ) : null}
             </>
@@ -94,7 +97,8 @@ export const MessageBubble = memo(MessageBubbleInner, (prev, next) => {
   if (prev.isInProgress !== next.isInProgress) return false;
   if (prev.expanded !== next.expanded) return false;
   // Tool pills mutate during streaming — refresh on length OR status change.
-  if ((prev.toolPills?.length ?? 0) !== (next.toolPills?.length ?? 0)) return false;
+  if ((prev.toolPills?.length ?? 0) !== (next.toolPills?.length ?? 0))
+    return false;
   if (prev.toolPills && next.toolPills) {
     for (let i = 0; i < prev.toolPills.length; i++) {
       if (prev.toolPills[i].status !== next.toolPills[i].status) return false;

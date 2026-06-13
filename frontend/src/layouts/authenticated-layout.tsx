@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { Outlet, useRouterState } from "@tanstack/react-router";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { useAuthMeMeSuspense } from "@/openapi/auth/auth";
 import { LlmDock } from "@/components/layout/llm-dock";
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 import { QueryBoundary } from "@/components/query-boundary";
 import { ShortcutsCheatSheet } from "@/components/shortcuts-cheat-sheet";
-import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAuthMeMeSuspense } from "@/openapi/auth/auth";
 
 function AuthenticatedLayoutContent() {
   const { data: user } = useAuthMeMeSuspense();

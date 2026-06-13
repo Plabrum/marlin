@@ -1,11 +1,10 @@
-import { AlertCircle, Clock, ListChecks } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import { AlertCircle, Clock, ListChecks } from 'lucide-react';
 import {
   describeRequirement,
   type ConnectAccountRequirements,
-} from "@/lib/connect";
-import { statusDotClasses, statusVariantClasses } from "@/lib/status-colors";
+} from '@/lib/connect';
+import { statusDotClasses, statusVariantClasses } from '@/lib/status-colors';
+import { cn } from '@/lib/utils';
 
 interface ConnectRequirementsProps {
   requirements: ConnectAccountRequirements;
@@ -31,25 +30,19 @@ function dedupe(keys: string[]): RequirementItem[] {
   return items;
 }
 
-function StatusPill({
-  enabled,
-  label,
-}: {
-  enabled: boolean;
-  label: string;
-}) {
-  const variant = enabled ? "active" : "warning";
+function StatusPill({ enabled, label }: { enabled: boolean; label: string }) {
+  const variant = enabled ? 'active' : 'warning';
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium",
-        statusVariantClasses[variant],
+        'inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium',
+        statusVariantClasses[variant]
       )}
     >
       <span
-        className={cn("h-1.5 w-1.5 rounded-full", statusDotClasses[variant])}
+        className={cn('h-1.5 w-1.5 rounded-full', statusDotClasses[variant])}
       />
-      {label}: {enabled ? "Enabled" : "Disabled"}
+      {label}: {enabled ? 'Enabled' : 'Disabled'}
     </span>
   );
 }
@@ -76,22 +69,22 @@ function Section({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className={cn("inline-flex size-4", iconClass)}>{icon}</span>
+        <span className={cn('inline-flex size-4', iconClass)}>{icon}</span>
         <h3 className="text-sm font-medium">{title}</h3>
       </div>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <p className="text-muted-foreground text-xs">{description}</p>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">{emptyHint}</p>
+        <p className="text-muted-foreground text-xs italic">{emptyHint}</p>
       ) : (
         <ul className="space-y-1.5">
           {items.map((item) => (
             <li
               key={item.key}
-              className="flex items-center justify-between gap-3 rounded-md border bg-card px-3 py-2 text-sm"
+              className="bg-card flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
             >
               <div className="flex flex-col">
                 <span className="font-medium">{item.label}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {item.key}
                 </span>
               </div>
@@ -99,7 +92,7 @@ function Section({
                 <button
                   type="button"
                   onClick={() => onResolve(item.key)}
-                  className="text-xs font-medium text-primary hover:underline"
+                  className="text-primary text-xs font-medium hover:underline"
                 >
                   Resolve
                 </button>
@@ -119,7 +112,7 @@ export function ConnectRequirements({
 }: ConnectRequirementsProps) {
   const currentlyDueSet = new Set(requirements.currently_due);
   const comingUpKeys = requirements.eventually_due.filter(
-    (key) => !currentlyDueSet.has(key),
+    (key) => !currentlyDueSet.has(key)
   );
 
   const actionRequired = dedupe(requirements.currently_due);
@@ -127,7 +120,7 @@ export function ConnectRequirements({
   const comingUp = dedupe(comingUpKeys);
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn('space-y-6', className)}>
       <div className="flex flex-wrap gap-2">
         <StatusPill enabled={requirements.charges_enabled} label="Charges" />
         <StatusPill enabled={requirements.payouts_enabled} label="Payouts" />

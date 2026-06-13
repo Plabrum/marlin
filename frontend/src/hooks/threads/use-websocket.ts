@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface UseWebSocketOptions {
   url: string;
@@ -62,7 +62,7 @@ export function useWebSocket({
 
   const send = useCallback((data: string | object) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const message = typeof data === "string" ? data : JSON.stringify(data);
+      const message = typeof data === 'string' ? data : JSON.stringify(data);
       wsRef.current.send(message);
     }
   }, []);

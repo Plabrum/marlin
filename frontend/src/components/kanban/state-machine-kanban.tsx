@@ -1,13 +1,13 @@
-import { useMemo, type ReactNode } from "react";
-import { toast } from "sonner";
+import { useMemo, type ReactNode } from 'react';
+import { toast } from 'sonner';
 import {
   KanbanProvider,
   KanbanHeader,
   KanbanCards,
   KanbanCard,
-} from "@/components/ui/kanban";
-import { humanize } from "@/lib/utils";
-import type { ActionDTO, ActionGroupType } from "@/openapi/litestarAPI.schemas";
+} from '@/components/ui/kanban';
+import { humanize } from '@/lib/utils';
+import type { ActionDTO, ActionGroupType } from '@/openapi/litestarAPI.schemas';
 
 type Row = { actions?: ActionDTO[] };
 
@@ -60,7 +60,7 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
 }: StateMachineKanbanProps<TRow, TState>) {
   const columns = useMemo(
     () => states.map((s) => ({ id: s, name: getStateLabel(s) })),
-    [states, getStateLabel],
+    [states, getStateLabel]
   );
 
   const items: KanbanItem<TRow>[] = useMemo(
@@ -71,7 +71,7 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
         column: getState(row),
         row,
       })),
-    [rows, getId, getName, getState],
+    [rows, getId, getName, getState]
   );
 
   const handleDataChange = async (updated: KanbanItem<TRow>[]) => {
@@ -79,7 +79,12 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
       .map((next) => {
         const prev = items.find((i) => i.id === next.id);
         return prev && prev.column !== next.column
-          ? { id: next.id, fromState: prev.column, toState: next.column, row: prev.row }
+          ? {
+              id: next.id,
+              fromState: prev.column,
+              toState: next.column,
+              row: prev.row,
+            }
           : null;
       })
       .filter((m): m is NonNullable<typeof m> => m !== null);
@@ -91,7 +96,7 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
     // on execute — this is just optimistic gating.
     const planned = moves.map((m) => {
       const action = (m.row.actions ?? []).find(
-        (a) => a.target_state === m.toState,
+        (a) => a.target_state === m.toState
       );
       return { ...m, action };
     });
@@ -99,7 +104,7 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
     const blocked = planned.find((p) => !p.action);
     if (blocked) {
       toast.error(
-        `Can't move to ${getStateLabel(blocked.toState as TState)} from here`,
+        `Can't move to ${getStateLabel(blocked.toState as TState)} from here`
       );
       return;
     }
@@ -115,12 +120,12 @@ export function StateMachineKanban<TRow extends Row, TState extends string>({
             actionGroup,
             objectId: p.id,
             action: p.action!.action,
-          }),
-        ),
+          })
+        )
       );
     } catch (err) {
       onRollback?.();
-      const message = err instanceof Error ? err.message : "Failed to update";
+      const message = err instanceof Error ? err.message : 'Failed to update';
       toast.error(message);
     } finally {
       onSettled?.();

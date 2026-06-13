@@ -1,6 +1,6 @@
 export function NotificationsPage() {
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-muted-foreground text-sm">
       Notification settings coming soon.
     </p>
   );

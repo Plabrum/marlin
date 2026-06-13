@@ -1,5 +1,4 @@
 import { Paperclip } from "lucide-react";
-
 import type { AttachmentRef } from "@/openapi/litestarAPI.schemas";
 
 interface Props {

@@ -1,13 +1,13 @@
 import { Suspense, useState } from "react";
-import { useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import type { StripeElementsOptions } from "@stripe/stripe-js";
-import { getStripe } from "@/lib/stripe";
-import { customInstance } from "@/openapi/custom-instance";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCents } from "@/lib/format";
+import { getStripe } from "@/lib/stripe";
+import { customInstance } from "@/openapi/custom-instance";
+import type { StripeElementsOptions } from "@stripe/stripe-js";
 
 type PublicInvoiceLineItem = {
   description: string;

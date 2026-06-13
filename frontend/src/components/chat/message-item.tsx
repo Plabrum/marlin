@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { MessageActions } from "./message-actions";
-import { MessageAvatar } from "./message-avatar";
-import { MessageContent } from "./message-content";
-import { MessageInput } from "./message-input";
-import { formatRelativeTime } from "@/lib/format";
-import { type TiptapContent, hasContentText } from "@/lib/tiptap";
-import type { ThreadsSchemasMessageSchema } from "@/openapi/litestarAPI.schemas";
+import { useState } from 'react';
+import { formatRelativeTime } from '@/lib/format';
+import { type TiptapContent, hasContentText } from '@/lib/tiptap';
+import { MessageActions } from './message-actions';
+import { MessageAvatar } from './message-avatar';
+import { MessageContent } from './message-content';
+import { MessageInput } from './message-input';
+import type { ThreadsSchemasMessageSchema } from '@/openapi/litestarAPI.schemas';
 
 interface MessageItemProps {
   message: ThreadsSchemasMessageSchema;
@@ -14,10 +14,15 @@ interface MessageItemProps {
   onDelete?: (messageId: string) => Promise<void>;
 }
 
-export function MessageItem({ message, isCurrentUser, onEdit, onDelete }: MessageItemProps) {
+export function MessageItem({
+  message,
+  isCurrentUser,
+  onEdit,
+  onDelete,
+}: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false);
 
-  const userName = message.user?.name ?? message.user?.email ?? "Unknown";
+  const userName = message.user?.name ?? message.user?.email ?? 'Unknown';
 
   const handleSaveEdit = async (content: TiptapContent) => {
     if (
@@ -34,11 +39,12 @@ export function MessageItem({ message, isCurrentUser, onEdit, onDelete }: Messag
 
   const handleDelete = async () => {
     if (!onDelete) return;
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    if (!window.confirm('Are you sure you want to delete this message?'))
+      return;
     try {
       await onDelete(message.id);
     } catch (error) {
-      console.error("Failed to delete message:", error);
+      console.error('Failed to delete message:', error);
     }
   };
 
@@ -51,9 +57,13 @@ export function MessageItem({ message, isCurrentUser, onEdit, onDelete }: Messag
       <div className="flex-1 space-y-1">
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-semibold">{userName}</span>
-          <span className="text-muted-foreground text-xs">{formatRelativeTime(message.created_at)}</span>
+          <span className="text-muted-foreground text-xs">
+            {formatRelativeTime(message.created_at)}
+          </span>
           {wasEdited && (
-            <span className="text-muted-foreground text-xs italic">(edited)</span>
+            <span className="text-muted-foreground text-xs italic">
+              (edited)
+            </span>
           )}
         </div>
 
@@ -65,12 +75,18 @@ export function MessageItem({ message, isCurrentUser, onEdit, onDelete }: Messag
             onCancel={() => setIsEditing(false)}
           />
         ) : (
-          <MessageContent content={message.content} className="text-foreground/90" />
+          <MessageContent
+            content={message.content}
+            className="text-foreground/90"
+          />
         )}
       </div>
 
       {isCurrentUser && !isEditing && (
-        <MessageActions onEdit={() => setIsEditing(true)} onDelete={handleDelete} />
+        <MessageActions
+          onEdit={() => setIsEditing(true)}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   );

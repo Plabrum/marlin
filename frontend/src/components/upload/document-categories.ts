@@ -7,7 +7,7 @@ import {
   Shield,
   Folder,
   type LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 /**
  * Frontend metadata for upload document categories.
@@ -17,12 +17,12 @@ import {
  * `DocumentCategory` and the local union below can be deleted.
  */
 export type DocumentCategory =
-  | "survey_photo"
-  | "inspection_report"
-  | "maintenance_record"
-  | "ownership_doc"
-  | "insurance"
-  | "other";
+  | 'survey_photo'
+  | 'inspection_report'
+  | 'maintenance_record'
+  | 'ownership_doc'
+  | 'insurance'
+  | 'other';
 
 export interface CategoryMeta {
   label: string;
@@ -30,22 +30,22 @@ export interface CategoryMeta {
 }
 
 export const DOCUMENT_CATEGORY_META: Record<DocumentCategory, CategoryMeta> = {
-  survey_photo: { label: "Survey Photo", icon: Camera },
-  inspection_report: { label: "Inspection Report", icon: ClipboardList },
-  maintenance_record: { label: "Maintenance Record", icon: Wrench },
-  ownership_doc: { label: "Registration / Title", icon: FileBadge },
-  insurance: { label: "Insurance", icon: Shield },
-  other: { label: "Other", icon: Folder },
+  survey_photo: { label: 'Survey Photo', icon: Camera },
+  inspection_report: { label: 'Inspection Report', icon: ClipboardList },
+  maintenance_record: { label: 'Maintenance Record', icon: Wrench },
+  ownership_doc: { label: 'Registration / Title', icon: FileBadge },
+  insurance: { label: 'Insurance', icon: Shield },
+  other: { label: 'Other', icon: Folder },
 };
 
 export const DOCUMENT_CATEGORY_ORDER: DocumentCategory[] = [
-  "survey_photo",
-  "inspection_report",
-  "maintenance_record",
-  "ownership_doc",
-  "insurance",
-  "other",
+  'survey_photo',
+  'inspection_report',
+  'maintenance_record',
+  'ownership_doc',
+  'insurance',
+  'other',
 ];
 
-export const ALL_CATEGORIES_ID = "all" as const;
-export const ALL_CATEGORIES_META: CategoryMeta = { label: "All", icon: Files };
+export const ALL_CATEGORIES_ID = 'all' as const;
+export const ALL_CATEGORIES_META: CategoryMeta = { label: 'All', icon: Files };

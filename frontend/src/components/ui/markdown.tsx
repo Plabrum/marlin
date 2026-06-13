@@ -1,16 +1,15 @@
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
-import remarkGfm from "remark-gfm";
-import { ArrowUpRight } from "lucide-react";
-
+import { ArrowUpRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { getCitationSourceType } from "@/lib/citations";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/tooltip';
+import { getCitationSourceType } from '@/lib/citations';
+import { cn } from '@/lib/utils';
 
 interface MarkdownProps {
   children: string;
@@ -24,7 +23,7 @@ interface MarkdownProps {
    * Defaults to "plain" — existing call sites that render arbitrary
    * markdown (release notes, etc.) keep their previous look.
    */
-  variant?: "plain" | "assistant";
+  variant?: 'plain' | 'assistant';
 }
 
 /**
@@ -36,12 +35,12 @@ interface MarkdownProps {
  * uppercase-then-period, not lowercase-then-period).
  */
 function normalizeSentenceSpacing(text: string): string {
-  return text.replace(/([a-z0-9][.!?])([A-Z])/g, "$1 $2");
+  return text.replace(/([a-z0-9][.!?])([A-Z])/g, '$1 $2');
 }
 
-export function Markdown({ children, variant = "plain" }: MarkdownProps) {
+export function Markdown({ children, variant = 'plain' }: MarkdownProps) {
   const normalized =
-    variant === "assistant" ? normalizeSentenceSpacing(children) : children;
+    variant === 'assistant' ? normalizeSentenceSpacing(children) : children;
   return (
     <ReactMarkdown
       // NEA-235: `remark-breaks` converts single `\n` line breaks into
@@ -53,18 +52,18 @@ export function Markdown({ children, variant = "plain" }: MarkdownProps) {
       components={{
         p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
         ul: ({ children }) => (
-          <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>
+          <ul className="mb-2 list-disc space-y-1 pl-4">{children}</ul>
         ),
         ol: ({ children }) => (
-          <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>
+          <ol className="mb-2 list-decimal space-y-1 pl-4">{children}</ol>
         ),
         li: ({ children }) => <li>{children}</li>,
         strong: ({ children }) => (
           <strong className="font-semibold">{children}</strong>
         ),
         table: ({ children }) => (
-          <div className="my-2 overflow-x-auto rounded-md border border-border">
-            <table className="w-full text-xs border-collapse">{children}</table>
+          <div className="border-border my-2 overflow-x-auto rounded-md border">
+            <table className="w-full border-collapse text-xs">{children}</table>
           </div>
         ),
         thead: ({ children }) => (
@@ -72,26 +71,26 @@ export function Markdown({ children, variant = "plain" }: MarkdownProps) {
         ),
         tbody: ({ children }) => <tbody>{children}</tbody>,
         tr: ({ children }) => (
-          <tr className="border-b border-border last:border-0">{children}</tr>
+          <tr className="border-border border-b last:border-0">{children}</tr>
         ),
         th: ({ children }) => (
-          <th className="px-2 py-1.5 font-semibold align-top">{children}</th>
+          <th className="px-2 py-1.5 align-top font-semibold">{children}</th>
         ),
         td: ({ children }) => (
           <td className="px-2 py-1.5 align-top">{children}</td>
         ),
         code: ({ children }) => (
-          <code className="rounded bg-muted px-1 py-0.5 text-[0.85em] font-mono">
+          <code className="bg-muted rounded px-1 py-0.5 font-mono text-[0.85em]">
             {children}
           </code>
         ),
         pre: ({ children }) => (
-          <pre className="my-2 overflow-x-auto rounded-md bg-muted p-2 text-[0.85em]">
+          <pre className="bg-muted my-2 overflow-x-auto rounded-md p-2 text-[0.85em]">
             {children}
           </pre>
         ),
         a: ({ children, href }) => {
-          if (variant !== "assistant" || !href) {
+          if (variant !== 'assistant' || !href) {
             return (
               <a href={href} className="underline">
                 {children}
@@ -106,15 +105,15 @@ export function Markdown({ children, variant = "plain" }: MarkdownProps) {
                 <TooltipTrigger asChild>
                   <a
                     href={href}
-                    target={isExternal ? "_blank" : undefined}
-                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    target={isExternal ? '_blank' : undefined}
+                    rel={isExternal ? 'noopener noreferrer' : undefined}
                     className={cn(
-                      "inline-flex items-baseline gap-0.5 text-amber-700 dark:text-amber-300 underline decoration-amber-400/60 underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100",
+                      'inline-flex items-baseline gap-0.5 text-amber-700 underline decoration-amber-400/60 underline-offset-2 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100'
                     )}
                   >
                     {children}
                     <ArrowUpRight
-                      className="w-3 h-3 self-center shrink-0"
+                      className="h-3 w-3 shrink-0 self-center"
                       aria-hidden
                     />
                   </a>

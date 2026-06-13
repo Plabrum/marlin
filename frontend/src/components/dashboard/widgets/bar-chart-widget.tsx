@@ -1,11 +1,15 @@
-import { MetricBarChart } from "@/components/data-display/metric-bar-chart";
-import type { NumericalTimeSeriesData } from "@/openapi/litestarAPI.schemas";
-import type { WidgetRead } from "../types";
-import { useTimeSeriesData } from "../data-sources";
+import { MetricBarChart } from '@/components/data-display/metric-bar-chart';
+import { useTimeSeriesData } from '../data-sources';
+import type { WidgetRead } from '../types';
+import type { NumericalTimeSeriesData } from '@/openapi/litestarAPI.schemas';
 
 function formatTimestamp(ts: string): string {
   const d = new Date(ts);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
 export function BarChartWidget({ widget }: { widget: WidgetRead }) {

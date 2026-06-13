@@ -1,8 +1,7 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { format, isSameDay, isToday, parseISO } from "date-fns";
-import { cn } from "@/lib/utils";
-import type { CalendarEventListItem } from "@/openapi/litestarAPI.schemas";
-import { eventStateClasses } from "./event-styles";
+import { useLayoutEffect, useRef, useState } from 'react';
+import { format, isSameDay, isToday, parseISO } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { eventStateClasses } from './event-styles';
 import {
   HOUR_END,
   HOUR_PX_MIN,
@@ -11,7 +10,8 @@ import {
   HOUR_VISIBLE_START,
   clampToVisibleHours,
   minutesFromDayStart,
-} from "./utils";
+} from './utils';
+import type { CalendarEventListItem } from '@/openapi/litestarAPI.schemas';
 
 interface Props {
   days: Date[];
@@ -22,7 +22,10 @@ interface Props {
 const VISIBLE_HOURS = HOUR_VISIBLE_END - HOUR_VISIBLE_START;
 
 export function TimeGrid({ days, events, onSelectEvent }: Props) {
-  const hours = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
+  const hours = Array.from(
+    { length: HOUR_END - HOUR_START },
+    (_, i) => HOUR_START + i
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollHeight, setScrollHeight] = useState<number | null>(null);
   const didInitialScroll = useRef(false);
@@ -36,8 +39,8 @@ export function TimeGrid({ days, events, onSelectEvent }: Props) {
       setScrollHeight(Math.max(VISIBLE_HOURS * HOUR_PX_MIN, available));
     };
     measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
   }, []);
 
   const effectiveHeight = scrollHeight ?? VISIBLE_HOURS * HOUR_PX_MIN;
@@ -56,20 +59,32 @@ export function TimeGrid({ days, events, onSelectEvent }: Props) {
   const timed = events.filter((e) => !e.all_day);
 
   return (
-    <div className="rounded-lg border bg-background overflow-hidden flex flex-col">
-      <div className="grid border-b" style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))` }}>
-        <div className="border-r bg-muted/40" />
+    <div className="bg-background flex flex-col overflow-hidden rounded-lg border">
+      <div
+        className="grid border-b"
+        style={{
+          gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))`,
+        }}
+      >
+        <div className="bg-muted/40 border-r" />
         {days.map((day) => (
           <div
             key={day.toISOString()}
             className={cn(
-              "border-r last:border-r-0 px-2 py-2 text-center text-xs",
-              isToday(day) && "bg-accent/40",
+              'border-r px-2 py-2 text-center text-xs last:border-r-0',
+              isToday(day) && 'bg-accent/40'
             )}
           >
-            <div className="text-muted-foreground uppercase tracking-wide">{format(day, "EEE")}</div>
-            <div className={cn("text-lg font-semibold", isToday(day) && "text-primary")}>
-              {format(day, "d")}
+            <div className="text-muted-foreground tracking-wide uppercase">
+              {format(day, 'EEE')}
+            </div>
+            <div
+              className={cn(
+                'text-lg font-semibold',
+                isToday(day) && 'text-primary'
+              )}
+            >
+              {format(day, 'd')}
             </div>
           </div>
         ))}
@@ -78,26 +93,31 @@ export function TimeGrid({ days, events, onSelectEvent }: Props) {
       {allDay.length > 0 && (
         <div
           className="grid border-b"
-          style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))`,
+          }}
         >
-          <div className="border-r bg-muted/40 px-2 py-1 text-[10px] uppercase text-muted-foreground">
+          <div className="bg-muted/40 text-muted-foreground border-r px-2 py-1 text-[10px] uppercase">
             All-day
           </div>
           {days.map((day) => {
             const dayEvents = allDay.filter((e) => spansDay(e, day));
             return (
-              <div key={day.toISOString()} className="border-r last:border-r-0 p-1 space-y-0.5">
+              <div
+                key={day.toISOString()}
+                className="space-y-0.5 border-r p-1 last:border-r-0"
+              >
                 {dayEvents.map((event) => (
                   <button
                     key={event.id}
                     type="button"
                     onClick={() => onSelectEvent(event)}
                     className={cn(
-                      "block w-full truncate rounded-sm border-l-2 px-1.5 py-0.5 text-left text-[11px]",
-                      eventStateClasses[event.state],
+                      'block w-full truncate rounded-sm border-l-2 px-1.5 py-0.5 text-left text-[11px]',
+                      eventStateClasses[event.state]
                     )}
                   >
-                    {event.name || "Untitled event"}
+                    {event.name || 'Untitled event'}
                   </button>
                 ))}
               </div>
@@ -106,19 +126,26 @@ export function TimeGrid({ days, events, onSelectEvent }: Props) {
         </div>
       )}
 
-      <div ref={scrollRef} className="overflow-y-auto" style={{ height: effectiveHeight }}>
+      <div
+        ref={scrollRef}
+        className="overflow-y-auto"
+        style={{ height: effectiveHeight }}
+      >
         <div
-          className="grid relative"
-          style={{ gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))`, height: gridHeight }}
+          className="relative grid"
+          style={{
+            gridTemplateColumns: `4rem repeat(${days.length}, minmax(0, 1fr))`,
+            height: gridHeight,
+          }}
         >
-          <div className="border-r bg-muted/20">
+          <div className="bg-muted/20 border-r">
             {hours.map((h) => (
               <div
                 key={h}
-                className="px-2 pt-1 text-right text-[10px] uppercase tracking-wide text-muted-foreground"
+                className="text-muted-foreground px-2 pt-1 text-right text-[10px] tracking-wide uppercase"
                 style={{ height: hourPx }}
               >
-                {format(new Date().setHours(h, 0, 0, 0), "ha").toLowerCase()}
+                {format(new Date().setHours(h, 0, 0, 0), 'ha').toLowerCase()}
               </div>
             ))}
           </div>
@@ -154,17 +181,26 @@ function DayColumn({
   return (
     <div className="relative border-r last:border-r-0">
       {hours.map((h) => (
-        <div key={h} className="border-t border-border/60" style={{ height: hourPx }} />
+        <div
+          key={h}
+          className="border-border/60 border-t"
+          style={{ height: hourPx }}
+        />
       ))}
       {events.map((event) => {
         const start = parseISO(event.start!);
         const end = parseISO(event.end!);
-        const { clampedStart, clampedEnd } = clampToVisibleHours(start, end, day);
+        const { clampedStart, clampedEnd } = clampToVisibleHours(
+          start,
+          end,
+          day
+        );
         if (clampedEnd <= clampedStart) return null;
         const top = (minutesFromDayStart(clampedStart) / 60) * hourPx;
         const height = Math.max(
-          ((clampedEnd.getTime() - clampedStart.getTime()) / 1000 / 60 / 60) * hourPx,
-          18,
+          ((clampedEnd.getTime() - clampedStart.getTime()) / 1000 / 60 / 60) *
+            hourPx,
+          18
         );
         return (
           <button
@@ -172,17 +208,21 @@ function DayColumn({
             type="button"
             onClick={() => onSelectEvent(event)}
             className={cn(
-              "absolute left-1 right-1 overflow-hidden rounded-md border-l-2 px-1.5 py-1 text-left text-[11px] leading-tight",
-              eventStateClasses[event.state],
+              'absolute right-1 left-1 overflow-hidden rounded-md border-l-2 px-1.5 py-1 text-left text-[11px] leading-tight',
+              eventStateClasses[event.state]
             )}
             style={{ top, height }}
           >
             <div className="font-medium">
-              {format(start, "HH:mm")}–{format(end, "HH:mm")}
+              {format(start, 'HH:mm')}–{format(end, 'HH:mm')}
             </div>
-            <div className="truncate font-medium">{event.name || "Untitled event"}</div>
+            <div className="truncate font-medium">
+              {event.name || 'Untitled event'}
+            </div>
             {event.address_line1 && (
-              <div className="truncate text-muted-foreground">{event.address_line1}</div>
+              <div className="text-muted-foreground truncate">
+                {event.address_line1}
+              </div>
             )}
           </button>
         );

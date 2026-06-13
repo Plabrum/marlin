@@ -6,12 +6,14 @@
  * Triggered automatically after Orval via the "codegen" npm script.
  */
 
-import { writeFileSync, mkdirSync } from "fs";
-import { dirname, join } from "path";
+import { writeFileSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
 
-const OPENAPI_URL = process.env.OPENAPI_URL ?? "http://localhost:8000/schema/openapi.json";
-const METADATA_URL = process.env.METADATA_URL ?? "http://localhost:8000/schema/crud-metadata";
-const OUTPUT_DIR = join(import.meta.dirname, "../src/openapi");
+const OPENAPI_URL =
+  process.env.OPENAPI_URL ?? 'http://localhost:8000/schema/openapi.json';
+const METADATA_URL =
+  process.env.METADATA_URL ?? 'http://localhost:8000/schema/crud-metadata';
+const OUTPUT_DIR = join(import.meta.dirname, '../src/openapi');
 
 // ---------------------------------------------------------------------------
 // Types for OpenAPI parsing
@@ -25,7 +27,10 @@ interface OpenAPISchema {
 interface OperationObject {
   operationId: string;
   tags?: string[];
-  responses: Record<string, { content?: Record<string, { schema: RefOrSchema }> }>;
+  responses: Record<
+    string,
+    { content?: Record<string, { schema: RefOrSchema }> }
+  >;
 }
 
 interface SchemaObject {
@@ -79,35 +84,39 @@ interface ColumnInfo {
 // ---------------------------------------------------------------------------
 
 function resolveRef(spec: OpenAPISchema, ref: string): SchemaObject {
-  const name = ref.split("/").pop()!;
+  const name = ref.split('/').pop()!;
   return spec.components.schemas[name];
 }
 
 function refName(ref: string): string {
-  return ref.split("/").pop()!;
+  return ref.split('/').pop()!;
 }
 
 function humanizeHeader(key: string): string {
   // created_at → Created, signed_up_by → Signed Up By, dob → DOB
-  if (key === "dob") return "DOB";
+  if (key === 'dob') return 'DOB';
   return key
-    .replace(/_at$/, "")
-    .replace(/_/g, " ")
+    .replace(/_at$/, '')
+    .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function isHidden(key: string, schema: RefOrSchema, spec: OpenAPISchema): boolean {
-  if (key === "id" || key === "actions") return true;
-  if (key.endsWith("_id")) return true;
+function isHidden(
+  key: string,
+  schema: RefOrSchema,
+  spec: OpenAPISchema
+): boolean {
+  if (key === 'id' || key === 'actions') return true;
+  if (key.endsWith('_id')) return true;
   // Skip array-of-object fields
-  if (schema.type === "array" && schema.items?.$ref) return true;
+  if (schema.type === 'array' && schema.items?.$ref) return true;
   // Skip composite-object refs (including nullable ones). Enums and EntityRef
   // are resolved into real display types further down; other Struct refs have
   // no sensible plain-text rendering.
   const { schema: unwrapped } = unwrapNullable(schema);
   if (unwrapped.$ref) {
     const name = refName(unwrapped.$ref);
-    if (name === "EntityRef") return false;
+    if (name === 'EntityRef') return false;
     const resolved = resolveRef(spec, unwrapped.$ref);
     if (!resolved.enum) return true;
   }
@@ -117,9 +126,12 @@ function isHidden(key: string, schema: RefOrSchema, spec: OpenAPISchema): boolea
 /**
  * Unwrap oneOf with null (nullable pattern) to get the real schema/ref.
  */
-function unwrapNullable(prop: RefOrSchema): { schema: RefOrSchema; nullable: boolean } {
+function unwrapNullable(prop: RefOrSchema): {
+  schema: RefOrSchema;
+  nullable: boolean;
+} {
   if (prop.oneOf) {
-    const nonNull = prop.oneOf.filter((s) => s.type !== "null");
+    const nonNull = prop.oneOf.filter((s) => s.type !== 'null');
     if (nonNull.length === 1) {
       return { schema: nonNull[0], nullable: true };
     }
@@ -135,7 +147,7 @@ function inferColumn(
   sortable: Set<string>,
   columnTypes: Record<string, string>,
   columnLabels: Record<string, string>,
-  stateColumn: string | null,
+  stateColumn: string | null
 ): ColumnInfo | null {
   if (isHidden(key, prop, spec)) return null;
 
@@ -143,10 +155,10 @@ function inferColumn(
   const { schema } = unwrapNullable(prop);
 
   // EntityRef: relationship column rendered as a link
-  if (schema.$ref && refName(schema.$ref) === "EntityRef") {
+  if (schema.$ref && refName(schema.$ref) === 'EntityRef') {
     return {
       key,
-      displayType: "entity",
+      displayType: 'entity',
       header,
       sortable: sortable.has(key),
       filterable: false,
@@ -175,7 +187,7 @@ function inferColumn(
   // Enum: $ref to a schema with enum values. Render as "status" only when the
   // backend declared this column as the state-machine column for the resource.
   if (enumRef) {
-    const displayType = key === stateColumn ? "status" : "enum";
+    const displayType = key === stateColumn ? 'status' : 'enum';
     return {
       key,
       displayType,
@@ -187,10 +199,10 @@ function inferColumn(
   }
 
   // Date
-  if (schema.type === "string" && schema.format === "date") {
+  if (schema.type === 'string' && schema.format === 'date') {
     return {
       key,
-      displayType: "date",
+      displayType: 'date',
       header,
       sortable: sortable.has(key),
       filterable: filterable.has(key),
@@ -198,10 +210,13 @@ function inferColumn(
   }
 
   // Datetime
-  if (schema.type === "string" && (schema.format === "date-time" || key.endsWith("_at"))) {
+  if (
+    schema.type === 'string' &&
+    (schema.format === 'date-time' || key.endsWith('_at'))
+  ) {
     return {
       key,
-      displayType: "datetime",
+      displayType: 'datetime',
       header,
       sortable: sortable.has(key),
       filterable: filterable.has(key),
@@ -210,10 +225,10 @@ function inferColumn(
   }
 
   // Number
-  if (schema.type === "integer" || schema.type === "number") {
+  if (schema.type === 'integer' || schema.type === 'number') {
     return {
       key,
-      displayType: "number",
+      displayType: 'number',
       header,
       sortable: sortable.has(key),
       filterable: filterable.has(key),
@@ -221,10 +236,10 @@ function inferColumn(
   }
 
   // Boolean
-  if (schema.type === "boolean") {
+  if (schema.type === 'boolean') {
     return {
       key,
-      displayType: "boolean",
+      displayType: 'boolean',
       header,
       sortable: sortable.has(key),
       filterable: filterable.has(key),
@@ -234,7 +249,7 @@ function inferColumn(
   // Default: text
   return {
     key,
-    displayType: "text",
+    displayType: 'text',
     header,
     sortable: sortable.has(key),
     filterable: filterable.has(key),
@@ -250,46 +265,49 @@ function generateColumnFile(
   tag: string,
   itemSchemaName: string,
   columns: ColumnInfo[],
-  meta: { filterable: string[]; sortable: string[] },
+  meta: { filterable: string[]; sortable: string[] }
 ): string {
   const enumImports = Array.from(
-    new Set(columns.filter((c) => c.enumRef).map((c) => c.enumRef!)),
+    new Set(columns.filter((c) => c.enumRef).map((c) => c.enumRef!))
   );
 
   const typeImport = `import type { ${itemSchemaName} } from "@/openapi/litestarAPI.schemas";`;
-  const valueImports = enumImports.length > 0
-    ? `import { ${enumImports.join(", ")} } from "@/openapi/litestarAPI.schemas";`
-    : "";
+  const valueImports =
+    enumImports.length > 0
+      ? `import { ${enumImports.join(', ')} } from "@/openapi/litestarAPI.schemas";`
+      : '';
 
   const builderChain = columns
     .map((col) => {
       const args: string[] = [`"${col.key}"`];
       const config: string[] = [`header: "${col.header}"`];
-      if (col.sortable) config.push("sortable: true");
-      if (col.filterable) config.push("filterable: true");
-      if (col.hideOnMobile) config.push("hideOnMobile: true");
+      if (col.sortable) config.push('sortable: true');
+      if (col.filterable) config.push('filterable: true');
+      if (col.hideOnMobile) config.push('hideOnMobile: true');
       if (col.className) config.push(`className: "${col.className}"`);
       if (col.enumRef) config.push(`options: Object.values(${col.enumRef})`);
-      args.push(`{ ${config.join(", ")} }`);
-      return `  .${col.displayType}(${args.join(", ")})`;
+      args.push(`{ ${config.join(', ')} }`);
+      return `  .${col.displayType}(${args.join(', ')})`;
     })
-    .join("\n");
+    .join('\n');
 
   // Variable names: patientColumnDefs, PatientSortableColumn, PatientFilterableColumn
-  const modelName = operationId.replace("list_", "");
+  const modelName = operationId.replace('list_', '');
   const varName = `${modelName[0].toLowerCase()}${modelName.slice(1)}ColumnDefs`;
 
   const constBlock = (name: string, keys: string[]) => {
-    const entries = keys.map((k) => `  ${k}: '${k}',`).join("\n");
+    const entries = keys.map((k) => `  ${k}: '${k}',`).join('\n');
     return `export const ${name} = {\n${entries}\n} as const;`;
   };
 
-  const sortableConst = meta.sortable.length > 0
-    ? `\n${constBlock(`${modelName}SortableColumn`, meta.sortable)}\n`
-    : "";
-  const filterableConst = meta.filterable.length > 0
-    ? `\n${constBlock(`${modelName}FilterableColumn`, meta.filterable)}\n`
-    : "";
+  const sortableConst =
+    meta.sortable.length > 0
+      ? `\n${constBlock(`${modelName}SortableColumn`, meta.sortable)}\n`
+      : '';
+  const filterableConst =
+    meta.filterable.length > 0
+      ? `\n${constBlock(`${modelName}FilterableColumn`, meta.filterable)}\n`
+      : '';
 
   return `/**
  * Generated by generate-columns.ts — DO NOT EDIT
@@ -346,19 +364,22 @@ async function main() {
     }
 
     if (!operation) {
-      console.warn(`Operation ${operationId} not found in OpenAPI spec, skipping`);
+      console.warn(
+        `Operation ${operationId} not found in OpenAPI spec, skipping`
+      );
       continue;
     }
 
     if (meta.state_machine && urlPath) {
-      const resource = urlPath.split("/").filter(Boolean)[0];
+      const resource = urlPath.split('/').filter(Boolean)[0];
       if (resource) {
         resolvedStateMachines.push({ ...meta.state_machine, resource });
       }
     }
 
     // Resolve response → PagedResponse → items → item schema
-    const respSchema = operation.responses?.["200"]?.content?.["application/json"]?.schema;
+    const respSchema =
+      operation.responses?.['200']?.content?.['application/json']?.schema;
     if (!respSchema?.$ref) {
       console.warn(`No response ref for ${operationId}, skipping`);
       continue;
@@ -367,7 +388,9 @@ async function main() {
     const pagedSchema = resolveRef(spec, respSchema.$ref);
     const itemsRef = pagedSchema.properties?.items?.items?.$ref;
     if (!itemsRef) {
-      console.warn(`No items ref in PagedResponse for ${operationId}, skipping`);
+      console.warn(
+        `No items ref in PagedResponse for ${operationId}, skipping`
+      );
       continue;
     }
 
@@ -389,47 +412,66 @@ async function main() {
 
     const columns: ColumnInfo[] = [];
     for (const [key, prop] of Object.entries(itemSchema.properties)) {
-      const col = inferColumn(key, prop, spec, filterable, sortable, columnTypes, columnLabels, stateColumn);
+      const col = inferColumn(
+        key,
+        prop,
+        spec,
+        filterable,
+        sortable,
+        columnTypes,
+        columnLabels,
+        stateColumn
+      );
       if (col) columns.push(col);
     }
 
     // Constrain long-text columns so they truncate instead of expanding the table
     for (const col of columns) {
-      if (col.key === "description" && col.displayType === "text") {
-        col.className = "max-w-[200px]";
+      if (col.key === 'description' && col.displayType === 'text') {
+        col.className = 'max-w-[200px]';
       }
     }
 
-
     // Determine output path from tag
-    const tag = (operation.tags?.[0] ?? operationId.replace("list_", "").toLowerCase());
-    const outPath = join(OUTPUT_DIR, tag, "columns.gen.ts");
+    const tag =
+      operation.tags?.[0] ?? operationId.replace('list_', '').toLowerCase();
+    const outPath = join(OUTPUT_DIR, tag, 'columns.gen.ts');
 
     mkdirSync(dirname(outPath), { recursive: true });
-    const content = generateColumnFile(operationId, tag, itemSchemaName, columns, meta);
+    const content = generateColumnFile(
+      operationId,
+      tag,
+      itemSchemaName,
+      columns,
+      meta
+    );
     writeFileSync(outPath, content);
 
-    console.log(`  ✓ ${outPath.replace(process.cwd() + "/", "")}`);
+    console.log(`  ✓ ${outPath.replace(process.cwd() + '/', '')}`);
     generated++;
   }
 
   console.log(`\n  Generated ${generated} column definition file(s)`);
 
   writeFileSync(
-    join(OUTPUT_DIR, "state-machines.gen.ts"),
-    renderStateMachines(resolvedStateMachines),
+    join(OUTPUT_DIR, 'state-machines.gen.ts'),
+    renderStateMachines(resolvedStateMachines)
   );
-  console.log(`  ✓ src/openapi/state-machines.gen.ts (${resolvedStateMachines.length} resource(s))`);
+  console.log(
+    `  ✓ src/openapi/state-machines.gen.ts (${resolvedStateMachines.length} resource(s))`
+  );
 }
 
 function renderStateMachines(entries: ResolvedStateMachine[]): string {
   const lines = entries
     .map((sm) => {
-      const states = sm.states.map((s) => JSON.stringify(s)).join(", ");
-      const ag = sm.action_group ? JSON.stringify(sm.action_group) : "undefined";
+      const states = sm.states.map((s) => JSON.stringify(s)).join(', ');
+      const ag = sm.action_group
+        ? JSON.stringify(sm.action_group)
+        : 'undefined';
       return `  ${JSON.stringify(sm.resource)}: { column: ${JSON.stringify(sm.column)}, states: [${states}], actionGroup: ${ag} },`;
     })
-    .join("\n");
+    .join('\n');
   return `/**
  * Generated by generate-columns.ts — DO NOT EDIT
  * State-machine metadata per resource, sourced from backend StateMachineMixin.
@@ -447,6 +489,6 @@ ${lines}
 }
 
 main().catch((err) => {
-  console.error("Column codegen failed:", err);
+  console.error('Column codegen failed:', err);
   process.exit(1);
 });

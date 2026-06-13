@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function PageSkeleton({
   toolbar = true,
-  contentHeight = "400px",
+  contentHeight = '400px',
 }: {
   toolbar?: boolean;
   contentHeight?: string;
@@ -17,7 +17,10 @@ export function PageSkeleton({
           </div>
         </div>
       )}
-      <Skeleton className="w-full rounded-lg" style={{ height: contentHeight }} />
+      <Skeleton
+        className="w-full rounded-lg"
+        style={{ height: contentHeight }}
+      />
     </div>
   );
 }

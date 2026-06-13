@@ -6,11 +6,13 @@ only pins the fields that matter for the demo: states, roles, and FK wiring.
 """
 
 import logging
+import random
 import sys
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
+from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.clients.enums import ClientType
@@ -20,6 +22,7 @@ from app.domain.onboarding.models import Onboarding
 from app.domain.reports.enums import ReportState
 from app.domain.subscriptions.enums import SubscriptionPlan, SubscriptionStatus
 from app.domain.surveys.enums import SurveyState
+from app.domain.surveys.models import Survey
 from app.domain.users.models import Organization
 from app.domain.users.roles import Role
 from app.domain.vessels.enums import FuelType, HullMaterial, PropulsionType, VesselType
@@ -67,10 +70,94 @@ _STATE_PATHS: dict[SurveyState, list[SurveyState]] = {
     SurveyState.cancelled: [SurveyState.cancelled],
 }
 
+# ── Bulk-volume generation ────────────────────────────────────────────────────
+# The four showcase surveys above carry the rich detail (materialized forms,
+# email threads, reports). The bulk records below exist purely to give the
+# dashboard charts and kanban realistic volume — they are intentionally cheap
+# to build (no form materialization).
+
+# Delivered surveys (each with an invoice) per month, oldest → newest. The
+# gentle upward trend makes the revenue-by-month chart read as a growing
+# business; index -1 is the current (partial) month.
+_REVENUE_PER_MONTH = [3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9]
+
+# A separate set of recent in-flight surveys that populate the kanban's active
+# columns (delivered work alone would leave scheduled/in_draft looking empty).
+_PIPELINE_STATES = [SurveyState.scheduled] * 7 + [SurveyState.in_draft] * 8 + [SurveyState.cancelled] * 3
+
+# Pre-purchase survey fees scale with vessel size (cents).
+_FEE_TIERS_CENTS = [55_000, 65_000, 75_000, 90_000, 110_000, 125_000, 150_000, 185_000]
+
+_VESSEL_ADJ = [
+    "Sea",
+    "Wind",
+    "Blue",
+    "Silver",
+    "Northern",
+    "Island",
+    "Coastal",
+    "Morning",
+    "Pacific",
+    "Salty",
+    "Restless",
+    "Wandering",
+    "Golden",
+    "Misty",
+    "Free",
+    "Southern",
+    "Tidal",
+    "Velvet",
+    "Crimson",
+    "Endless",
+]
+_VESSEL_NOUN = [
+    "Spirit",
+    "Dancer",
+    "Breeze",
+    "Horizon",
+    "Voyager",
+    "Star",
+    "Pearl",
+    "Quest",
+    "Serenade",
+    "Whisper",
+    "Drifter",
+    "Compass",
+    "Odyssey",
+    "Mirage",
+    "Tide",
+    "Current",
+    "Harbor",
+    "Beacon",
+    "Mariner",
+    "Solstice",
+]
+
+_VESSEL_PROFILES: list[tuple[VesselType, PropulsionType, HullMaterial]] = [
+    (VesselType.sailboat_monohull, PropulsionType.sail_aux, HullMaterial.frp),
+    (VesselType.motor_yacht, PropulsionType.inboard, HullMaterial.frp),
+    (VesselType.trawler, PropulsionType.inboard, HullMaterial.frp),
+    (VesselType.sailboat_monohull, PropulsionType.sail, HullMaterial.frp),
+]
+
+
+def _client_spec(rng: random.Random, fake: Faker) -> dict[str, object]:
+    r = rng.random()
+    if r < 0.70:
+        return {"client_type": ClientType.individual, "display_name": fake.name()}
+    if r < 0.82:
+        return {"client_type": ClientType.insurance_company, "display_name": f"{fake.last_name()} Marine Insurance"}
+    if r < 0.92:
+        return {"client_type": ClientType.lender, "display_name": f"{fake.city()} Marine Lending"}
+    return {"client_type": ClientType.broker, "display_name": f"{fake.last_name()} Yacht Brokers"}
+
 
 async def seed_demo_org(session: AsyncSession) -> Organization:
     """Create the demo org and populate it with fixture data."""
     now = datetime.now(tz=UTC)
+    rng = random.Random(20240601)
+    fake = Faker()
+    Faker.seed(20240601)
 
     # ── 1. Organization ──────────────────────────────────────────────────────
     # Construct directly: polyfactory's `Use(fake.company)` on OrgFactory overrides
@@ -131,8 +218,15 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         client = ClientFactory.build(organization_id=org.id, **spec)
         session.add(client)
         clients.append(client)
+
+    bulk_clients = []
+    for _ in range(28):
+        client = ClientFactory.build(organization_id=org.id, **_client_spec(rng, fake))
+        session.add(client)
+        bulk_clients.append(client)
     await session.flush()
-    logger.info("Created %d clients", len(clients))
+    all_clients = clients + bulk_clients
+    logger.info("Created %d clients", len(all_clients))
 
     # ── 5. Vessels ────────────────────────────────────────────────────────────
     vessel_specs = [
@@ -193,6 +287,15 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     logger.info("Created survey template: %s (id=%s)", template.name, template.id)
 
     # ── 6b. Surveys ───────────────────────────────────────────────────────────
+    # Pin created_at to recent dates per state so the showcase surveys land in
+    # the dashboard's recent window (the factory otherwise generates a random
+    # historical timestamp).
+    showcase_age_days: dict[SurveyState, int] = {
+        SurveyState.scheduled: 5,
+        SurveyState.in_draft: 14,
+        SurveyState.delivered: 30,
+        SurveyState.cancelled: 20,
+    }
     surveys = []
     for i, survey_state in enumerate(_SURVEY_STATES):
         vessel = vessels[i % len(vessels)]
@@ -204,6 +307,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             template_id=template.id,
         )
         session.add(survey)
+        survey.created_at = now - timedelta(days=showcase_age_days[survey_state])
         surveys.append(survey)
     await session.flush()
 
@@ -263,6 +367,84 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     await session.flush()
     logger.info("Created shared ad-hoc field across 3 surveys")
 
+    # ── 6d. Bulk surveys + vessels (volume for charts and the kanban) ──────────
+    # Two streams: a delivered "revenue" stream trending upward across 12 months
+    # (drives the revenue-by-month chart), and a recent "pipeline" stream that
+    # fills the kanban's active columns. Each bulk survey gets its own vessel,
+    # named from the adjective/noun pools so kanban cards read as distinct boats.
+    # `bulk_surveys` carries the desired invoice state (None = no invoice) so the
+    # invoice section can build them without re-deriving intent.
+    name_combos = [f"{adj} {noun}" for adj in _VESSEL_ADJ for noun in _VESSEL_NOUN]
+    rng.shuffle(name_combos)
+    total_bulk = sum(_REVENUE_PER_MONTH) + len(_PIPELINE_STATES)
+
+    bulk_vessels = []
+    for i in range(total_bulk):
+        vtype, propulsion, hull = rng.choice(_VESSEL_PROFILES)
+        vessel = VesselFactory.build(
+            organization_id=org.id,
+            name=name_combos[i],
+            vessel_type=vtype,
+            propulsion_type=propulsion,
+            hull_material=hull,
+            year_built=rng.randint(1985, 2022),
+            loa_ft=Decimal(rng.randint(28, 58)),
+        )
+        session.add(vessel)
+        bulk_vessels.append(vessel)
+    await session.flush()
+
+    bulk_surveys: list[tuple[Survey, datetime, InvoiceState | None]] = []
+    seq = 2000
+
+    def _add_bulk_survey(state: SurveyState, created_at: datetime, inv_state: InvoiceState | None) -> None:
+        nonlocal seq
+        survey = SurveyFactory.build(
+            organization_id=org.id,
+            vessel_id=bulk_vessels[seq - 2000].id,
+            assigned_surveyor_id=surveyor.id,
+            state=state,
+            template_id=template.id,
+            identifier=f"SUR-{seq}",
+        )
+        session.add(survey)
+        survey.created_at = created_at
+        bulk_surveys.append((survey, created_at, inv_state))
+        seq += 1
+
+    # Revenue stream: delivered surveys, mostly paid with a few sent/overdue.
+    for month_idx, count in enumerate(_REVENUE_PER_MONTH):
+        months_ago = len(_REVENUE_PER_MONTH) - 1 - month_idx
+        for _ in range(count):
+            created_at = now - timedelta(
+                days=months_ago * 30 + rng.randint(0, 27),
+                hours=rng.randint(8, 18),
+            )
+            inv_state = rng.choices(
+                [InvoiceState.paid, InvoiceState.overdue, InvoiceState.sent],
+                weights=[85, 8, 7],
+            )[0]
+            _add_bulk_survey(SurveyState.delivered, created_at, inv_state)
+
+    # Pipeline stream: recent in-flight surveys for the active kanban columns.
+    for state in _PIPELINE_STATES:
+        created_at = now - timedelta(days=rng.randint(2, 45), hours=rng.randint(8, 18))
+        if state == SurveyState.in_draft and rng.random() < 0.5:
+            inv_state = rng.choice([InvoiceState.draft, InvoiceState.sent])
+        elif state == SurveyState.cancelled and rng.random() < 0.25:
+            inv_state = InvoiceState.void
+        else:
+            inv_state = None
+        _add_bulk_survey(state, created_at, inv_state)
+
+    await session.flush()
+    logger.info(
+        "Created %d bulk surveys (%d revenue + %d pipeline)",
+        len(bulk_surveys),
+        sum(_REVENUE_PER_MONTH),
+        len(_PIPELINE_STATES),
+    )
+
     # ── 7. State transition logs ──────────────────────────────────────────────
     for survey, survey_state in zip(surveys, _SURVEY_STATES):
         path = _STATE_PATHS.get(survey_state, [])
@@ -303,6 +485,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             total_cents=75000,
         )
         session.add(invoice)
+        invoice.created_at = now - timedelta(days=10)
         await session.flush()
         session.add(
             InvoiceLineItemFactory.build(
@@ -315,6 +498,44 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         )
     await session.flush()
     logger.info("Created invoices")
+
+    # ── 8b. Bulk invoices (revenue volume across months) ──────────────────────
+    inv_seq = 3000
+    bulk_invoice_count = 0
+    for survey, created_at, invoice_state in bulk_surveys:
+        if invoice_state is None:
+            continue
+
+        subtotal = rng.choice(_FEE_TIERS_CENTS)
+        issued = min(created_at + timedelta(days=rng.randint(1, 4)), now)
+        client = rng.choice(all_clients)
+        invoice = InvoiceFactory.build(
+            organization_id=org.id,
+            survey_id=survey.id,
+            client_id=client.id,
+            state=invoice_state,
+            identifier=f"INV-{inv_seq}",
+            issued_at=issued,
+            due_at=issued + timedelta(days=rng.choice([14, 21, 30])),
+            subtotal_cents=subtotal,
+            total_cents=subtotal,
+        )
+        session.add(invoice)
+        invoice.created_at = issued
+        await session.flush()
+        session.add(
+            InvoiceLineItemFactory.build(
+                organization_id=org.id,
+                invoice_id=invoice.id,
+                description="Marine Survey Services",
+                quantity=Decimal("1.00"),
+                unit_price_cents=subtotal,
+            )
+        )
+        inv_seq += 1
+        bulk_invoice_count += 1
+    await session.flush()
+    logger.info("Created %d bulk invoices", bulk_invoice_count)
 
     # ── 9. Reports ────────────────────────────────────────────────────────────
     reported_states = {SurveyState.in_draft, SurveyState.delivered}
@@ -339,6 +560,8 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     session.add(dashboard)
     await session.flush()
 
+    paid_only = [{"type": "enum", "column": "state", "values": [InvoiceState.paid.value]}]
+
     starter_widgets = [
         Widget(
             dashboard_id=dashboard.id,
@@ -354,7 +577,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
                 "field": "total_cents",
                 "aggregation": AggregationType.sum.value,
                 "time_range": TimeRange.MONTH_TO_DATE.value,
-                "filters": [],
+                "filters": paid_only,
                 "color": WidgetColor.GREEN.value,
             },
         ),
@@ -413,7 +636,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             dashboard_id=dashboard.id,
             user_id=admin.id,
             type=WidgetType.AREA_CHART,
-            title="Revenue (last 90 days)",
+            title="Revenue by Month",
             position_x=0,
             position_y=1,
             size_w=3,
@@ -422,16 +645,16 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
                 "resource": ResourceType.INVOICES.value,
                 "field": "total_cents",
                 "aggregation": AggregationType.sum.value,
-                "time_range": TimeRange.LAST_90_DAYS.value,
-                "granularity": Granularity.WEEK.value,
-                "filters": [],
+                "time_range": TimeRange.LAST_YEAR.value,
+                "granularity": Granularity.MONTH.value,
+                "filters": paid_only,
             },
         ),
         Widget(
             dashboard_id=dashboard.id,
             user_id=admin.id,
             type=WidgetType.BAR_CHART,
-            title="Surveys by Week",
+            title="New Surveys by Month",
             position_x=3,
             position_y=1,
             size_w=1,
@@ -439,7 +662,28 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             query={
                 "resource": ResourceType.SURVEYS.value,
                 "field": "state",
-                "time_range": TimeRange.LAST_30_DAYS.value,
+                "time_range": TimeRange.LAST_YEAR.value,
+                "granularity": Granularity.MONTH.value,
+                "filters": [],
+            },
+        ),
+        Widget(
+            dashboard_id=dashboard.id,
+            user_id=admin.id,
+            type=WidgetType.KANBAN,
+            title="Survey Pipeline",
+            position_x=0,
+            position_y=3,
+            size_w=4,
+            size_h=3,
+            query={
+                "resource": ResourceType.SURVEYS.value,
+                "columns": ["vessel", "surveyor"],
+                "column_rules": {
+                    SurveyState.delivered.value: {"since": "40d"},
+                    SurveyState.cancelled.value: {"since": "40d"},
+                },
+                "limit": 200,
                 "filters": [],
             },
         ),
@@ -449,7 +693,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             type=WidgetType.RESOURCE_TABLE,
             title="Recent Invoices",
             position_x=0,
-            position_y=3,
+            position_y=6,
             size_w=2,
             size_h=2,
             query={
@@ -465,7 +709,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             type=WidgetType.CHILD_LIST,
             title="Recent Surveys",
             position_x=2,
-            position_y=3,
+            position_y=6,
             size_w=2,
             size_h=2,
             query={

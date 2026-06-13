@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { addMinutes } from "date-fns";
-import { X } from "lucide-react";
+import { useState } from 'react';
+import { addMinutes } from 'date-fns';
+import { X } from 'lucide-react';
 import {
   EventFormBody,
   type EventFormValues,
-} from "@/components/calendar/event-fields";
-import { StatusBadge } from "@/components/status-badge";
-import { Button } from "@/components/ui/button";
-import { CalendarEventState } from "@/openapi/litestarAPI.schemas";
-import { useActionExecutor } from "@/hooks/actions/use-action-executor";
-import type { ActionDTO } from "@/lib/actions/types";
+} from '@/components/calendar/event-fields';
+import { StatusBadge } from '@/components/status-badge';
+import { Button } from '@/components/ui/button';
+import { useActionExecutor } from '@/hooks/actions/use-action-executor';
+import { CalendarEventState } from '@/openapi/litestarAPI.schemas';
+import type { ActionDTO } from '@/lib/actions/types';
 
 interface Props {
   initialStart?: Date;
@@ -34,17 +34,17 @@ function makeInitialDraft(start: Date): EventFormValues {
 }
 
 const CREATE_ACTION: ActionDTO = {
-  action: "calendar_event_actions__create",
-  label: "Create event",
+  action: 'calendar_event_actions__create',
+  label: 'Create event',
 };
 
 export function EventCreatePanel({ initialStart, onClose, onCreated }: Props) {
   const [draft, setDraft] = useState<EventFormValues>(() =>
-    makeInitialDraft(initialStart ?? new Date()),
+    makeInitialDraft(initialStart ?? new Date())
   );
 
   const executor = useActionExecutor({
-    actionGroup: "calendar_event_actions",
+    actionGroup: 'calendar_event_actions',
     onSuccess: (_action, response) => {
       if (response.created_id) onCreated(response.created_id);
       else onClose();
@@ -53,16 +53,21 @@ export function EventCreatePanel({ initialStart, onClose, onCreated }: Props) {
 
   const handleCreate = () => {
     executor.executeAction(CREATE_ACTION, {
-      action: "calendar_event_actions__create",
+      action: 'calendar_event_actions__create',
       data: draft,
     });
   };
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="border-border flex items-center justify-between border-b px-4 py-3">
         <h3 className="text-sm font-semibold">New event</h3>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label="Close"
+        >
           <X className="size-4" />
         </Button>
       </div>
@@ -75,12 +80,16 @@ export function EventCreatePanel({ initialStart, onClose, onCreated }: Props) {
           />
         </div>
       </div>
-      <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-border px-4 py-3">
-        <Button variant="outline" onClick={onClose} disabled={executor.isExecuting}>
+      <div className="border-border flex flex-shrink-0 items-center justify-end gap-2 border-t px-4 py-3">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          disabled={executor.isExecuting}
+        >
           Cancel
         </Button>
         <Button onClick={handleCreate} disabled={executor.isExecuting}>
-          {executor.isExecuting ? "Creating..." : "Create"}
+          {executor.isExecuting ? 'Creating...' : 'Create'}
         </Button>
       </div>
     </div>

@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { getActionRenderer, type ActionType } from "@/lib/actions/registry";
-import type { ActionFormRenderer } from "./use-action-executor";
+import { useCallback } from 'react';
+import { getActionRenderer, type ActionType } from '@/lib/actions/registry';
+import type { ActionFormRenderer } from './use-action-executor';
 
 /**
  * Bridges the typed action registry to the executor. objectData is opaque
@@ -8,7 +8,7 @@ import type { ActionFormRenderer } from "./use-action-executor";
  * the type internally.
  */
 export function useActionFormRenderer(
-  objectData?: unknown,
+  objectData?: unknown
 ): ActionFormRenderer {
   return useCallback<ActionFormRenderer>(
     ({ action, onSubmit, onClose, isSubmitting, isOpen, actionLabel }) => {
@@ -34,6 +34,6 @@ export function useActionFormRenderer(
         actionLabel,
       });
     },
-    [objectData],
+    [objectData]
   );
 }

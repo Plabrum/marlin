@@ -1,6 +1,6 @@
-import { MinimalTiptap } from "@/components/ui/minimal-tiptap";
-import type { TiptapContent } from "@/lib/tiptap";
-import { cn } from "@/lib/utils";
+import { MinimalTiptap } from '@/components/ui/minimal-tiptap';
+import { cn } from '@/lib/utils';
+import type { TiptapContent } from '@/lib/tiptap';
 
 interface MessageContentProps {
   content: TiptapContent;
@@ -9,8 +9,13 @@ interface MessageContentProps {
 
 export function MessageContent({ content, className }: MessageContentProps) {
   return (
-    <div className={cn("text-sm", className)}>
-      <MinimalTiptap content={content} editable={false} showToolbar={false} className="border-0" />
+    <div className={cn('text-sm', className)}>
+      <MinimalTiptap
+        content={content}
+        editable={false}
+        showToolbar={false}
+        className="border-0"
+      />
     </div>
   );
 }

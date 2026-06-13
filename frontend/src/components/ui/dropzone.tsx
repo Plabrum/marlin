@@ -1,22 +1,21 @@
-import { createContext, useContext } from "react";
-import { UploadIcon } from "lucide-react";
-import { useDropzone } from "react-dropzone";
-import type { ReactNode } from "react";
-import type { DropEvent, DropzoneOptions, FileRejection } from "react-dropzone";
-
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { createContext, useContext } from 'react';
+import { UploadIcon } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
+import type { DropEvent, DropzoneOptions, FileRejection } from 'react-dropzone';
 
 type DropzoneContextType = {
   src?: File[];
-  accept?: DropzoneOptions["accept"];
-  maxSize?: DropzoneOptions["maxSize"];
-  minSize?: DropzoneOptions["minSize"];
-  maxFiles?: DropzoneOptions["maxFiles"];
+  accept?: DropzoneOptions['accept'];
+  maxSize?: DropzoneOptions['maxSize'];
+  minSize?: DropzoneOptions['minSize'];
+  maxFiles?: DropzoneOptions['maxFiles'];
 };
 
 const renderBytes = (bytes: number) => {
-  const units = ["B", "KB", "MB", "GB", "TB", "PB"];
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
   let size = bytes;
   let unitIndex = 0;
   while (size >= 1024 && unitIndex < units.length - 1) {
@@ -26,15 +25,17 @@ const renderBytes = (bytes: number) => {
   return `${size.toFixed(2)}${units[unitIndex]}`;
 };
 
-const DropzoneContext = createContext<DropzoneContextType | undefined>(undefined);
+const DropzoneContext = createContext<DropzoneContextType | undefined>(
+  undefined
+);
 
-export type DropzoneProps = Omit<DropzoneOptions, "onDrop"> & {
+export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
   src?: File[];
   className?: string;
   onDrop?: (
     acceptedFiles: File[],
     fileRejections: FileRejection[],
-    event: DropEvent,
+    event: DropEvent
   ) => void;
   children?: ReactNode;
 };
@@ -77,9 +78,9 @@ export function Dropzone({
     >
       <Button
         className={cn(
-          "relative h-auto w-full flex-col overflow-hidden p-8",
-          isDragActive && "outline-none ring-1 ring-ring",
-          className,
+          'relative h-auto w-full flex-col overflow-hidden p-8',
+          isDragActive && 'ring-ring ring-1 outline-none',
+          className
         )}
         disabled={disabled}
         type="button"
@@ -96,7 +97,7 @@ export function Dropzone({
 function useDropzoneContext() {
   const context = useContext(DropzoneContext);
   if (!context) {
-    throw new Error("useDropzoneContext must be used within a Dropzone");
+    throw new Error('useDropzoneContext must be used within a Dropzone');
   }
   return context;
 }
@@ -114,18 +115,18 @@ export function DropzoneContent({ children, className }: DropzoneContentProps) {
   if (children) return <>{children}</>;
 
   return (
-    <div className={cn("flex flex-col items-center justify-center", className)}>
-      <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
+    <div className={cn('flex flex-col items-center justify-center', className)}>
+      <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-md">
         <UploadIcon size={16} />
       </div>
       <p className="my-2 w-full truncate text-sm font-medium">
         {src.length > maxLabelItems
-          ? `${new Intl.ListFormat("en").format(
-              src.slice(0, maxLabelItems).map((f) => f.name),
+          ? `${new Intl.ListFormat('en').format(
+              src.slice(0, maxLabelItems).map((f) => f.name)
             )} and ${src.length - maxLabelItems} more`
-          : new Intl.ListFormat("en").format(src.map((f) => f.name))}
+          : new Intl.ListFormat('en').format(src.map((f) => f.name))}
       </p>
-      <p className="w-full text-wrap text-xs text-muted-foreground">
+      <p className="text-muted-foreground w-full text-xs text-wrap">
         Drag and drop or click to replace
       </p>
     </div>
@@ -137,15 +138,18 @@ export type DropzoneEmptyStateProps = {
   className?: string;
 };
 
-export function DropzoneEmptyState({ children, className }: DropzoneEmptyStateProps) {
+export function DropzoneEmptyState({
+  children,
+  className,
+}: DropzoneEmptyStateProps) {
   const { src, accept, maxSize, minSize, maxFiles } = useDropzoneContext();
   if (src) return null;
   if (children) return <>{children}</>;
 
-  let caption = "";
+  let caption = '';
   if (accept) {
-    caption += "Accepts ";
-    caption += new Intl.ListFormat("en").format(Object.keys(accept));
+    caption += 'Accepts ';
+    caption += new Intl.ListFormat('en').format(Object.keys(accept));
   }
   if (minSize && maxSize) {
     caption += ` between ${renderBytes(minSize)} and ${renderBytes(maxSize)}`;
@@ -156,18 +160,18 @@ export function DropzoneEmptyState({ children, className }: DropzoneEmptyStatePr
   }
 
   return (
-    <div className={cn("flex flex-col items-center justify-center", className)}>
-      <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
+    <div className={cn('flex flex-col items-center justify-center', className)}>
+      <div className="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-md">
         <UploadIcon size={16} />
       </div>
-      <p className="my-2 w-full truncate text-wrap text-sm font-medium">
-        Upload {maxFiles === 1 ? "a file" : "files"}
+      <p className="my-2 w-full truncate text-sm font-medium text-wrap">
+        Upload {maxFiles === 1 ? 'a file' : 'files'}
       </p>
-      <p className="w-full truncate text-wrap text-xs text-muted-foreground">
+      <p className="text-muted-foreground w-full truncate text-xs text-wrap">
         Drag and drop or click to upload
       </p>
       {caption && (
-        <p className="text-wrap text-xs text-muted-foreground">{caption}.</p>
+        <p className="text-muted-foreground text-xs text-wrap">{caption}.</p>
       )}
     </div>
   );

@@ -8,7 +8,7 @@ export type {
   Granularity,
   TimeRange,
   AggregationType,
-} from "@/openapi/litestarAPI.schemas";
+} from '@/openapi/litestarAPI.schemas';
 
 export type FilterDefinition =
-  import("@/openapi/litestarAPI.schemas").WidgetQueryFiltersItem;
+  import('@/openapi/litestarAPI.schemas').WidgetQueryFiltersItem;

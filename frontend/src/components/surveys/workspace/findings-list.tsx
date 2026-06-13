@@ -1,12 +1,17 @@
-import { useMemo } from "react";
-import type { SurveyFormNodeRef } from "@/openapi/litestarAPI.schemas";
-import { SEVERITY_RANK, asSeverity, getFindingValue, type Severity } from "./field";
-import { RailSection } from "./rail-section";
+import { useMemo } from 'react';
+import {
+  SEVERITY_RANK,
+  asSeverity,
+  getFindingValue,
+  type Severity,
+} from './field';
+import { RailSection } from './rail-section';
+import type { SurveyFormNodeRef } from '@/openapi/litestarAPI.schemas';
 
 const SEVERITY_TONE: Record<Severity, string> = {
-  critical: "bg-red-500 border-red-500",
-  advisory: "bg-amber-500 border-amber-500",
-  info: "bg-sky-500 border-sky-500",
+  critical: 'bg-red-500 border-red-500',
+  advisory: 'bg-amber-500 border-amber-500',
+  info: 'bg-sky-500 border-sky-500',
 };
 
 export function FindingsList({
@@ -25,20 +30,22 @@ export function FindingsList({
         const bv = asSeverity(getFindingValue(b)?.severity);
         return SEVERITY_RANK[av] - SEVERITY_RANK[bv];
       }),
-    [findings],
+    [findings]
   );
 
   return (
     <RailSection label="Findings" meta={`(${findings.length})`}>
       {findings.length === 0 ? (
-        <p className="font-serif text-[12px] italic text-muted-foreground">None yet.</p>
+        <p className="text-muted-foreground font-serif text-[12px] italic">
+          None yet.
+        </p>
       ) : (
         <ul className="space-y-2">
           {sorted.map((f) => {
             const v = getFindingValue(f);
             const sev = asSeverity(v?.severity);
             const sectionId = f.parent_id
-              ? sectionAncestor.get(f.parent_id) ?? f.parent_id
+              ? (sectionAncestor.get(f.parent_id) ?? f.parent_id)
               : null;
             return (
               <li key={f.id}>
@@ -50,7 +57,7 @@ export function FindingsList({
                   <span
                     className={`mt-1 inline-block h-2 w-2 shrink-0 rounded-full border ${SEVERITY_TONE[sev]}`}
                   />
-                  <span className="font-serif text-[13px] leading-[1.4] text-muted-foreground group-hover:text-foreground">
+                  <span className="text-muted-foreground group-hover:text-foreground font-serif text-[13px] leading-[1.4]">
                     {v?.summary ?? f.label}
                   </span>
                 </button>

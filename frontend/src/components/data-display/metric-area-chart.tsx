@@ -1,24 +1,18 @@
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { ChartLegend } from '@/components/data-display/chart-legend';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import { ChartLegend } from "@/components/data-display/chart-legend";
+} from '@/components/ui/chart';
 import {
   CHART_AXIS_TICK,
   CHART_GRID_PROPS,
   CHART_TOOLTIP_CURSOR,
   formatCompactNumber,
-} from "@/lib/chart-config";
-import { cn } from "@/lib/utils";
+} from '@/lib/chart-config';
+import { cn } from '@/lib/utils';
 
 interface AreaSeriesConfig {
   key: string;
@@ -41,8 +35,8 @@ export function MetricAreaChart({
   subtitle,
   data,
   series,
-  valuePrefix = "",
-  valueSuffix = "",
+  valuePrefix = '',
+  valueSuffix = '',
   className,
 }: MetricAreaChartProps) {
   const seriesWithColor = series.map((s, i) => ({
@@ -51,22 +45,22 @@ export function MetricAreaChart({
   }));
 
   const chartConfig: ChartConfig = Object.fromEntries(
-    seriesWithColor.map((s) => [s.key, { label: s.label, color: s.color }]),
+    seriesWithColor.map((s) => [s.key, { label: s.label, color: s.color }])
   );
 
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-lg)] border border-border bg-card",
-        className,
+        'border-border bg-card rounded-[var(--radius-lg)] border',
+        className
       )}
     >
       <div className="flex items-baseline justify-between px-5 pt-4">
-        <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
           {title}
         </h3>
         {subtitle && (
-          <span className="text-xs tabular-nums text-muted-foreground">
+          <span className="text-muted-foreground text-xs tabular-nums">
             {subtitle}
           </span>
         )}
@@ -74,12 +68,15 @@ export function MetricAreaChart({
 
       {seriesWithColor.length > 1 && (
         <ChartLegend
-          items={seriesWithColor.map((s) => ({ label: s.label, color: s.color }))}
+          items={seriesWithColor.map((s) => ({
+            label: s.label,
+            color: s.color,
+          }))}
         />
       )}
 
       {data.length === 0 ? (
-        <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground px-6 py-10 text-center text-sm">
           No data available
         </p>
       ) : (
@@ -87,7 +84,10 @@ export function MetricAreaChart({
           config={chartConfig}
           className="aspect-auto h-[220px] w-full px-2 pt-3 pb-2"
         >
-          <AreaChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+          <AreaChart
+            data={data}
+            margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+          >
             <CartesianGrid {...CHART_GRID_PROPS} />
             <XAxis
               dataKey="label"

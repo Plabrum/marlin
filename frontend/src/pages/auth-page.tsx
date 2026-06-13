@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSearch } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
+import { useSearch } from "@tanstack/react-router";
 import { Clock } from "lucide-react";
 import { toast } from "sonner";
 import { MagicLinkForm } from "@/components/auth/magic-link-form";

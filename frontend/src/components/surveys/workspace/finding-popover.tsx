@@ -1,22 +1,28 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { useActionExecutor } from "@/hooks/actions/use-action-executor";
-import type { ActionDTO } from "@/lib/actions/types";
-import type { SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
+} from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { useActionExecutor } from '@/hooks/actions/use-action-executor';
+import type { ActionDTO } from '@/lib/actions/types';
+import type { SurveyMediaListItem } from '@/openapi/litestarAPI.schemas';
 
-const SEVERITIES = ["info", "advisory", "critical"] as const;
+const SEVERITIES = ['info', 'advisory', 'critical'] as const;
 type Severity = (typeof SEVERITIES)[number];
 
-const ADD_FINDING: ActionDTO = { action: "survey_finding_actions__add", label: "Add finding" };
-const ASSIGN_MEDIA: ActionDTO = { action: "survey_media_actions__assign", label: "Assign media" };
+const ADD_FINDING: ActionDTO = {
+  action: 'survey_finding_actions__add',
+  label: 'Add finding',
+};
+const ASSIGN_MEDIA: ActionDTO = {
+  action: 'survey_media_actions__assign',
+  label: 'Assign media',
+};
 
 export function AddFindingButton({
   parentNodeId,
@@ -26,13 +32,17 @@ export function AddFindingButton({
   unassignedMedia?: SurveyMediaListItem[];
 }) {
   const [open, setOpen] = useState(false);
-  const [severity, setSeverity] = useState<Severity>("advisory");
-  const [summary, setSummary] = useState("");
-  const [detail, setDetail] = useState("");
-  const [recommended, setRecommended] = useState("");
+  const [severity, setSeverity] = useState<Severity>('advisory');
+  const [summary, setSummary] = useState('');
+  const [detail, setDetail] = useState('');
+  const [recommended, setRecommended] = useState('');
   const [pickedMedia, setPickedMedia] = useState<Set<string>>(new Set());
-  const findingExecutor = useActionExecutor({ actionGroup: "survey_finding_actions" });
-  const mediaExecutor = useActionExecutor({ actionGroup: "survey_media_actions" });
+  const findingExecutor = useActionExecutor({
+    actionGroup: 'survey_finding_actions',
+  });
+  const mediaExecutor = useActionExecutor({
+    actionGroup: 'survey_media_actions',
+  });
 
   function togglePick(id: string) {
     setPickedMedia((prev) => {
@@ -44,10 +54,10 @@ export function AddFindingButton({
   }
 
   function reset() {
-    setSummary("");
-    setDetail("");
-    setRecommended("");
-    setSeverity("advisory");
+    setSummary('');
+    setDetail('');
+    setRecommended('');
+    setSeverity('advisory');
     setPickedMedia(new Set());
   }
 
@@ -65,7 +75,7 @@ export function AddFindingButton({
           recommended_action: recommended || null,
         },
       } as never,
-      { silent: true },
+      { silent: true }
     );
     const findingId = res.created_id;
     if (findingId && pickedMedia.size > 0) {
@@ -73,10 +83,13 @@ export function AddFindingButton({
         Array.from(pickedMedia).map((mediaId) =>
           mediaExecutor.executeAction(
             ASSIGN_MEDIA,
-            { action: ASSIGN_MEDIA.action, data: { node_id: findingId } } as never,
-            { silent: true, objectId: mediaId },
-          ),
-        ),
+            {
+              action: ASSIGN_MEDIA.action,
+              data: { node_id: findingId },
+            } as never,
+            { silent: true, objectId: mediaId }
+          )
+        )
       );
     }
     reset();
@@ -98,7 +111,7 @@ export function AddFindingButton({
               key={s}
               type="button"
               size="sm"
-              variant={severity === s ? "default" : "outline"}
+              variant={severity === s ? 'default' : 'outline'}
               onClick={() => setSeverity(s)}
             >
               {s}
@@ -111,15 +124,25 @@ export function AddFindingButton({
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Detail</Label>
-          <Textarea value={detail} onChange={(e) => setDetail(e.target.value)} rows={3} />
+          <Textarea
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
+            rows={3}
+          />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Recommended action</Label>
-          <Textarea value={recommended} onChange={(e) => setRecommended(e.target.value)} rows={2} />
+          <Textarea
+            value={recommended}
+            onChange={(e) => setRecommended(e.target.value)}
+            rows={2}
+          />
         </div>
         {unassignedMedia.length > 0 && (
           <div className="space-y-1">
-            <Label className="text-xs">From Unassigned ({unassignedMedia.length})</Label>
+            <Label className="text-xs">
+              From Unassigned ({unassignedMedia.length})
+            </Label>
             <div className="grid max-h-32 grid-cols-4 gap-1 overflow-y-auto">
               {unassignedMedia.map((m) => {
                 const picked = pickedMedia.has(m.id);
@@ -129,12 +152,12 @@ export function AddFindingButton({
                     type="button"
                     onClick={() => togglePick(m.id)}
                     className={`aspect-square overflow-hidden rounded border-2 ${
-                      picked ? "border-primary" : "border-transparent"
+                      picked ? 'border-primary' : 'border-transparent'
                     }`}
                   >
                     <img
                       src={m.thumbnail_url ?? m.view_url}
-                      alt={m.caption ?? ""}
+                      alt={m.caption ?? ''}
                       className="h-full w-full object-cover"
                     />
                   </button>
@@ -146,9 +169,14 @@ export function AddFindingButton({
         <Button
           size="sm"
           onClick={submit}
-          disabled={!summary.trim() || findingExecutor.isExecuting || mediaExecutor.isExecuting}
+          disabled={
+            !summary.trim() ||
+            findingExecutor.isExecuting ||
+            mediaExecutor.isExecuting
+          }
         >
-          Save finding{pickedMedia.size > 0 ? ` (+${pickedMedia.size} photo)` : ""}
+          Save finding
+          {pickedMedia.size > 0 ? ` (+${pickedMedia.size} photo)` : ''}
         </Button>
       </PopoverContent>
     </Popover>

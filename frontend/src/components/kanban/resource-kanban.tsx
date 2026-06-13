@@ -1,28 +1,28 @@
-import { useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { StateMachineKanban } from "@/components/kanban/state-machine-kanban";
-import { StatusBadge } from "@/components/status-badge";
+import { useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import {
   findColumn,
   getPrimaryColumn,
   getSubColumn,
   useResourceList,
-} from "@/components/dashboard/data-sources";
-import type { ColumnDefinition } from "@/lib/resource-table-types";
-import { humanize } from "@/lib/utils";
-import type { FilterDefinition } from "@/components/dashboard/types";
-import { useActionsActionGroupObjectIdExecuteObjectAction } from "@/openapi/actions/actions";
-import {
-  RESOURCE_STATE_MACHINES,
-  type StateMachineMeta,
-} from "@/openapi/state-machines.gen";
+} from '@/components/dashboard/data-sources';
+import { StateMachineKanban } from '@/components/kanban/state-machine-kanban';
+import { StatusBadge } from '@/components/status-badge';
+import { humanize } from '@/lib/utils';
+import { useActionsActionGroupObjectIdExecuteObjectAction } from '@/openapi/actions/actions';
 import {
   ActionGroupType,
   type ActionDTO,
   type ColumnRule,
   type ResourceType,
-} from "@/openapi/litestarAPI.schemas";
+} from '@/openapi/litestarAPI.schemas';
+import {
+  RESOURCE_STATE_MACHINES,
+  type StateMachineMeta,
+} from '@/openapi/state-machines.gen';
+import type { FilterDefinition } from '@/components/dashboard/types';
+import type { ColumnDefinition } from '@/lib/resource-table-types';
 
 export type ResourceRow = Record<string, unknown> & {
   id: string;
@@ -71,24 +71,34 @@ function ResourceKanbanInner({
       allowedColumns && allowedColumns.length > 0
         ? stateMachine.states.filter((s) => allowedColumns.includes(s))
         : stateMachine.states,
-    [allowedColumns, stateMachine.states],
+    [allowedColumns, stateMachine.states]
   );
 
   const effectiveFilters = useMemo<FilterDefinition[]>(() => {
     if (!allowedColumns || allowedColumns.length === 0) return baseFilters;
     return [
       ...baseFilters,
-      { type: "enum", column: stateMachine.column, values: [...visibleStates] },
+      { type: 'enum', column: stateMachine.column, values: [...visibleStates] },
     ];
   }, [baseFilters, allowedColumns, stateMachine.column, visibleStates]);
 
   const effectiveLimit = limit ?? DEFAULT_LIMIT;
   const { data } = useResourceList(resource, effectiveFilters, effectiveLimit);
-  const queryKey = ["dashboard-list", resource, effectiveFilters, effectiveLimit] as const;
+  const queryKey = [
+    'dashboard-list',
+    resource,
+    effectiveFilters,
+    effectiveLimit,
+  ] as const;
 
   const rows = useMemo(
-    () => applyColumnRules(data.items as ResourceRow[], stateMachine.column, columnRules),
-    [data.items, stateMachine.column, columnRules],
+    () =>
+      applyColumnRules(
+        data.items as ResourceRow[],
+        stateMachine.column,
+        columnRules
+      ),
+    [data.items, stateMachine.column, columnRules]
   );
 
   const cols = cardColumns ?? [];
@@ -97,8 +107,8 @@ function ResourceKanbanInner({
     <StateMachineKanban<ResourceRow, string>
       rows={rows}
       getId={(r) => r.id}
-      getName={(r) => String(r[stateMachine.column] ?? "")}
-      getState={(r) => String(r[stateMachine.column] ?? "")}
+      getName={(r) => String(r[stateMachine.column] ?? '')}
+      getState={(r) => String(r[stateMachine.column] ?? '')}
       states={visibleStates}
       renderCard={(r) => (
         <button
@@ -112,7 +122,11 @@ function ResourceKanbanInner({
           }
         >
           {cols.length === 0 ? (
-            <DefaultCardBody row={r} resource={resource} stateColumn={stateMachine.column} />
+            <DefaultCardBody
+              row={r}
+              resource={resource}
+              stateColumn={stateMachine.column}
+            />
           ) : (
             cols.map((col, idx) => (
               <CardField
@@ -145,10 +159,12 @@ function ResourceKanbanInner({
               ? {
                   ...old,
                   items: old.items.map((it) =>
-                    it.id === rowId ? { ...it, [stateMachine.column]: toState } : it,
+                    it.id === rowId
+                      ? { ...it, [stateMachine.column]: toState }
+                      : it
                   ),
                 }
-              : old,
+              : old
         );
       }}
       onRollback={() => queryClient.invalidateQueries({ queryKey })}
@@ -194,7 +210,7 @@ function CardField({
 }) {
   const col = findColumn(resource, columnKey);
   if (!col || row[columnKey] == null) return null;
-  const isStatus = col.displayType === "status" || col.displayType === "enum";
+  const isStatus = col.displayType === 'status' || col.displayType === 'enum';
   if (isStatus) {
     return (
       <div className="pt-1">
@@ -203,7 +219,11 @@ function CardField({
     );
   }
   return (
-    <div className={isPrimary ? "text-sm font-medium" : "text-muted-foreground text-xs"}>
+    <div
+      className={
+        isPrimary ? 'text-sm font-medium' : 'text-muted-foreground text-xs'
+      }
+    >
       <span className="sr-only">{col.header}: </span>
       {renderCardValue(col, row)}
     </div>
@@ -214,17 +234,17 @@ function CardField({
 // wrappers the table renderer adds (the card itself is already a button).
 function renderCardValue(
   col: ColumnDefinition<Record<string, unknown>>,
-  row: ResourceRow,
+  row: ResourceRow
 ): string {
   const value = row[col.key];
-  if (value == null) return "";
+  if (value == null) return '';
   switch (col.displayType) {
-    case "entity":
-      return typeof value === "object" && value && "label" in value
-        ? String((value as { label: unknown }).label ?? "")
+    case 'entity':
+      return typeof value === 'object' && value && 'label' in value
+        ? String((value as { label: unknown }).label ?? '')
         : String(value);
-    case "enum":
-    case "status":
+    case 'enum':
+    case 'status':
       return humanize(String(value));
     default:
       return String(value);
@@ -234,7 +254,7 @@ function renderCardValue(
 function applyColumnRules(
   rows: ResourceRow[],
   stateColumn: string,
-  rules: Record<string, ColumnRule> | null | undefined,
+  rules: Record<string, ColumnRule> | null | undefined
 ): ResourceRow[] {
   if (!rules) return rows;
   const cutoffs: Record<string, number> = {};
@@ -247,11 +267,11 @@ function applyColumnRules(
   }
   if (Object.keys(cutoffs).length === 0) return rows;
   return rows.filter((row) => {
-    const state = String(row[stateColumn] ?? "");
+    const state = String(row[stateColumn] ?? '');
     const cutoff = cutoffs[state];
     if (cutoff == null) return true;
     const ts = row.created_at;
-    if (typeof ts !== "string") return true;
+    if (typeof ts !== 'string') return true;
     const t = Date.parse(ts);
     return Number.isFinite(t) ? t >= cutoff : true;
   });

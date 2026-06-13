@@ -1,9 +1,9 @@
-import { useListCalendarEventSuspense } from "@/openapi/calendar-events/calendar-events";
-import type { CalendarEventListItem } from "@/openapi/litestarAPI.schemas";
-import { MonthView } from "./month-view";
-import { TimeGrid } from "./time-grid";
-import type { CalendarView } from "./types";
-import { buildWeekDays, getVisibleRange } from "./utils";
+import { useListCalendarEventSuspense } from '@/openapi/calendar-events/calendar-events';
+import { MonthView } from './month-view';
+import { TimeGrid } from './time-grid';
+import { buildWeekDays, getVisibleRange } from './utils';
+import type { CalendarView } from './types';
+import type { CalendarEventListItem } from '@/openapi/litestarAPI.schemas';
 
 interface Props {
   view: CalendarView;
@@ -12,18 +12,28 @@ interface Props {
   onSelectEvent: (event: CalendarEventListItem) => void;
 }
 
-export function CalendarView({ view, anchor, onSelectDay, onSelectEvent }: Props) {
+export function CalendarView({
+  view,
+  anchor,
+  onSelectDay,
+  onSelectEvent,
+}: Props) {
   const { start, end } = getVisibleRange(view, anchor);
   const { data } = useListCalendarEventSuspense({
     filters: [
-      { type: "date", column: "effective_start", start: start.toISOString(), finish: end.toISOString() },
+      {
+        type: 'date',
+        column: 'effective_start',
+        start: start.toISOString(),
+        finish: end.toISOString(),
+      },
     ],
-    sorts: [{ column: "effective_start", direction: "asc" }],
+    sorts: [{ column: 'effective_start', direction: 'asc' }],
     limit: 500,
   });
   const events = data.items;
 
-  if (view === "month") {
+  if (view === 'month') {
     return (
       <MonthView
         anchor={anchor}
@@ -34,6 +44,6 @@ export function CalendarView({ view, anchor, onSelectDay, onSelectEvent }: Props
     );
   }
 
-  const days = view === "week" ? buildWeekDays(anchor) : [anchor];
+  const days = view === 'week' ? buildWeekDays(anchor) : [anchor];
   return <TimeGrid days={days} events={events} onSelectEvent={onSelectEvent} />;
 }

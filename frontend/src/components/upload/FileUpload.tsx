@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Upload,
   X,
@@ -8,34 +8,34 @@ import {
   RotateCcw,
   Check,
   Pencil,
-} from "lucide-react";
-import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/error-handler";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  DEFAULT_ACCEPT,
-  MAX_SIZE_BYTES,
-} from "@/components/upload/file-upload-constants";
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   DOCUMENT_CATEGORY_META,
   DOCUMENT_CATEGORY_ORDER,
   type DocumentCategory,
-} from "@/components/upload/document-categories";
+} from '@/components/upload/document-categories';
+import {
+  DEFAULT_ACCEPT,
+  MAX_SIZE_BYTES,
+} from '@/components/upload/file-upload-constants';
+import { getErrorMessage } from '@/lib/error-handler';
+import { cn } from '@/lib/utils';
 
 const CONCURRENCY = 3;
 
 type UploadStage =
-  | "awaiting_confirm"
-  | "queued"
-  | "presigning"
-  | "uploading"
-  | "confirming"
-  | "done"
-  | "error";
+  | 'awaiting_confirm'
+  | 'queued'
+  | 'presigning'
+  | 'uploading'
+  | 'confirming'
+  | 'done'
+  | 'error';
 
 interface UploadSlot<TDoc> {
   id: string;
@@ -110,7 +110,7 @@ export function FileUpload<TDoc>({
   category,
   confirmBeforeUpload = false,
   maxConcurrent = CONCURRENCY,
-  emptyHint = "Drop files here or click to browse",
+  emptyHint = 'Drop files here or click to browse',
   className,
 }: FileUploadProps<TDoc>) {
   const [slots, setSlots] = useState<UploadSlot<TDoc>[]>([]);
@@ -126,14 +126,16 @@ export function FileUpload<TDoc>({
   const seenOnUploadedRef = useRef<Set<string>>(new Set());
   // Outstanding setTimeout handles (auto-dismiss timers). Cleared on
   // unmount so we don't touch state on a torn-down component.
-  const dismissTimeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const dismissTimeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(
+    new Set()
+  );
 
   useEffect(
     () => () => {
       for (const h of dismissTimeoutsRef.current) clearTimeout(h);
       dismissTimeoutsRef.current.clear();
     },
-    [],
+    []
   );
 
   const patch = useCallback((id: string, patch: Partial<UploadSlot<TDoc>>) => {
@@ -142,42 +144,50 @@ export function FileUpload<TDoc>({
 
   const runUpload = useCallback(
     async (qf: QueuedFile) => {
-      const { slotId, file, fileName, category: qfCategory, description: qfDescription } = qf;
+      const {
+        slotId,
+        file,
+        fileName,
+        category: qfCategory,
+        description: qfDescription,
+      } = qf;
 
       try {
         if (file.size > MAX_SIZE_BYTES) {
-          throw new Error(`File exceeds the ${MAX_SIZE_BYTES / (1024 * 1024)}MB limit.`);
+          throw new Error(
+            `File exceeds the ${MAX_SIZE_BYTES / (1024 * 1024)}MB limit.`
+          );
         }
 
-        patch(slotId, { stage: "presigning", error: null });
+        patch(slotId, { stage: 'presigning', error: null });
         const presigned = await requestUploadUrl({
           parentId,
           fileName,
-          mimeType: file.type || "application/octet-stream",
+          mimeType: file.type || 'application/octet-stream',
           sizeBytes: file.size,
           category: qfCategory,
         });
 
-        patch(slotId, { stage: "uploading", progress: 0 });
+        patch(slotId, { stage: 'uploading', progress: 0 });
 
         const formData = new FormData();
         for (const [k, v] of Object.entries(presigned.fields ?? {})) {
           formData.append(k, v);
         }
-        formData.append("file", file);
+        formData.append('file', file);
 
         await uploadWithProgress(presigned.url, formData, (ratio) => {
           patch(slotId, { progress: ratio });
         });
 
-        patch(slotId, { stage: "confirming", progress: 1 });
+        patch(slotId, { stage: 'confirming', progress: 1 });
         const doc = await confirmUpload({
           uploadToken: presigned.uploadToken,
           category: qfCategory,
           description: qfDescription,
         });
 
-        patch(slotId, { stage: "done", doc });
+        patch(slotId, { stage: 'done', doc });
 
         if (!seenOnUploadedRef.current.has(slotId)) {
           seenOnUploadedRef.current.add(slotId);
@@ -195,7 +205,7 @@ export function FileUpload<TDoc>({
         dismissTimeoutsRef.current.add(handle);
       } catch (err) {
         const message = getErrorMessage(err);
-        patch(slotId, { stage: "error", error: message });
+        patch(slotId, { stage: 'error', error: message });
         onError?.(err as Error);
       } finally {
         inFlightCountRef.current -= 1;
@@ -206,11 +216,14 @@ export function FileUpload<TDoc>({
     // intentionally a stable callback (depends on runUpload, which would
     // create a cycle if added).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [patch, parentId, requestUploadUrl, confirmUpload, onUploaded, onError],
+    [patch, parentId, requestUploadUrl, confirmUpload, onUploaded, onError]
   );
 
   const drainQueue = useCallback(() => {
-    while (inFlightCountRef.current < maxConcurrent && queueRef.current.length > 0) {
+    while (
+      inFlightCountRef.current < maxConcurrent &&
+      queueRef.current.length > 0
+    ) {
       const next = queueRef.current.shift();
       if (!next) break;
       inFlightCountRef.current += 1;
@@ -229,7 +242,7 @@ export function FileUpload<TDoc>({
       });
       drainQueue();
     },
-    [drainQueue],
+    [drainQueue]
   );
 
   const addFiles = useCallback(
@@ -238,7 +251,7 @@ export function FileUpload<TDoc>({
       const list = Array.from(files);
       for (const file of list) {
         const id = `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const declared = file.type || "application/octet-stream";
+        const declared = file.type || 'application/octet-stream';
 
         if (!accept.includes(declared)) {
           toast.error(`${file.name}: file type "${declared}" is not allowed.`);
@@ -246,7 +259,7 @@ export function FileUpload<TDoc>({
         }
         if (file.size > MAX_SIZE_BYTES) {
           toast.error(
-            `${file.name}: exceeds the ${MAX_SIZE_BYTES / (1024 * 1024)}MB limit.`,
+            `${file.name}: exceeds the ${MAX_SIZE_BYTES / (1024 * 1024)}MB limit.`
           );
           continue;
         }
@@ -255,12 +268,12 @@ export function FileUpload<TDoc>({
           id,
           file,
           progress: 0,
-          stage: confirmBeforeUpload ? "awaiting_confirm" : "queued",
+          stage: confirmBeforeUpload ? 'awaiting_confirm' : 'queued',
           error: null,
           doc: null,
           editedFileName: file.name,
-          editedCategory: category ?? "other",
-          editedDescription: description ?? "",
+          editedCategory: category ?? 'other',
+          editedDescription: description ?? '',
         });
       }
 
@@ -271,18 +284,18 @@ export function FileUpload<TDoc>({
         for (const s of newSlots) enqueueSlot(s);
       }
     },
-    [accept, category, description, confirmBeforeUpload, enqueueSlot],
+    [accept, category, description, confirmBeforeUpload, enqueueSlot]
   );
 
   const updateSlotField = useCallback(
-    <K extends "editedFileName" | "editedCategory" | "editedDescription">(
+    <K extends 'editedFileName' | 'editedCategory' | 'editedDescription'>(
       slotId: string,
       key: K,
-      value: UploadSlot<TDoc>[K],
+      value: UploadSlot<TDoc>[K]
     ) => {
       patch(slotId, { [key]: value } as Partial<UploadSlot<TDoc>>);
     },
-    [patch],
+    [patch]
   );
 
   // Receive the full slot from the child row (it already has it as a
@@ -292,18 +305,18 @@ export function FileUpload<TDoc>({
   const confirmSlot = useCallback(
     (slot: UploadSlot<TDoc>) => {
       if (!slot.editedFileName.trim()) return;
-      patch(slot.id, { stage: "queued", error: null });
-      enqueueSlot({ ...slot, stage: "queued" });
+      patch(slot.id, { stage: 'queued', error: null });
+      enqueueSlot({ ...slot, stage: 'queued' });
     },
-    [patch, enqueueSlot],
+    [patch, enqueueSlot]
   );
 
   const retrySlot = useCallback(
     (slot: UploadSlot<TDoc>) => {
-      patch(slot.id, { stage: "queued", error: null, progress: 0 });
-      enqueueSlot({ ...slot, stage: "queued", progress: 0 });
+      patch(slot.id, { stage: 'queued', error: null, progress: 0 });
+      enqueueSlot({ ...slot, stage: 'queued', progress: 0 });
     },
-    [patch, enqueueSlot],
+    [patch, enqueueSlot]
   );
 
   const remove = useCallback((slotId: string) => {
@@ -317,7 +330,7 @@ export function FileUpload<TDoc>({
       setIsDragging(false);
       if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
     },
-    [addFiles],
+    [addFiles]
   );
 
   const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -334,22 +347,22 @@ export function FileUpload<TDoc>({
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === "Enter" || e.key === " ") {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         openPicker();
       }
     },
-    [openPicker],
+    [openPicker]
   );
 
   useEffect(() => {
     if (fileInputRef.current && slots.length === 0) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   }, [slots.length]);
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
+    <div className={cn('flex flex-col gap-3', className)}>
       <div
         role="button"
         tabIndex={0}
@@ -360,21 +373,24 @@ export function FileUpload<TDoc>({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-          isDragging ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30",
+          'flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors',
+          'focus-visible:ring-primary/50 focus-visible:ring-2 focus-visible:outline-none',
+          isDragging
+            ? 'border-primary bg-primary/5'
+            : 'border-border hover:bg-muted/30'
         )}
       >
-        <Upload className="mb-2 h-6 w-6 text-muted-foreground" />
+        <Upload className="text-muted-foreground mb-2 h-6 w-6" />
         <p className="text-sm font-medium">{emptyHint}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          PDF, images, text, Word, Excel · up to {Math.floor(MAX_SIZE_BYTES / (1024 * 1024))} MB each
+        <p className="text-muted-foreground mt-1 text-xs">
+          PDF, images, text, Word, Excel · up to{' '}
+          {Math.floor(MAX_SIZE_BYTES / (1024 * 1024))} MB each
         </p>
         <input
           ref={fileInputRef}
           type="file"
           multiple
-          accept={accept.join(",")}
+          accept={accept.join(',')}
           hidden
           onChange={(e) => {
             if (e.target.files) addFiles(e.target.files);
@@ -389,7 +405,7 @@ export function FileUpload<TDoc>({
           aria-label="Upload progress"
         >
           {slots.map((slot) =>
-            slot.stage === "awaiting_confirm" ? (
+            slot.stage === 'awaiting_confirm' ? (
               <PendingRow
                 key={slot.id}
                 slot={slot}
@@ -398,8 +414,13 @@ export function FileUpload<TDoc>({
                 onCancel={remove}
               />
             ) : (
-              <UploadRow key={slot.id} slot={slot} onRetry={retrySlot} onRemove={remove} />
-            ),
+              <UploadRow
+                key={slot.id}
+                slot={slot}
+                onRetry={retrySlot}
+                onRemove={remove}
+              />
+            )
           )}
         </ul>
       )}
@@ -414,10 +435,12 @@ function PendingRow<TDoc>({
   onCancel,
 }: {
   slot: UploadSlot<TDoc>;
-  onFieldChange: <K extends "editedFileName" | "editedCategory" | "editedDescription">(
+  onFieldChange: <
+    K extends 'editedFileName' | 'editedCategory' | 'editedDescription',
+  >(
     slotId: string,
     key: K,
-    value: UploadSlot<TDoc>[K],
+    value: UploadSlot<TDoc>[K]
   ) => void;
   onSave: (slot: UploadSlot<TDoc>) => void;
   onCancel: (slotId: string) => void;
@@ -425,14 +448,14 @@ function PendingRow<TDoc>({
   const trimmedName = slot.editedFileName.trim();
 
   return (
-    <li className="rounded-2xl border bg-card px-5 py-4 shadow-sm">
+    <li className="bg-card rounded-2xl border px-5 py-4 shadow-sm">
       <div className="mb-3 flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <div className="bg-muted text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
           <Pencil className="h-4 w-4" />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{slot.file.name}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {formatBytes(slot.file.size)} · review details before uploading
           </p>
         </div>
@@ -445,7 +468,9 @@ function PendingRow<TDoc>({
           <Input
             id={`${slot.id}-name`}
             value={slot.editedFileName}
-            onChange={(e) => onFieldChange(slot.id, "editedFileName", e.target.value)}
+            onChange={(e) =>
+              onFieldChange(slot.id, 'editedFileName', e.target.value)
+            }
             placeholder="Display name (extension preserved)"
           />
         </div>
@@ -457,9 +482,13 @@ function PendingRow<TDoc>({
             id={`${slot.id}-category`}
             value={slot.editedCategory}
             onChange={(e) =>
-              onFieldChange(slot.id, "editedCategory", e.target.value as DocumentCategory)
+              onFieldChange(
+                slot.id,
+                'editedCategory',
+                e.target.value as DocumentCategory
+              )
             }
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
           >
             {DOCUMENT_CATEGORY_ORDER.map((cat) => (
               <option key={cat} value={cat}>
@@ -476,7 +505,9 @@ function PendingRow<TDoc>({
         <Textarea
           id={`${slot.id}-description`}
           value={slot.editedDescription}
-          onChange={(e) => onFieldChange(slot.id, "editedDescription", e.target.value)}
+          onChange={(e) =>
+            onFieldChange(slot.id, 'editedDescription', e.target.value)
+          }
           placeholder="Add context — e.g. 'starboard hull, waterline crack'"
           rows={2}
         />
@@ -506,27 +537,31 @@ function UploadRow<TDoc>({
   onRetry: (slot: UploadSlot<TDoc>) => void;
   onRemove: (id: string) => void;
 }) {
-  const icon = slot.file.type.startsWith("image/") ? (
-    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+  const icon = slot.file.type.startsWith('image/') ? (
+    <ImageIcon className="text-muted-foreground h-5 w-5" />
   ) : (
-    <FileText className="h-5 w-5 text-muted-foreground" />
+    <FileText className="text-muted-foreground h-5 w-5" />
   );
 
-  const done = slot.stage === "done";
-  const errored = slot.stage === "error";
+  const done = slot.stage === 'done';
+  const errored = slot.stage === 'error';
 
   return (
-    <li className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5">
+    <li className="bg-card flex items-center gap-3 rounded-xl border px-4 py-2.5">
       {icon}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-sm font-medium">{slot.editedFileName || slot.file.name}</p>
-          <p className="shrink-0 text-xs text-muted-foreground">{formatBytes(slot.file.size)}</p>
+          <p className="truncate text-sm font-medium">
+            {slot.editedFileName || slot.file.name}
+          </p>
+          <p className="text-muted-foreground shrink-0 text-xs">
+            {formatBytes(slot.file.size)}
+          </p>
         </div>
         {!done && !errored && (
-          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+          <div className="bg-muted mt-1.5 h-1 w-full overflow-hidden rounded-full">
             <div
-              className="h-full bg-primary transition-all"
+              className="bg-primary h-full transition-all"
               style={{ width: `${Math.round(slot.progress * 100)}%` }}
             />
           </div>
@@ -538,7 +573,7 @@ function UploadRow<TDoc>({
           </p>
         )}
         {errored && slot.error && (
-          <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
+          <p className="text-destructive mt-1 flex items-center gap-1 text-xs">
             <AlertCircle className="h-3 w-3" /> {slot.error}
           </p>
         )}
@@ -547,7 +582,7 @@ function UploadRow<TDoc>({
         <button
           type="button"
           onClick={() => onRetry(slot)}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
           aria-label="Retry upload"
         >
           <RotateCcw className="h-4 w-4" />
@@ -557,7 +592,7 @@ function UploadRow<TDoc>({
         <button
           type="button"
           onClick={() => onRemove(slot.id)}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
           aria-label="Remove"
         >
           <X className="h-4 w-4" />
@@ -581,11 +616,11 @@ function formatBytes(n: number): string {
 function uploadWithProgress(
   url: string,
   body: FormData,
-  onProgress: (ratio: number) => void,
+  onProgress: (ratio: number) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
+    xhr.open('POST', url, true);
     xhr.withCredentials = false;
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(e.loaded / e.total);
@@ -594,8 +629,8 @@ function uploadWithProgress(
       if (xhr.status >= 200 && xhr.status < 300) resolve();
       else reject(new Error(`Upload failed: HTTP ${xhr.status}`));
     };
-    xhr.onerror = () => reject(new Error("Network error during upload"));
-    xhr.ontimeout = () => reject(new Error("Upload timed out"));
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.ontimeout = () => reject(new Error('Upload timed out'));
     xhr.send(body);
   });
 }

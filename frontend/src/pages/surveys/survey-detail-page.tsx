@@ -1,21 +1,21 @@
-import { Suspense } from "react";
-import { useParams } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { ObjectActions } from "@/components/object-detail/object-actions";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SurveyWorkspace } from "@/components/surveys/workspace/survey-workspace";
-import { useSurveysIdDetailHandlerSuspense } from "@/openapi/survey/survey";
-import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
+import { Suspense } from 'react';
+import { useParams } from '@tanstack/react-router';
+import { PageTopBar } from '@/components/layout/page-topbar';
+import { ObjectActions } from '@/components/object-detail/object-actions';
+import { SurveyWorkspace } from '@/components/surveys/workspace/survey-workspace';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useActionsActionGroupObjectIdListObjectActions } from '@/openapi/actions/actions';
+import { useSurveysIdDetailHandlerSuspense } from '@/openapi/survey/survey';
 
 function SurveyDetailContent() {
-  const { surveyId } = useParams({ from: "/_authenticated/surveys/$surveyId" });
+  const { surveyId } = useParams({ from: '/_authenticated/surveys/$surveyId' });
   const { data } = useSurveysIdDetailHandlerSuspense(surveyId);
   const { data: actionsData, refetch: refetchActions } =
-    useActionsActionGroupObjectIdListObjectActions("survey_actions", surveyId);
+    useActionsActionGroupObjectIdListObjectActions('survey_actions', surveyId);
 
   return (
     <PageTopBar
-      title={data.vessel?.label ?? "Survey"}
+      title={data.vessel?.label ?? 'Survey'}
       state={data.state}
       actions={
         <ObjectActions

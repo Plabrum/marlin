@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export interface MetadataItem {
   label: string;
@@ -12,9 +12,9 @@ interface MetadataRowProps {
 
 export function MetadataRow({ items, title }: MetadataRowProps) {
   return (
-    <div className="rounded-xl bg-primary/[0.07] px-5 py-3">
+    <div className="bg-primary/[0.07] rounded-xl px-5 py-3">
       {title && (
-        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6D6C6A]">
+        <p className="mb-1.5 text-[10px] font-semibold tracking-wider text-[#6D6C6A] uppercase">
           {title}
         </p>
       )}

@@ -1,7 +1,6 @@
 import { ClipboardList, Users } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { ThreadListItem as Thread } from "@/openapi/litestarAPI.schemas";
 
 interface Props {

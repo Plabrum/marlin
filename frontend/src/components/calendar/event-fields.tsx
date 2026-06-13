@@ -1,21 +1,25 @@
-import { useEffect, useRef, useState } from "react";
-import { addMinutes, format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { AddressFields } from "@/components/calendar/address-fields";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { EntityCombobox } from "@/lib/forms/entity-combobox";
+import { useEffect, useRef, useState } from 'react';
+import { addMinutes, format, parseISO } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { AddressFields } from '@/components/calendar/address-fields';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { EntityCombobox } from '@/lib/forms/entity-combobox';
+import { cn } from '@/lib/utils';
 import type {
   AddressInput,
   CalendarEventDetail,
-} from "@/openapi/litestarAPI.schemas";
+} from '@/openapi/litestarAPI.schemas';
 
 export interface EventFormValues {
   // For timed events: ISO datetimes. Null when all_day is true.
@@ -50,7 +54,7 @@ export function EventFormBody({
             if (all_day) {
               // Anchor to today (or the existing start day if we have one).
               const day = value.start ? parseISO(value.start) : new Date();
-              const dateStr = format(day, "yyyy-MM-dd");
+              const dateStr = format(day, 'yyyy-MM-dd');
               onChange({
                 all_day,
                 start: null,
@@ -101,7 +105,7 @@ export function EventFormBody({
 
       <Field label="Name">
         <TextField
-          value={value.name ?? ""}
+          value={value.name ?? ''}
           placeholder="Add a title"
           onCommit={(v) => onChange({ name: v || null })}
         />
@@ -114,7 +118,7 @@ export function EventFormBody({
 
       <Field label="Description">
         <TextAreaField
-          value={value.description ?? ""}
+          value={value.description ?? ''}
           placeholder="Add notes"
           onCommit={(v) => onChange({ description: v || null })}
         />
@@ -130,7 +134,7 @@ export function EventFormBody({
       <Field label="Survey">
         <EntityCombobox
           modelName="Survey"
-          value={value.survey_id ?? ""}
+          value={value.survey_id ?? ''}
           onChange={(v) => onChange({ survey_id: v || null })}
         />
       </Field>
@@ -138,7 +142,7 @@ export function EventFormBody({
       <Field label="Client">
         <EntityCombobox
           modelName="Client"
-          value={value.client_id ?? ""}
+          value={value.client_id ?? ''}
           onChange={(v) => onChange({ client_id: v || null })}
         />
       </Field>
@@ -155,7 +159,7 @@ export function Field({
 }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-muted-foreground text-xs">{label}</Label>
       {children}
     </div>
   );
@@ -215,11 +219,11 @@ export function AttendeesField({
   value: string[];
   onCommit: (value: string[]) => void;
 }) {
-  const [draft, setDraft] = useState(value.join(", "));
+  const [draft, setDraft] = useState(value.join(', '));
   const last = useRef(value);
   useEffect(() => {
     last.current = value;
-    setDraft(value.join(", "));
+    setDraft(value.join(', '));
   }, [value]);
   return (
     <Input
@@ -228,10 +232,10 @@ export function AttendeesField({
       onChange={(e) => setDraft(e.target.value)}
       onBlur={() => {
         const parts = draft
-          .split(",")
+          .split(',')
           .map((s) => s.trim())
           .filter(Boolean);
-        if (parts.join(",") !== last.current.join(",")) onCommit(parts);
+        if (parts.join(',') !== last.current.join(',')) onCommit(parts);
       }}
     />
   );
@@ -269,10 +273,10 @@ export function DateTimeInput({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("w-full justify-start text-left font-normal")}
+          className={cn('w-full justify-start text-left font-normal')}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {format(current, "PPP p")}
+          {format(current, 'PPP p')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -283,19 +287,25 @@ export function DateTimeInput({
           onSelect={(date) => {
             if (!date) return;
             const next = new Date(current);
-            next.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-            if (next.getTime() !== current.getTime()) onCommit(next.toISOString());
+            next.setFullYear(
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate()
+            );
+            if (next.getTime() !== current.getTime())
+              onCommit(next.toISOString());
           }}
         />
         <div className="border-t p-3">
           <Input
             type="time"
-            value={format(current, "HH:mm")}
+            value={format(current, 'HH:mm')}
             onChange={(e) => {
-              const [hours, minutes] = e.target.value.split(":").map(Number);
+              const [hours, minutes] = e.target.value.split(':').map(Number);
               const next = new Date(current);
               next.setHours(hours, minutes, 0, 0);
-              if (next.getTime() !== current.getTime()) onCommit(next.toISOString());
+              if (next.getTime() !== current.getTime())
+                onCommit(next.toISOString());
             }}
           />
         </div>
@@ -305,7 +315,7 @@ export function DateTimeInput({
 }
 
 export function addressToInput(
-  address: CalendarEventDetail["address"],
+  address: CalendarEventDetail['address']
 ): AddressInput | null {
   if (!address) return null;
   return {

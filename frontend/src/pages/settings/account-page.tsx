@@ -1,6 +1,6 @@
 export function AccountPage() {
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-muted-foreground text-sm">
       Account settings coming soon.
     </p>
   );

@@ -1,12 +1,12 @@
-import { DraggableThumb } from "@/components/common/draggable-thumb";
-import { Dropzone, DropzoneEmptyState } from "@/components/ui/dropzone";
-import { useAttachSurveyMedia } from "@/hooks/use-attach-survey-media";
-import type { SurveyMediaListItem } from "@/openapi/litestarAPI.schemas";
-import { DRAG_MEDIA_TYPE } from "./field";
-import { RailSection } from "./rail-section";
+import { DraggableThumb } from '@/components/common/draggable-thumb';
+import { Dropzone, DropzoneEmptyState } from '@/components/ui/dropzone';
+import { useAttachSurveyMedia } from '@/hooks/use-attach-survey-media';
+import { DRAG_MEDIA_TYPE } from './field';
+import { RailSection } from './rail-section';
+import type { SurveyMediaListItem } from '@/openapi/litestarAPI.schemas';
 
 const IMAGE_ACCEPT = {
-  "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp", ".heic", ".heif"],
+  'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.heic', '.heif'],
 };
 
 export function PhotosRail({
@@ -23,15 +23,15 @@ export function PhotosRail({
   const { attachFiles, status, pendingCount, completedCount, error } =
     useAttachSurveyMedia(surveyId);
 
-  const uploading = status === "uploading";
+  const uploading = status === 'uploading';
 
   return (
     <RailSection
-      label={sectionLabel ? `Photos · ${sectionLabel}` : "Photos"}
+      label={sectionLabel ? `Photos · ${sectionLabel}` : 'Photos'}
       meta={`(${items.length})`}
     >
       {items.length === 0 ? (
-        <p className="font-serif text-[12px] italic text-muted-foreground">
+        <p className="text-muted-foreground font-serif text-[12px] italic">
           No photos in this section yet.
         </p>
       ) : (
@@ -40,17 +40,17 @@ export function PhotosRail({
             <DraggableThumb
               key={m.id}
               src={m.thumbnail_url ?? m.view_url}
-              alt={m.caption ?? ""}
+              alt={m.caption ?? ''}
               dragMimeType={DRAG_MEDIA_TYPE}
               dragPayload={m.id}
-              className="aspect-square rounded-sm border border-border"
+              className="border-border aspect-square rounded-sm border"
             />
           ))}
         </div>
       )}
 
       <div className="mt-3 rounded-sm border border-dashed border-amber-500/60 bg-amber-500/5 px-3 py-2">
-        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
+        <div className="font-mono text-[10px] tracking-[0.18em] text-amber-600 uppercase dark:text-amber-400">
           Unassigned ({unassigned.length})
         </div>
 
@@ -60,7 +60,7 @@ export function PhotosRail({
               <DraggableThumb
                 key={m.id}
                 src={m.thumbnail_url ?? m.view_url}
-                alt={m.caption ?? ""}
+                alt={m.caption ?? ''}
                 dragMimeType={DRAG_MEDIA_TYPE}
                 dragPayload={m.id}
                 className="aspect-square rounded-sm border border-dashed border-amber-500/40"
@@ -80,16 +80,16 @@ export function PhotosRail({
           }}
         >
           <DropzoneEmptyState>
-            <p className="font-serif text-[11px] italic text-muted-foreground">
+            <p className="text-muted-foreground font-serif text-[11px] italic">
               {uploading
                 ? `Uploading ${completedCount + 1} of ${pendingCount}…`
-                : "Drop photos here or click to upload"}
+                : 'Drop photos here or click to upload'}
             </p>
           </DropzoneEmptyState>
         </Dropzone>
 
         {error && (
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
+          <p className="text-destructive mt-1 font-mono text-[10px] tracking-[0.18em] uppercase">
             {error}
           </p>
         )}

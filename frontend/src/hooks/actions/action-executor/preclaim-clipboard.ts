@@ -1,4 +1,4 @@
-import type { ActionExecutionResponse } from "@/lib/actions/types";
+import type { ActionExecutionResponse } from '@/lib/actions/types';
 
 /**
  * Pre-claim the clipboard during the user-activation window, resolving the
@@ -10,12 +10,12 @@ import type { ActionExecutionResponse } from "@/lib/actions/types";
  * post-await `writeText` fallback.
  */
 export function preclaimClipboardFromActionResponse(
-  responsePromise: Promise<ActionExecutionResponse>,
+  responsePromise: Promise<ActionExecutionResponse>
 ): boolean {
   if (
-    typeof ClipboardItem === "undefined" ||
+    typeof ClipboardItem === 'undefined' ||
     !navigator.clipboard ||
-    typeof navigator.clipboard.write !== "function"
+    typeof navigator.clipboard.write !== 'function'
   ) {
     return false;
   }
@@ -23,17 +23,17 @@ export function preclaimClipboardFromActionResponse(
   const blobPromise = responsePromise.then((r) => {
     if (
       r.action_result &&
-      "type" in r.action_result &&
-      r.action_result.type === "copy_to_clipboard"
+      'type' in r.action_result &&
+      r.action_result.type === 'copy_to_clipboard'
     ) {
-      return new Blob([r.action_result.text], { type: "text/plain" });
+      return new Blob([r.action_result.text], { type: 'text/plain' });
     }
-    throw new Error("not-a-copy-action");
+    throw new Error('not-a-copy-action');
   });
 
   try {
     void navigator.clipboard
-      .write([new ClipboardItem({ "text/plain": blobPromise })])
+      .write([new ClipboardItem({ 'text/plain': blobPromise })])
       .catch(() => {});
     return true;
   } catch {

@@ -5,9 +5,9 @@
  */
 export function PublicAuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4 py-6">
+    <div className="bg-background flex min-h-svh flex-col items-center justify-center px-4 py-6">
       <div className="mb-10 flex flex-col items-center text-center">
-        <span className="font-display text-4xl font-normal tracking-tight text-foreground">
+        <span className="font-display text-foreground text-4xl font-normal tracking-tight">
           Sloopquest
         </span>
         <span

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface ChildObjectListProps<T extends { id: string | number }> {
   items: T[];
@@ -19,7 +19,7 @@ export function ChildObjectList<T extends { id: string | number }>({
   title,
   badge,
   topLevelActions,
-  emptyMessage = "No items",
+  emptyMessage = 'No items',
   loading,
   className,
 }: ChildObjectListProps<T>) {
@@ -28,9 +28,9 @@ export function ChildObjectList<T extends { id: string | number }>({
   return (
     <div
       className={cn(
-        "w-full overflow-hidden rounded-xl border border-border/30 bg-card",
-        loading && "opacity-60",
-        className,
+        'border-border/30 bg-card w-full overflow-hidden rounded-xl border',
+        loading && 'opacity-60',
+        className
       )}
     >
       {hasHeader && (
@@ -40,10 +40,10 @@ export function ChildObjectList<T extends { id: string | number }>({
               <h3 className="text-base font-semibold">{title}</h3>
             )}
             {badge != null &&
-              (typeof badge === "object" ? (
+              (typeof badge === 'object' ? (
                 badge
               ) : (
-                <span className="inline-flex items-center justify-center rounded-lg bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded-lg px-2.5 py-0.5 text-[11px] font-semibold">
                   {badge}
                 </span>
               ))}
@@ -57,8 +57,8 @@ export function ChildObjectList<T extends { id: string | number }>({
       {items.length === 0 && !loading ? (
         <div
           className={cn(
-            "px-5 py-8 text-center text-sm text-muted-foreground",
-            hasHeader && "border-t border-border/30",
+            'text-muted-foreground px-5 py-8 text-center text-sm',
+            hasHeader && 'border-border/30 border-t'
           )}
         >
           {emptyMessage}
@@ -66,16 +66,16 @@ export function ChildObjectList<T extends { id: string | number }>({
       ) : (
         <div
           className={cn(
-            "flex flex-col",
-            hasHeader && "border-t border-border/30",
+            'flex flex-col',
+            hasHeader && 'border-border/30 border-t'
           )}
         >
           {items.map((item, i) => (
             <div
               key={item.id}
               className={cn(
-                i > 0 && "border-t border-border/30",
-                "transition-colors even:bg-primary/[0.04]",
+                i > 0 && 'border-border/30 border-t',
+                'even:bg-primary/[0.04] transition-colors'
               )}
             >
               {renderItem(item)}
@@ -106,13 +106,13 @@ export function ChildObjectRow({
 }: ChildObjectRowProps) {
   return (
     <div
-      role={onClick ? "button" : undefined}
+      role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
       onKeyDown={
         onClick
           ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onClick();
               }
@@ -120,15 +120,15 @@ export function ChildObjectRow({
           : undefined
       }
       className={cn(
-        "flex items-center gap-3 px-5 py-3",
-        onClick && "cursor-pointer transition-colors hover:bg-primary/[0.06]",
-        className,
+        'flex items-center gap-3 px-5 py-3',
+        onClick && 'hover:bg-primary/[0.06] cursor-pointer transition-colors',
+        className
       )}
     >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{title}</p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="text-muted-foreground text-xs">{subtitle}</p>
         )}
       </div>
       {status && <div className="shrink-0">{status}</div>}

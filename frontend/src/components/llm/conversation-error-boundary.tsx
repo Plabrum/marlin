@@ -11,8 +11,8 @@
  * stale pointer was the root cause of the page crash, and recovering
  * inside the dock is the right UX.
  */
-import type { AxiosError } from "axios";
-import { Component, type ReactNode } from "react";
+import { Component, type ReactNode } from 'react';
+import type { AxiosError } from 'axios';
 
 type Props = {
   threadId: string | null;
@@ -36,7 +36,7 @@ function isThreadMessages404(err: unknown): boolean {
   const ax = err as Partial<AxiosError>;
   if (ax?.isAxiosError !== true) return false;
   if (ax.response?.status !== 404) return false;
-  const url = ax.config?.url ?? "";
+  const url = ax.config?.url ?? '';
   return /\/llm\/threads\/[^/]+\/messages(\?|$)/.test(url);
 }
 

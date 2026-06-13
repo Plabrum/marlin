@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { useParams } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
 import { KeyValueGrid } from "@/components/layout/key-value-grid";
+import { PageTopBar } from "@/components/layout/page-topbar";
 import { ObjectActions } from "@/components/object-detail/object-actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useClientsIdDetailHandlerSuspense } from "@/openapi/client/client";
 import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
+import { useClientsIdDetailHandlerSuspense } from "@/openapi/client/client";
 
 function ClientDetailContent() {
   const { clientId } = useParams({ from: "/_authenticated/clients/$clientId" });

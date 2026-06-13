@@ -1,16 +1,18 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
+import { useActionExecutor } from '@/hooks/actions/use-action-executor';
+import { useMediaUpload } from './use-media-upload';
+import type { ActionDTO } from '@/lib/actions/types';
 
-import { useActionExecutor } from "@/hooks/actions/use-action-executor";
-import type { ActionDTO } from "@/lib/actions/types";
-
-import { useMediaUpload } from "./use-media-upload";
-
-export type AttachSurveyMediaStatus = "idle" | "uploading" | "complete" | "error";
+export type AttachSurveyMediaStatus =
+  | 'idle'
+  | 'uploading'
+  | 'complete'
+  | 'error';
 
 export type UseAttachSurveyMediaReturn = {
   attachFiles: (
     files: File[],
-    options?: { nodeId?: string | null; caption?: string | null },
+    options?: { nodeId?: string | null; caption?: string | null }
   ) => Promise<void>;
   status: AttachSurveyMediaStatus;
   pendingCount: number;
@@ -19,19 +21,24 @@ export type UseAttachSurveyMediaReturn = {
   reset: () => void;
 };
 
-const ATTACH: ActionDTO = { action: "survey_media_actions__attach", label: "Attach media" };
+const ATTACH: ActionDTO = {
+  action: 'survey_media_actions__attach',
+  label: 'Attach media',
+};
 
-export function useAttachSurveyMedia(surveyId: string): UseAttachSurveyMediaReturn {
+export function useAttachSurveyMedia(
+  surveyId: string
+): UseAttachSurveyMediaReturn {
   const { uploadFile, reset: resetUpload } = useMediaUpload();
-  const executor = useActionExecutor({ actionGroup: "survey_media_actions" });
-  const [status, setStatus] = useState<AttachSurveyMediaStatus>("idle");
+  const executor = useActionExecutor({ actionGroup: 'survey_media_actions' });
+  const [status, setStatus] = useState<AttachSurveyMediaStatus>('idle');
   const [pendingCount, setPendingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const reset = useCallback(() => {
     resetUpload();
-    setStatus("idle");
+    setStatus('idle');
     setPendingCount(0);
     setCompletedCount(0);
     setError(null);
@@ -40,12 +47,12 @@ export function useAttachSurveyMedia(surveyId: string): UseAttachSurveyMediaRetu
   const attachFiles = useCallback(
     async (
       files: File[],
-      options?: { nodeId?: string | null; caption?: string | null },
+      options?: { nodeId?: string | null; caption?: string | null }
     ) => {
       if (files.length === 0) return;
       const { nodeId = null, caption = null } = options ?? {};
 
-      setStatus("uploading");
+      setStatus('uploading');
       setPendingCount(files.length);
       setCompletedCount(0);
       setError(null);
@@ -68,18 +75,19 @@ export function useAttachSurveyMedia(surveyId: string): UseAttachSurveyMediaRetu
                 sort_order: 0,
               },
             } as never,
-            { silent: true },
+            { silent: true }
           );
           setCompletedCount((n) => n + 1);
         }
-        setStatus("complete");
+        setStatus('complete');
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to attach media";
-        setStatus("error");
+        const message =
+          err instanceof Error ? err.message : 'Failed to attach media';
+        setStatus('error');
         setError(message);
       }
     },
-    [surveyId, uploadFile, executor],
+    [surveyId, uploadFile, executor]
   );
 
   return { attachFiles, status, pendingCount, completedCount, error, reset };

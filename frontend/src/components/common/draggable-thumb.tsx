@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 export function DraggableThumb({
   src,
@@ -16,15 +16,15 @@ export function DraggableThumb({
   return (
     <img
       src={src}
-      alt={alt ?? ""}
+      alt={alt ?? ''}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData(dragMimeType, dragPayload);
-        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.effectAllowed = 'move';
       }}
       className={cn(
-        "aspect-square cursor-grab rounded border object-cover active:cursor-grabbing",
-        className,
+        'aspect-square cursor-grab rounded border object-cover active:cursor-grabbing',
+        className
       )}
     />
   );

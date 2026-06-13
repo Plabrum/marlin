@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface MagicLinkSuccessProps {
   email: string;
@@ -13,11 +13,11 @@ export function MagicLinkSuccess({ email, onTryAgain }: MagicLinkSuccessProps) {
       </div>
       <p className="t-kicker">Magic link sent</p>
       <div>
-        <p className="font-display mb-2 text-[22px] font-normal text-foreground">
+        <p className="font-display text-foreground mb-2 text-[22px] font-normal">
           Check your inbox
         </p>
-        <p className="font-serif text-[15px] leading-relaxed text-muted-foreground">
-          We sent a magic link to{" "}
+        <p className="text-muted-foreground font-serif text-[15px] leading-relaxed">
+          We sent a magic link to{' '}
           <strong className="text-foreground">{email}</strong>. Click it to sign
           in securely.
         </p>

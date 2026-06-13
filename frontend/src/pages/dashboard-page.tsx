@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { PageTopBar } from "@/components/layout/page-topbar";
 import { DashboardRenderer } from "@/components/dashboard/dashboard-renderer";
+import { PageTopBar } from "@/components/layout/page-topbar";
 import { useGetDashboardSuspense } from "@/openapi/dashboard/dashboard";
 
 function DashboardContent() {

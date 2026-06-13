@@ -1,20 +1,23 @@
-import { Suspense, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { ResourceTable } from "@/components/resource-table/resource-table";
-import { TopLevelActions } from "@/components/object-list/top-level-actions";
-import { ResourceKanban } from "@/components/kanban/resource-kanban";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useResourceTable } from "@/hooks/use-resource-table";
-import { useListSurvey } from "@/openapi/survey/survey";
-import { surveyColumnDefs } from "@/openapi/survey/columns.gen";
+import { Suspense, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { ResourceKanban } from '@/components/kanban/resource-kanban';
+import { PageTopBar } from '@/components/layout/page-topbar';
+import { TopLevelActions } from '@/components/object-list/top-level-actions';
+import { ResourceTable } from '@/components/resource-table/resource-table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useResourceTable } from '@/hooks/use-resource-table';
+import { surveyColumnDefs } from '@/openapi/survey/columns.gen';
+import { useListSurvey } from '@/openapi/survey/survey';
 
-type View = "table" | "kanban";
+type View = 'table' | 'kanban';
 
 export function SurveysListPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState<View>("table");
-  const { tableProps } = useResourceTable({ listQuery: useListSurvey, columns: surveyColumnDefs });
+  const [view, setView] = useState<View>('table');
+  const { tableProps } = useResourceTable({
+    listQuery: useListSurvey,
+    columns: surveyColumnDefs,
+  });
 
   return (
     <PageTopBar
@@ -34,15 +37,23 @@ export function SurveysListPage() {
       }
     >
       <div className="h-full p-6">
-        {view === "table" ? (
+        {view === 'table' ? (
           <ResourceTable
             {...tableProps}
             columns={surveyColumnDefs}
-            onRowClick={(row) => navigate({ to: "/surveys/$surveyId", params: { surveyId: String(row.id) } })}
+            onRowClick={(row) =>
+              navigate({
+                to: '/surveys/$surveyId',
+                params: { surveyId: String(row.id) },
+              })
+            }
           />
         ) : (
           <Suspense>
-            <ResourceKanban resource="surveys" cardColumns={["vessel", "surveyor", "state"]} />
+            <ResourceKanban
+              resource="surveys"
+              cardColumns={['vessel', 'surveyor', 'state']}
+            />
           </Suspense>
         )}
       </div>

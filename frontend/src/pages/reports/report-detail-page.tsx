@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { useParams } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
 import { KeyValueGrid } from "@/components/layout/key-value-grid";
+import { PageTopBar } from "@/components/layout/page-topbar";
 import { ObjectActions } from "@/components/object-detail/object-actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useReportsIdDetailHandlerSuspense } from "@/openapi/report/report";
-import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
 import { formatCents } from "@/lib/format";
+import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
+import { useReportsIdDetailHandlerSuspense } from "@/openapi/report/report";
 
 function ReportDetailContent() {
   const { reportId } = useParams({ from: "/_authenticated/reports/$reportId" });

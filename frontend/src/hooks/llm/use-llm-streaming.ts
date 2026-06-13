@@ -20,28 +20,26 @@
  * materialized list re-renders. Also invalidate the thread-list so the
  * history dropdown reflects the new `last_message_at`.
  */
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
-import { getErrorMessage } from "@/lib/error-handler";
-import { useThreadableFromRoute } from "@/lib/llm/threadable";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/error-handler';
+import { useThreadableFromRoute } from '@/lib/llm/threadable';
 import {
   getLlmThreadsListThreadsHandlerQueryKey,
   getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey,
   llmThreadsThreadIdMessagesGetThreadMessagesHandler,
-} from "@/openapi/llm/llm";
-import type { LlmSchemasMessageSchema as MessageSchema } from "@/openapi/litestarAPI.schemas";
-
+} from '@/openapi/llm/llm';
+import type { LlmSchemasMessageSchema as MessageSchema } from '@/openapi/litestarAPI.schemas';
 
 export type LlmStreamingStatus =
-  | "idle"
-  | "streaming"
-  | "tool_running"
-  | "rate_limited"
-  | "error";
+  | 'idle'
+  | 'streaming'
+  | 'tool_running'
+  | 'rate_limited'
+  | 'error';
 
-export type ToolPillStatus = "running" | "ok" | "error";
+export type ToolPillStatus = 'running' | 'ok' | 'error';
 
 export type ToolPill = {
   id: string;
@@ -68,25 +66,25 @@ export type SendResult = {
   message: MessageSchema;
 };
 
-type StreamTokenEvent = { event: "token"; delta: string };
+type StreamTokenEvent = { event: 'token'; delta: string };
 type StreamToolCallEvent = {
-  event: "tool_call";
+  event: 'tool_call';
   id: string;
   name: string;
   input: Record<string, unknown>;
 };
 type StreamToolResultEvent = {
-  event: "tool_result";
+  event: 'tool_result';
   tool_use_id: string;
   is_error: boolean;
 };
 type StreamMessageCompleteEvent = {
-  event: "message_complete";
+  event: 'message_complete';
   message: MessageSchema;
   invalidate_queries?: string[];
 };
 type StreamErrorEvent = {
-  event: "error";
+  event: 'error';
   code: string;
   message: string;
 };
@@ -98,7 +96,7 @@ type StreamEvent =
   | StreamMessageCompleteEvent
   | StreamErrorEvent;
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "/api") as string;
+const API_BASE = (import.meta.env.VITE_API_URL ?? '/api') as string;
 
 /**
  * After a CREATE-thread stream closes, poll the messages endpoint until
@@ -107,7 +105,7 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? "/api") as string;
  */
 async function pollForThreadMessages(
   queryClient: ReturnType<typeof useQueryClient>,
-  threadId: string,
+  threadId: string
 ): Promise<void> {
   const queryKey =
     getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey(threadId);
@@ -119,7 +117,11 @@ async function pollForThreadMessages(
       await queryClient.fetchQuery({
         queryKey,
         queryFn: ({ signal }) =>
-          llmThreadsThreadIdMessagesGetThreadMessagesHandler(threadId, undefined, signal),
+          llmThreadsThreadIdMessagesGetThreadMessagesHandler(
+            threadId,
+            undefined,
+            signal
+          ),
         staleTime: 0,
       });
       return;
@@ -132,7 +134,7 @@ async function pollForThreadMessages(
 }
 
 function nextLocalId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();
   }
   return `llm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -144,34 +146,34 @@ function parseFrames(buffer: string): {
 } {
   // SSE frames separated by blank line. Normalize line endings then
   // split — Litestar emits `\r\n\r\n` between frames.
-  const normalized = buffer.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+  const normalized = buffer.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   const events: StreamEvent[] = [];
   let cursor = 0;
   while (true) {
-    const sep = normalized.indexOf("\n\n", cursor);
+    const sep = normalized.indexOf('\n\n', cursor);
     if (sep === -1) break;
     const frame = normalized.slice(cursor, sep);
     cursor = sep + 2;
 
     let event: string | null = null;
     const dataLines: string[] = [];
-    for (const line of frame.split("\n")) {
-      if (!line || line.startsWith(":")) continue;
-      if (line.startsWith("event:")) {
+    for (const line of frame.split('\n')) {
+      if (!line || line.startsWith(':')) continue;
+      if (line.startsWith('event:')) {
         event = line.slice(6).trim();
-      } else if (line.startsWith("data:")) {
+      } else if (line.startsWith('data:')) {
         const v = line.slice(5);
-        dataLines.push(v.startsWith(" ") ? v.slice(1) : v);
+        dataLines.push(v.startsWith(' ') ? v.slice(1) : v);
       }
     }
     if (event == null || dataLines.length === 0) continue;
     let parsed: unknown;
     try {
-      parsed = JSON.parse(dataLines.join("\n"));
+      parsed = JSON.parse(dataLines.join('\n'));
     } catch {
       continue;
     }
-    if (parsed && typeof parsed === "object") {
+    if (parsed && typeof parsed === 'object') {
       events.push({ ...(parsed as object), event } as StreamEvent);
     }
   }
@@ -188,12 +190,12 @@ export type UseLlmStreamingApi = {
 
 export function useLlmStreaming(
   threadId: string | null,
-  onThreadCreated?: (id: string) => void,
+  onThreadCreated?: (id: string) => void
 ): UseLlmStreamingApi {
   const queryClient = useQueryClient();
   const [inProgressMessage, setInProgressMessage] =
     useState<InProgressMessage | null>(null);
-  const [status, setStatus] = useState<LlmStreamingStatus>("idle");
+  const [status, setStatus] = useState<LlmStreamingStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const threadIdRef = useRef(threadId);
@@ -219,9 +221,9 @@ export function useLlmStreaming(
   const send = useCallback(
     async (
       content: string,
-      opts: SendOpts = {},
+      opts: SendOpts = {}
     ): Promise<SendResult | null> => {
-      if (status === "streaming" || status === "tool_running") {
+      if (status === 'streaming' || status === 'tool_running') {
         return null;
       }
 
@@ -229,8 +231,8 @@ export function useLlmStreaming(
       abortRef.current = ctrl;
 
       const localId = nextLocalId();
-      setInProgressMessage({ id: localId, content: "", toolPills: [] });
-      setStatus("streaming");
+      setInProgressMessage({ id: localId, content: '', toolPills: [] });
+      setStatus('streaming');
       setError(null);
 
       const isCreate = threadIdRef.current == null;
@@ -239,7 +241,7 @@ export function useLlmStreaming(
         : `${API_BASE}/llm/threads/${threadIdRef.current}/messages/stream`;
 
       const currentPage =
-        typeof window !== "undefined" ? window.location.pathname : null;
+        typeof window !== 'undefined' ? window.location.pathname : null;
       const body: Record<string, unknown> = {
         content,
         timezone:
@@ -261,11 +263,11 @@ export function useLlmStreaming(
 
       try {
         const response = await fetch(url, {
-          method: "POST",
-          credentials: "include",
+          method: 'POST',
+          credentials: 'include',
           headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
           },
           body: JSON.stringify(body),
           signal: ctrl.signal,
@@ -276,10 +278,10 @@ export function useLlmStreaming(
           if (response.status === 429) {
             toastMessage =
               "You've hit your rate limit. Try again in a few minutes.";
-            setStatus("rate_limited");
+            setStatus('rate_limited');
           } else {
-            toastMessage = "Something went wrong — please try again.";
-            setStatus("error");
+            toastMessage = 'Something went wrong — please try again.';
+            setStatus('error');
           }
           setError(toastMessage);
           toast.error(toastMessage);
@@ -293,10 +295,10 @@ export function useLlmStreaming(
 
         const reader = response.body?.getReader();
         if (!reader) {
-          throw new Error("Streaming response has no body");
+          throw new Error('Streaming response has no body');
         }
-        const decoder = new TextDecoder("utf-8");
-        let buffer = "";
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
 
         while (true) {
           const { done, value } = await reader.read();
@@ -305,12 +307,12 @@ export function useLlmStreaming(
           const { events, remainder } = parseFrames(buffer);
           buffer = remainder;
           for (const event of events) {
-            if (event.event === "token") {
+            if (event.event === 'token') {
               setInProgressMessage((prev) =>
-                prev ? { ...prev, content: prev.content + event.delta } : prev,
+                prev ? { ...prev, content: prev.content + event.delta } : prev
               );
-            } else if (event.event === "tool_call") {
-              setStatus("tool_running");
+            } else if (event.event === 'tool_call') {
+              setStatus('tool_running');
               setInProgressMessage((prev) =>
                 prev
                   ? {
@@ -321,28 +323,28 @@ export function useLlmStreaming(
                           id: event.id,
                           name: event.name,
                           input: event.input,
-                          status: "running",
+                          status: 'running',
                         },
                       ],
                     }
-                  : prev,
+                  : prev
               );
-            } else if (event.event === "tool_result") {
+            } else if (event.event === 'tool_result') {
               setInProgressMessage((prev) => {
                 if (!prev) return prev;
                 const idx = prev.toolPills.findIndex(
-                  (p) => p.id === event.tool_use_id,
+                  (p) => p.id === event.tool_use_id
                 );
                 if (idx === -1) return prev;
                 const next = prev.toolPills.slice();
                 next[idx] = {
                   ...next[idx],
-                  status: event.is_error ? "error" : "ok",
+                  status: event.is_error ? 'error' : 'ok',
                 };
                 return { ...prev, toolPills: next };
               });
-              setStatus("streaming");
-            } else if (event.event === "message_complete") {
+              setStatus('streaming');
+            } else if (event.event === 'message_complete') {
               result = {
                 threadId: event.message.thread_id,
                 message: event.message,
@@ -351,7 +353,7 @@ export function useLlmStreaming(
                 await queryClient.invalidateQueries({
                   queryKey:
                     getLlmThreadsThreadIdMessagesGetThreadMessagesHandlerQueryKey(
-                      event.message.thread_id,
+                      event.message.thread_id
                     ),
                 });
               }
@@ -361,20 +363,20 @@ export function useLlmStreaming(
               for (const key of event.invalidate_queries ?? []) {
                 await queryClient.invalidateQueries({ queryKey: [key] });
               }
-            } else if (event.event === "error") {
+            } else if (event.event === 'error') {
               sawError = true;
               setError(event.message);
               setStatus(
-                event.code === "rate_limited" ? "rate_limited" : "error",
+                event.code === 'rate_limited' ? 'rate_limited' : 'error'
               );
               toast.error(event.message);
             }
           }
         }
         if (buffer.trim().length > 0) {
-          const { events } = parseFrames(buffer + "\n\n");
+          const { events } = parseFrames(buffer + '\n\n');
           for (const event of events) {
-            if (event.event === "message_complete") {
+            if (event.event === 'message_complete') {
               result = {
                 threadId: event.message.thread_id,
                 message: event.message,
@@ -383,14 +385,14 @@ export function useLlmStreaming(
           }
         }
       } catch (err) {
-        if ((err as { name?: string })?.name === "AbortError") {
-          setStatus("idle");
+        if ((err as { name?: string })?.name === 'AbortError') {
+          setStatus('idle');
           setInProgressMessage(null);
           return null;
         }
         const message = getErrorMessage(err);
         setError(message);
-        setStatus("error");
+        setStatus('error');
         toast.error(message);
         return null;
       } finally {
@@ -403,14 +405,14 @@ export function useLlmStreaming(
           onThreadCreatedRef.current?.(result.threadId);
         }
         setInProgressMessage(null);
-        setStatus("idle");
+        setStatus('idle');
       } else if (!result && !sawError) {
         setInProgressMessage(null);
-        setStatus("idle");
+        setStatus('idle');
       }
       return result;
     },
-    [queryClient, status],
+    [queryClient, status]
   );
 
   return { inProgressMessage, status, error, send, cancel };

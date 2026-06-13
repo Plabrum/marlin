@@ -1,7 +1,7 @@
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export type StepStatus = "completed" | "current" | "upcoming";
+export type StepStatus = 'completed' | 'current' | 'upcoming';
 
 export interface StatusProgressStep {
   label: string;
@@ -17,33 +17,30 @@ const stepStyles: Record<
   { circle: string; check: boolean; label: string }
 > = {
   completed: {
-    circle: "bg-[#A7D5B8] border-2 border-[#7A9E87]",
+    circle: 'bg-[#A7D5B8] border-2 border-[#7A9E87]',
     check: true,
-    label: "text-[#7A9E87]",
+    label: 'text-[#7A9E87]',
   },
   current: {
-    circle: "bg-[#F4B183] border-2 border-[#C4714A]",
+    circle: 'bg-[#F4B183] border-2 border-[#C4714A]',
     check: false,
-    label: "text-[#C4714A]",
+    label: 'text-[#C4714A]',
   },
   upcoming: {
-    circle: "bg-transparent border-2 border-[#6D6C6A]",
+    circle: 'bg-transparent border-2 border-[#6D6C6A]',
     check: false,
-    label: "text-[#6D6C6A]",
+    label: 'text-[#6D6C6A]',
   },
 };
 
-function getLineColor(
-  leftStatus: StepStatus,
-  rightStatus: StepStatus,
-): string {
-  if (leftStatus === "completed" && rightStatus === "completed") {
-    return "bg-[#A7D5B8]";
+function getLineColor(leftStatus: StepStatus, rightStatus: StepStatus): string {
+  if (leftStatus === 'completed' && rightStatus === 'completed') {
+    return 'bg-[#A7D5B8]';
   }
-  if (leftStatus === "completed" && rightStatus === "current") {
-    return "bg-[#F4B183]";
+  if (leftStatus === 'completed' && rightStatus === 'current') {
+    return 'bg-[#F4B183]';
   }
-  return "bg-[#E5E4E1]";
+  return 'bg-[#E5E4E1]';
 }
 
 export function StatusProgress({ steps }: StatusProgressProps) {
@@ -58,8 +55,8 @@ export function StatusProgress({ steps }: StatusProgressProps) {
             <div className="flex flex-1 flex-col items-center gap-1">
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full",
-                  style.circle,
+                  'flex h-6 w-6 items-center justify-center rounded-full',
+                  style.circle
                 )}
               >
                 {style.check && (
@@ -68,8 +65,8 @@ export function StatusProgress({ steps }: StatusProgressProps) {
               </div>
               <span
                 className={cn(
-                  "whitespace-nowrap font-sans text-[11px] font-semibold",
-                  style.label,
+                  'font-sans text-[11px] font-semibold whitespace-nowrap',
+                  style.label
                 )}
               >
                 {step.label}
@@ -79,8 +76,8 @@ export function StatusProgress({ steps }: StatusProgressProps) {
             {!isLast && (
               <div
                 className={cn(
-                  "h-0.5 flex-1",
-                  getLineColor(step.status, steps[i + 1].status),
+                  'h-0.5 flex-1',
+                  getLineColor(step.status, steps[i + 1].status)
                 )}
               />
             )}

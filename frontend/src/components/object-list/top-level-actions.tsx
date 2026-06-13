@@ -1,7 +1,7 @@
-import { Suspense } from "react";
-import { ObjectActions } from "@/components/object-detail/object-actions";
-import { useActionsActionGroupListActionsSuspense } from "@/openapi/actions/actions";
-import type { ActionDTO, ActionGroupType } from "@/lib/actions/types";
+import { Suspense } from 'react';
+import { ObjectActions } from '@/components/object-detail/object-actions';
+import { useActionsActionGroupListActionsSuspense } from '@/openapi/actions/actions';
+import type { ActionDTO, ActionGroupType } from '@/lib/actions/types';
 
 interface TopLevelActionsProps {
   actionGroup: ActionGroupType;

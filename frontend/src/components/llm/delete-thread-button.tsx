@@ -8,12 +8,11 @@
  * updates, and calls `onDeleted` so the parent can navigate away if the
  * deleted conversation was the active one.
  */
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -21,13 +20,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import { getErrorMessage } from "@/lib/error-handler";
+} from '@/components/ui/dialog';
+import { getErrorMessage } from '@/lib/error-handler';
+import { cn } from '@/lib/utils';
 import {
   getLlmThreadsListThreadsHandlerQueryKey,
   useLlmThreadsThreadIdDeleteThreadHandler,
-} from "@/openapi/llm/llm";
+} from '@/openapi/llm/llm';
 
 interface DeleteThreadButtonProps {
   threadId: string;
@@ -60,7 +59,7 @@ export function DeleteThreadButton({
         queryClient.invalidateQueries({
           queryKey: getLlmThreadsListThreadsHandlerQueryKey().slice(0, 1),
         });
-        toast.success("Conversation deleted");
+        toast.success('Conversation deleted');
         setOpen(false);
         onDeleted?.(threadId);
       },
@@ -81,11 +80,11 @@ export function DeleteThreadButton({
         aria-label="Delete conversation"
         title="Delete conversation"
         className={cn(
-          "shrink-0 p-1 rounded text-muted-foreground hover:text-destructive transition-colors",
-          className,
+          'text-muted-foreground hover:text-destructive shrink-0 rounded p-1 transition-colors',
+          className
         )}
       >
-        <Trash2 className="w-3 h-3" />
+        <Trash2 className="h-3 w-3" />
       </button>
       <Dialog
         open={open}
@@ -111,9 +110,9 @@ export function DeleteThreadButton({
             <Button
               onClick={() => deleteMutation.mutate({ threadId })}
               disabled={deleteMutation.isPending}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

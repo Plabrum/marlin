@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface MagicLinkFormProps {
   email: string;
@@ -29,7 +29,7 @@ export function MagicLinkForm({
         />
       </div>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Sending…" : "Send magic link"}
+        {isSubmitting ? 'Sending…' : 'Send magic link'}
       </Button>
     </form>
   );

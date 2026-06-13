@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/error-handler";
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/error-handler';
 import {
   useActionsActionGroupExecuteAction,
   useActionsActionGroupObjectIdExecuteObjectAction,
-} from "@/openapi/actions/actions";
-import { executeActionApi } from "./action-executor/execute-action-api";
-import { handleActionResult } from "./action-executor/handle-action-result";
-import { handleQueryInvalidation } from "./action-executor/handle-query-invalidation";
-import { preclaimClipboardFromActionResponse } from "./action-executor/preclaim-clipboard";
+} from '@/openapi/actions/actions';
+import { executeActionApi } from './action-executor/execute-action-api';
+import { handleActionResult } from './action-executor/handle-action-result';
+import { handleQueryInvalidation } from './action-executor/handle-query-invalidation';
+import { preclaimClipboardFromActionResponse } from './action-executor/preclaim-clipboard';
+import type { ActionBodyUnion } from '@/lib/actions/registry';
 import type {
   ActionDTO,
   ActionExecutionResponse,
   ActionGroupType,
-} from "@/lib/actions/types";
-import type { ActionBodyUnion } from "@/lib/actions/registry";
+} from '@/lib/actions/types';
 
 export type ActionExecutorState = {
   isExecuting: boolean;
@@ -43,7 +43,7 @@ export type ActionExecutorOptions = {
   renderActionForm?: ActionFormRenderer;
   onInvalidate?: (
     queryClient: ReturnType<typeof useQueryClient>,
-    backendQueryKeys: string[],
+    backendQueryKeys: string[]
   ) => void;
   /** Context values merged into every action body (e.g. { survey_id: "..." }). */
   formContext?: Record<string, unknown>;
@@ -61,7 +61,8 @@ export function useActionExecutor({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const executeGroupActionMutation = useActionsActionGroupExecuteAction();
-  const executeObjectActionMutation = useActionsActionGroupObjectIdExecuteObjectAction();
+  const executeObjectActionMutation =
+    useActionsActionGroupObjectIdExecuteObjectAction();
   const [state, setState] = useState<ActionExecutorState>({
     isExecuting: false,
     pendingAction: null,
@@ -80,7 +81,7 @@ export function useActionExecutor({
   async function executeAction(
     action: ActionDTO,
     actionBody?: ActionBodyUnion,
-    opts?: { silent?: boolean; objectId?: string },
+    opts?: { silent?: boolean; objectId?: string }
   ) {
     const silent = opts?.silent ?? false;
     if (!silent) {
@@ -91,7 +92,8 @@ export function useActionExecutor({
       let finalBody = actionBody;
       if (formContext) {
         const existingData = finalBody
-          ? (finalBody as { action: string; data: Record<string, unknown> }).data
+          ? (finalBody as { action: string; data: Record<string, unknown> })
+              .data
           : {};
         finalBody = {
           action: finalBody
@@ -119,13 +121,13 @@ export function useActionExecutor({
       if (!silent) {
         const resultHasOwnToast =
           response.action_result != null &&
-          "type" in response.action_result &&
-          response.action_result.type === "copy_to_clipboard" &&
+          'type' in response.action_result &&
+          response.action_result.type === 'copy_to_clipboard' &&
           response.action_result.toast != null;
 
         if (!resultHasOwnToast) {
           toast.success(
-            response.message || `${action.label} completed successfully`,
+            response.message || `${action.label} completed successfully`
           );
         }
       }
@@ -149,7 +151,7 @@ export function useActionExecutor({
     } catch (err) {
       const errorMessage = getErrorMessage(
         err,
-        `Failed to execute ${action.label}`,
+        `Failed to execute ${action.label}`
       );
 
       if (!silent) {
@@ -203,7 +205,7 @@ export function useActionExecutor({
     }
 
     executeAction(action).catch((err) => {
-      console.error("Action execution failed:", err);
+      console.error('Action execution failed:', err);
     });
   }
 

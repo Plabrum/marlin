@@ -1,24 +1,27 @@
-import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProgressBarProps {
   value: number;
   max: number;
   label?: string;
   valueLabel?: string;
-  variant?: "default" | "success" | "warning" | "danger";
-  size?: "sm" | "md";
+  variant?: 'default' | 'success' | 'warning' | 'danger';
+  size?: 'sm' | 'md';
   className?: string;
 }
 
 const FILL_COLORS = {
-  success: "#A7D5B8",
-  warning: "#F4B183",
-  danger: "#E88B8B",
+  success: '#A7D5B8',
+  warning: '#F4B183',
+  danger: '#E88B8B',
 } as const;
 
-function resolveFillColor(variant: ProgressBarProps["variant"], ratio: number): string {
-  if (variant && variant !== "default") return FILL_COLORS[variant];
+function resolveFillColor(
+  variant: ProgressBarProps['variant'],
+  ratio: number
+): string {
+  if (variant && variant !== 'default') return FILL_COLORS[variant];
   if (ratio >= 0.75) return FILL_COLORS.success;
   if (ratio >= 0.5) return FILL_COLORS.warning;
   return FILL_COLORS.danger;
@@ -29,8 +32,8 @@ export function ProgressBar({
   max,
   label,
   valueLabel,
-  variant = "default",
-  size = "md",
+  variant = 'default',
+  size = 'md',
   className,
 }: ProgressBarProps) {
   const ratio = max > 0 ? Math.min(value / max, 1) : 0;
@@ -38,17 +41,17 @@ export function ProgressBar({
   const fillColor = resolveFillColor(variant, ratio);
 
   return (
-    <div className={cn("flex flex-col gap-1", className)}>
+    <div className={cn('flex flex-col gap-1', className)}>
       {(label || valueLabel) && (
         <div className="flex items-center justify-between">
           {label && (
-            <span className="font-display text-[13px] font-semibold text-foreground">
+            <span className="font-display text-foreground text-[13px] font-semibold">
               {label}
             </span>
           )}
           <div className="flex items-center gap-1.5">
             {valueLabel && (
-              <span className="text-[13px] font-medium text-muted-foreground">
+              <span className="text-muted-foreground text-[13px] font-medium">
                 {valueLabel}
               </span>
             )}
@@ -60,8 +63,8 @@ export function ProgressBar({
       )}
       <div
         className={cn(
-          "w-full rounded-full bg-[#EDECEA]",
-          size === "sm" ? "h-1" : "h-2",
+          'w-full rounded-full bg-[#EDECEA]',
+          size === 'sm' ? 'h-1' : 'h-2'
         )}
       >
         <div

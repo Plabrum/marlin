@@ -1,38 +1,37 @@
-import { useRef } from "react";
-
-import { Button } from "@/components/ui/button";
-import { useAttachSurveyMedia } from "@/hooks/use-attach-survey-media";
+import { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { useAttachSurveyMedia } from '@/hooks/use-attach-survey-media';
 
 type Props = {
   surveyId: string;
   nodeId?: string | null;
   /** Camera mode: capture="environment" for rear camera, undefined for library. */
-  mode?: "camera" | "library";
+  mode?: 'camera' | 'library';
   label?: string;
-  size?: "sm" | "xs";
+  size?: 'sm' | 'xs';
 };
 
 export function CapturePhotoButton({
   surveyId,
   nodeId = null,
-  mode = "library",
+  mode = 'library',
   label,
-  size = "sm",
+  size = 'sm',
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { attachFiles, status } = useAttachSurveyMedia(surveyId);
-  const pending = status === "uploading";
+  const pending = status === 'uploading';
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     try {
       await attachFiles(Array.from(files), { nodeId });
     } finally {
-      if (inputRef.current) inputRef.current.value = "";
+      if (inputRef.current) inputRef.current.value = '';
     }
   }
 
-  const displayLabel = label ?? (mode === "camera" ? "📷 Camera" : "🖼️ Upload");
+  const displayLabel = label ?? (mode === 'camera' ? '📷 Camera' : '🖼️ Upload');
 
   return (
     <>
@@ -40,8 +39,8 @@ export function CapturePhotoButton({
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture={mode === "camera" ? "environment" : undefined}
-        multiple={mode === "library"}
+        capture={mode === 'camera' ? 'environment' : undefined}
+        multiple={mode === 'library'}
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />
@@ -50,10 +49,12 @@ export function CapturePhotoButton({
         size="sm"
         variant="ghost"
         disabled={pending}
-        className={size === "xs" ? "h-6 px-2 text-xs text-muted-foreground" : "text-xs"}
+        className={
+          size === 'xs' ? 'text-muted-foreground h-6 px-2 text-xs' : 'text-xs'
+        }
         onClick={() => inputRef.current?.click()}
       >
-        {pending ? "Uploading…" : displayLabel}
+        {pending ? 'Uploading…' : displayLabel}
       </Button>
     </>
   );

@@ -1,6 +1,9 @@
-import { useMemo } from "react";
-import type { SurveyFormNodeRef, SectionCompletion } from "@/openapi/litestarAPI.schemas";
-import { type Tree } from "./field";
+import { useMemo } from 'react';
+import { type Tree } from './field';
+import type {
+  SurveyFormNodeRef,
+  SectionCompletion,
+} from '@/openapi/litestarAPI.schemas';
 
 function buildTree(nodes: SurveyFormNodeRef[]): Tree[] {
   const byId = new Map<string, Tree>();
@@ -33,11 +36,11 @@ export type SurveyTree = {
 
 export function useSurveyTree(
   nodes: SurveyFormNodeRef[],
-  sectionCompletion: SectionCompletion[],
+  sectionCompletion: SectionCompletion[]
 ): SurveyTree {
   return useMemo(() => {
     const tree = buildTree(nodes);
-    const sections = tree.filter((n) => n.kind === "section");
+    const sections = tree.filter((n) => n.kind === 'section');
     const completion = new Map(sectionCompletion.map((c) => [c.section_id, c]));
 
     const findings: SurveyFormNodeRef[] = [];
@@ -59,7 +62,7 @@ export function useSurveyTree(
         if (cached) return cached;
         const node = byId.get(cur);
         if (!node) return undefined;
-        if (node.kind === "section") return node.id;
+        if (node.kind === 'section') return node.id;
         cur = node.parent_id ?? null;
       }
       return undefined;
@@ -69,6 +72,13 @@ export function useSurveyTree(
       if (sid) sectionAncestor.set(n.id, sid);
     }
 
-    return { tree, sections, completion, findings, findingsByParent, sectionAncestor };
+    return {
+      tree,
+      sections,
+      completion,
+      findings,
+      findingsByParent,
+      sectionAncestor,
+    };
   }, [nodes, sectionCompletion]);
 }

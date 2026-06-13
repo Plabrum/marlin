@@ -1,17 +1,17 @@
-import { Suspense, type ComponentType } from "react";
+import { Suspense, type ComponentType } from 'react';
+import { QueryBoundary } from '@/components/query-boundary';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { QueryBoundary } from "@/components/query-boundary";
-import { useListOnboardingSuspense } from "@/openapi/onboarding/onboarding";
-import { OnboardingState } from "@/openapi/litestarAPI.schemas";
-import { cn } from "@/lib/utils";
-import { InboxStep } from "./inbox-step";
-import { PricingStep } from "./pricing-step";
+} from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+import { OnboardingState } from '@/openapi/litestarAPI.schemas';
+import { useListOnboardingSuspense } from '@/openapi/onboarding/onboarding';
+import { InboxStep } from './inbox-step';
+import { PricingStep } from './pricing-step';
 
 type StepDef = {
   state: OnboardingState;
@@ -23,16 +23,16 @@ type StepDef = {
 const STEPS: StepDef[] = [
   {
     state: OnboardingState.inbox,
-    title: "Claim your inbox",
+    title: 'Claim your inbox',
     description:
-      "Pick a short name for your Sloopquest inbox. This is permanent and cannot be changed later.",
+      'Pick a short name for your Sloopquest inbox. This is permanent and cannot be changed later.',
     Body: InboxStep,
   },
   {
     state: OnboardingState.pricing,
-    title: "Set up your pricing",
+    title: 'Set up your pricing',
     description:
-      "Define one or more pricing tiers. Use length ranges for per-foot or size-based pricing, or stick with a single flat rate.",
+      'Define one or more pricing tiers. Use length ranges for per-foot or size-based pricing, or stick with a single flat rate.',
     Body: PricingStep,
   },
 ];
@@ -41,7 +41,8 @@ function OnboardingModalContent() {
   const { data: list } = useListOnboardingSuspense({ limit: 1 });
   const onboarding = list.items[0];
 
-  const open = onboarding != null && onboarding.state !== OnboardingState.completed;
+  const open =
+    onboarding != null && onboarding.state !== OnboardingState.completed;
   if (!open) {
     return null;
   }
@@ -73,7 +74,13 @@ function OnboardingModalContent() {
   );
 }
 
-function StepDots({ count, currentIdx }: { count: number; currentIdx: number }) {
+function StepDots({
+  count,
+  currentIdx,
+}: {
+  count: number;
+  currentIdx: number;
+}) {
   return (
     <div
       className="flex items-center justify-center gap-1.5"
@@ -86,8 +93,8 @@ function StepDots({ count, currentIdx }: { count: number; currentIdx: number }) 
         <span
           key={i}
           className={cn(
-            "h-1.5 w-1.5 rounded-full transition-colors",
-            i <= currentIdx ? "bg-primary" : "bg-muted",
+            'h-1.5 w-1.5 rounded-full transition-colors',
+            i <= currentIdx ? 'bg-primary' : 'bg-muted'
           )}
         />
       ))}

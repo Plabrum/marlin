@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { CalendarIcon } from "lucide-react";
-import { format, isSameDay, parse } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from 'react';
+import { format, isSameDay, parse } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import type { DateRange } from 'react-day-picker';
 
 // Values are wire-format `YYYY-MM-DD` strings (not Date objects) so they
 // round-trip through URL search params cleanly.
@@ -13,7 +17,10 @@ import { cn } from "@/lib/utils";
 export interface DateRangePickerProps {
   startDate: string | undefined;
   endDate: string | undefined;
-  onChange: (range: { startDate: string | undefined; endDate: string | undefined }) => void;
+  onChange: (range: {
+    startDate: string | undefined;
+    endDate: string | undefined;
+  }) => void;
   placeholder?: string;
   triggerClassName?: string;
   disabled?: boolean;
@@ -23,16 +30,21 @@ export interface DateRangePickerProps {
 
 function toDate(value: string | undefined): Date | undefined {
   if (!value) return undefined;
-  return parse(value, "yyyy-MM-dd", new Date());
+  return parse(value, 'yyyy-MM-dd', new Date());
 }
 
 function fromDate(value: Date | undefined): string | undefined {
   if (!value) return undefined;
-  return format(value, "yyyy-MM-dd");
+  return format(value, 'yyyy-MM-dd');
 }
 
-function displayLabel(start: string | undefined, end: string | undefined, placeholder: string): string {
-  const fmt = (s: string) => format(parse(s, "yyyy-MM-dd", new Date()), "MMM d, yyyy");
+function displayLabel(
+  start: string | undefined,
+  end: string | undefined,
+  placeholder: string
+): string {
+  const fmt = (s: string) =>
+    format(parse(s, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy');
   if (start && end) return `${fmt(start)} – ${fmt(end)}`;
   if (start) return `${fmt(start)} – …`;
   return placeholder;
@@ -42,7 +54,7 @@ export function DateRangePicker({
   startDate,
   endDate,
   onChange,
-  placeholder = "Pick a date range",
+  placeholder = 'Pick a date range',
   triggerClassName,
   disabled,
   open: openProp,
@@ -67,9 +79,9 @@ export function DateRangePicker({
           // surface, focus ring. Filter rows that mix this picker with a
           // FilterSelect read as one design family.
           className={cn(
-            "h-9 justify-start gap-2 bg-card font-normal",
-            !startDate && "text-muted-foreground",
-            triggerClassName,
+            'bg-card h-9 justify-start gap-2 font-normal',
+            !startDate && 'text-muted-foreground',
+            triggerClassName
           )}
         >
           <CalendarIcon className="size-4" />
@@ -104,11 +116,16 @@ function CalendarBody({
 }: {
   startDate: string | undefined;
   endDate: string | undefined;
-  onCommit: (startDate: string | undefined, endDate: string | undefined) => void;
+  onCommit: (
+    startDate: string | undefined,
+    endDate: string | undefined
+  ) => void;
   onClose: () => void;
 }) {
   const [draft, setDraft] = useState<DateRange | undefined>(() =>
-    startDate || endDate ? { from: toDate(startDate), to: toDate(endDate) } : undefined,
+    startDate || endDate
+      ? { from: toDate(startDate), to: toDate(endDate) }
+      : undefined
   );
   const [touched, setTouched] = useState(false);
 

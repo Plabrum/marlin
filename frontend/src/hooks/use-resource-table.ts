@@ -1,6 +1,14 @@
 import { useCallback, useMemo } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import {
+  getParam,
+  parseFiltersFromUrl,
+  parseSortsFromUrl,
+  prefixKey,
+  serializeFilter,
+  serializeSorts,
+} from "@/lib/url-filters";
 import type {
   ColumnDefinition,
   FilterDefinition,
@@ -11,14 +19,6 @@ import type {
   SortState,
 } from "@/lib/resource-table-types";
 import type { FilterColumnConfig } from "@/lib/url-filters";
-import {
-  getParam,
-  parseFiltersFromUrl,
-  parseSortsFromUrl,
-  prefixKey,
-  serializeFilter,
-  serializeSorts,
-} from "@/lib/url-filters";
 
 interface UseResourceTableOptions<T> {
   /** The Orval-generated query hook for this resource's list endpoint.

@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";

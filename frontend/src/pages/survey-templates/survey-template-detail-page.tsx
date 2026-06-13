@@ -1,17 +1,22 @@
-import { Suspense } from "react";
-import { useParams } from "@tanstack/react-router";
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { KeyValueGrid } from "@/components/layout/key-value-grid";
-import { ObjectActions } from "@/components/object-detail/object-actions";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useSurveyTemplatesIdDetailHandlerSuspense } from "@/openapi/survey-templates/survey-templates";
-import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
+import { Suspense } from 'react';
+import { useParams } from '@tanstack/react-router';
+import { KeyValueGrid } from '@/components/layout/key-value-grid';
+import { PageTopBar } from '@/components/layout/page-topbar';
+import { ObjectActions } from '@/components/object-detail/object-actions';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useActionsActionGroupObjectIdListObjectActions } from '@/openapi/actions/actions';
+import { useSurveyTemplatesIdDetailHandlerSuspense } from '@/openapi/survey-templates/survey-templates';
 
 function SurveyTemplateDetailContent() {
-  const { templateId } = useParams({ from: "/_authenticated/settings/templates/$templateId" });
+  const { templateId } = useParams({
+    from: '/_authenticated/settings/templates/$templateId',
+  });
   const { data } = useSurveyTemplatesIdDetailHandlerSuspense(templateId);
   const { data: actionsData, refetch: refetchActions } =
-    useActionsActionGroupObjectIdListObjectActions("survey_template_actions", templateId);
+    useActionsActionGroupObjectIdListObjectActions(
+      'survey_template_actions',
+      templateId
+    );
 
   return (
     <PageTopBar
@@ -27,8 +32,8 @@ function SurveyTemplateDetailContent() {
       <div className="p-6">
         <KeyValueGrid
           items={[
-            { label: "Name", value: data.name },
-            { label: "Tags", value: data.tags.join(", ") || "—" },
+            { label: 'Name', value: data.name },
+            { label: 'Tags', value: data.tags.join(', ') || '—' },
           ]}
         />
       </div>

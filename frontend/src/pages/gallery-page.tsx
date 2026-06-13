@@ -1,12 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { MetricAreaChart } from "@/components/data-display/metric-area-chart";
+import { MetricBarChart } from "@/components/data-display/metric-bar-chart";
+import { StatCards } from "@/components/data-display/stat-card";
+import { StatusBadge } from "@/components/status-badge";
+import { FieldCard } from "@/components/surveys/workspace/field";
+import { PhotosRail } from "@/components/surveys/workspace/photos-rail";
+import { RailSection } from "@/components/surveys/workspace/rail-section";
+import { VesselCard } from "@/components/surveys/workspace/vessel-card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,6 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from "@/components/ui/dropzone";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,6 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -30,25 +45,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Slider } from "@/components/ui/slider";
-import { StatusBadge } from "@/components/status-badge";
-import type { StatusVariant } from "@/lib/status-colors";
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "@/lib/theme";
-import { MetricBarChart } from "@/components/data-display/metric-bar-chart";
-import { MetricAreaChart } from "@/components/data-display/metric-area-chart";
-import { StatCards } from "@/components/data-display/stat-card";
-import { RailSection } from "@/components/surveys/workspace/rail-section";
-import { VesselCard } from "@/components/surveys/workspace/vessel-card";
-import { FieldCard } from "@/components/surveys/workspace/field";
-import { PhotosRail } from "@/components/surveys/workspace/photos-rail";
-import {
-  Dropzone,
-  DropzoneContent,
-  DropzoneEmptyState,
-} from "@/components/ui/dropzone";
 import {
   FormNodeKind,
   SurveyState,
@@ -56,6 +55,7 @@ import {
   type SurveyFormNodeRef,
   type SurveyMediaListItem,
 } from "@/openapi/litestarAPI.schemas";
+import type { StatusVariant } from "@/lib/status-colors";
 
 type Theme = "shad" | "glass" | "angular" | "almanac";
 type ColorMode = "light" | "dark" | "system";

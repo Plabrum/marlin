@@ -1,6 +1,6 @@
-import type { AuthUser } from "@/lib/auth-loader";
-import { useThreadConnection } from "./use-thread-connection";
-import { useThreadMessages } from "./use-thread-messages";
+import { useThreadConnection } from './use-thread-connection';
+import { useThreadMessages } from './use-thread-messages';
+import type { AuthUser } from '@/lib/auth-loader';
 
 interface UseThreadSyncOptions {
   threadableType: string;
@@ -41,7 +41,9 @@ export function useThreadSync({
     onMessageUpdate: refetchMessages,
   });
 
-  const typingUsers = viewers.filter((v) => v.is_typing && v.user_id !== currentUserId);
+  const typingUsers = viewers.filter(
+    (v) => v.is_typing && v.user_id !== currentUserId
+  );
   const activeViewers = viewers.filter((v) => v.user_id !== currentUserId);
 
   return {

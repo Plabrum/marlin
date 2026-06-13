@@ -1,27 +1,27 @@
-import { cn } from "@/lib/utils";
 import {
   getStatusConfig,
   statusVariantClasses,
   statusSolidClasses,
   statusDotClasses,
   type StatusVariant,
-} from "@/lib/status-colors";
+} from '@/lib/status-colors';
+import { cn } from '@/lib/utils';
 
 interface StatusBadgeProps {
   status: string;
-  size?: "sm" | "default";
+  size?: 'sm' | 'default';
   showDot?: boolean;
-  tone?: "subtle" | "solid";
+  tone?: 'subtle' | 'solid';
 }
 
 export function StatusBadge({
   status,
-  size = "default",
+  size = 'default',
   showDot = true,
-  tone = "subtle",
+  tone = 'subtle',
 }: StatusBadgeProps) {
   const config = getStatusConfig(status);
-  const isSolid = tone === "solid";
+  const isSolid = tone === 'solid';
 
   return (
     <span
@@ -29,22 +29,22 @@ export function StatusBadge({
       data-variant={config.variant}
       data-tone={tone}
       className={cn(
-        "inline-flex items-center rounded-md font-medium tracking-wide uppercase",
+        'inline-flex items-center rounded-md font-medium tracking-wide uppercase',
         isSolid
           ? statusSolidClasses[config.variant]
           : statusVariantClasses[config.variant],
-        size === "sm"
-          ? "gap-1.5 px-2 py-0.5 text-[11px] leading-none"
-          : "gap-2 px-3 py-1 text-xs",
+        size === 'sm'
+          ? 'gap-1.5 px-2 py-0.5 text-[11px] leading-none'
+          : 'gap-2 px-3 py-1 text-xs'
       )}
     >
       {showDot && !isSolid && (
         <span
           data-slot="status-badge-dot"
           className={cn(
-            "rounded-full",
+            'rounded-full',
             statusDotClasses[config.variant],
-            size === "sm" ? "h-1.5 w-1.5" : "h-2 w-2",
+            size === 'sm' ? 'h-1.5 w-1.5' : 'h-2 w-2'
           )}
         />
       )}
@@ -62,7 +62,11 @@ export function StatusDot({
 }) {
   return (
     <span
-      className={cn("h-2 w-2 rounded-full", statusDotClasses[variant], className)}
+      className={cn(
+        'h-2 w-2 rounded-full',
+        statusDotClasses[variant],
+        className
+      )}
     />
   );
 }

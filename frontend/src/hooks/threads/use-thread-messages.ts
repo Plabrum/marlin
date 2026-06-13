@@ -1,12 +1,15 @@
-import { useQueryClient } from "@tanstack/react-query";
-import type { ThreadsSchemasMessageSchema, MessageListResponse } from "@/openapi/litestarAPI.schemas";
-import type { TiptapContent } from "@/lib/tiptap";
-import type { AuthUser } from "@/lib/auth-loader";
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useThreadsThreadableTypeThreadableIdMessagesListMessages,
   useThreadsThreadableTypeThreadableIdMessagesCreateMessage,
   getThreadsThreadableTypeThreadableIdMessagesListMessagesQueryKey,
-} from "@/openapi/threads/threads";
+} from '@/openapi/threads/threads';
+import type { AuthUser } from '@/lib/auth-loader';
+import type { TiptapContent } from '@/lib/tiptap';
+import type {
+  ThreadsSchemasMessageSchema,
+  MessageListResponse,
+} from '@/openapi/litestarAPI.schemas';
 
 interface UseThreadMessagesOptions {
   threadableType: string;
@@ -24,11 +27,12 @@ export function useThreadMessages({
   const queryClient = useQueryClient();
   const threadableIdNum = parseInt(threadableId, 10);
 
-  const queryKey = getThreadsThreadableTypeThreadableIdMessagesListMessagesQueryKey(
-    threadableType,
-    threadableIdNum,
-    { limit: 100, offset: 0 },
-  );
+  const queryKey =
+    getThreadsThreadableTypeThreadableIdMessagesListMessagesQueryKey(
+      threadableType,
+      threadableIdNum,
+      { limit: 100, offset: 0 }
+    );
 
   const {
     data: messagesData,
@@ -38,7 +42,7 @@ export function useThreadMessages({
     threadableType,
     threadableIdNum,
     { limit: 100, offset: 0 },
-    { query: { enabled } },
+    { query: { enabled } }
   );
 
   const createMessageMutation =
@@ -47,12 +51,13 @@ export function useThreadMessages({
         onMutate: async (variables) => {
           await queryClient.cancelQueries({ queryKey });
 
-          const previousMessages = queryClient.getQueryData<MessageListResponse>(queryKey);
+          const previousMessages =
+            queryClient.getQueryData<MessageListResponse>(queryKey);
 
           if (previousMessages) {
             const optimisticMessage = {
               id: `optimistic-${Date.now()}`,
-              thread_id: "",
+              thread_id: '',
               user_id: user.id,
               content: variables.data.content,
               created_at: new Date().toISOString(),
@@ -95,21 +100,24 @@ export function useThreadMessages({
 
   const editMessage = async (messageId: string, content: TiptapContent) => {
     const response = await fetch(`/actions/message_actions/${messageId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "message_actions__update", data: { content } }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'message_actions__update',
+        data: { content },
+      }),
     });
-    if (!response.ok) throw new Error("Failed to edit message");
+    if (!response.ok) throw new Error('Failed to edit message');
     await refetchMessages();
   };
 
   const deleteMessage = async (messageId: string) => {
     const response = await fetch(`/actions/message_actions/${messageId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "message_actions__delete" }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'message_actions__delete' }),
     });
-    if (!response.ok) throw new Error("Failed to delete message");
+    if (!response.ok) throw new Error('Failed to delete message');
     await refetchMessages();
   };
 

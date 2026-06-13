@@ -1,8 +1,8 @@
-import * as React from "react";
-import * as RechartsPrimitive from "recharts";
-import type { TooltipPayload } from "recharts";
-import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import * as RechartsPrimitive from 'recharts';
+import { cn } from '@/lib/utils';
+import type { TooltipPayload } from 'recharts';
+import type { LegendPayload } from 'recharts/types/component/DefaultLegendContent';
 
 export type ChartConfig = Record<
   string,
@@ -17,7 +17,7 @@ const ChartContext = React.createContext<ChartContextValue | null>(null);
 
 function useChart() {
   const ctx = React.useContext(ChartContext);
-  if (!ctx) throw new Error("useChart must be used inside <ChartContainer>");
+  if (!ctx) throw new Error('useChart must be used inside <ChartContainer>');
   return ctx;
 }
 
@@ -26,16 +26,16 @@ function ChartContainer({
   className,
   children,
   config,
-}: React.ComponentProps<"div"> & { config: ChartConfig }) {
+}: React.ComponentProps<'div'> & { config: ChartConfig }) {
   const uid = React.useId();
-  const chartId = id ?? `chart-${uid.replace(/:/g, "")}`;
+  const chartId = id ?? `chart-${uid.replace(/:/g, '')}`;
 
   const colorVars = React.useMemo(() => {
     return Object.fromEntries(
       Object.entries(config).map(([key, value]) => [
         `--color-${key}`,
         value.color ?? `var(--chart-1)`,
-      ]),
+      ])
     );
   }, [config]);
 
@@ -43,7 +43,7 @@ function ChartContainer({
     <ChartContext.Provider value={{ config }}>
       <div
         id={chartId}
-        className={cn("aspect-video w-full text-xs", className)}
+        className={cn('aspect-video w-full text-xs', className)}
         style={colorVars as React.CSSProperties}
       >
         <RechartsPrimitive.ResponsiveContainer
@@ -78,16 +78,16 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card px-3 py-2 shadow-md text-card-foreground text-xs",
-        className,
+        'border-border bg-card text-card-foreground rounded-lg border px-3 py-2 text-xs shadow-md',
+        className
       )}
     >
       {!hideLabel && label && (
-        <p className="mb-1.5 font-medium text-muted-foreground">{label}</p>
+        <p className="text-muted-foreground mb-1.5 font-medium">{label}</p>
       )}
       <div className="flex flex-col gap-1">
         {payload.map((item) => {
-          const key = String(item.dataKey ?? "");
+          const key = String(item.dataKey ?? '');
           const cfg = config[key];
           return (
             <div key={key} className="flex items-center gap-2">
@@ -96,7 +96,7 @@ function ChartTooltipContent({
                 style={{ backgroundColor: `var(--color-${key})` }}
               />
               <span className="text-muted-foreground">{cfg?.label ?? key}</span>
-              <span className="ml-auto font-mono font-medium tabular-nums text-foreground">
+              <span className="text-foreground ml-auto font-mono font-medium tabular-nums">
                 {item.value}
               </span>
             </div>
@@ -118,9 +118,9 @@ function ChartLegendContent({
   if (!payload?.length) return null;
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-4 text-xs", className)}>
+    <div className={cn('flex flex-wrap items-center gap-4 text-xs', className)}>
       {payload.map((item) => {
-        const key = item.value ?? "";
+        const key = item.value ?? '';
         const cfg = config[key];
         return (
           <div key={key} className="flex items-center gap-1.5">

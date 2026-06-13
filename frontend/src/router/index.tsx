@@ -1,11 +1,4 @@
-import { createRouter } from "@tanstack/react-router";
-import { rootRoute } from "@/router/root.route";
-import {
-  publicLayoutRoute,
-  authenticatedLayoutRoute,
-} from "@/router/layout.routes";
-import { authRoute, magicLinkVerifyRoute, galleryRoute } from "@/router/public.routes";
-import { payInvoiceRoute } from "@/router/payment.routes";
+import { createRouter } from '@tanstack/react-router';
 import {
   indexRoute,
   searchRoute,
@@ -37,12 +30,28 @@ import {
   pricingGuidesIndexRoute,
   pricingGuideDetailRoute,
   legacyRedirectRoutes,
-} from "@/router/authenticated.routes";
+} from '@/router/authenticated.routes';
+import {
+  publicLayoutRoute,
+  authenticatedLayoutRoute,
+} from '@/router/layout.routes';
+import { payInvoiceRoute } from '@/router/payment.routes';
+import {
+  authRoute,
+  magicLinkVerifyRoute,
+  galleryRoute,
+} from '@/router/public.routes';
+import { rootRoute } from '@/router/root.route';
 
 const devRoutes = galleryRoute ? [galleryRoute] : [];
 
 const routeTree = rootRoute.addChildren([
-  publicLayoutRoute.addChildren([authRoute, magicLinkVerifyRoute, payInvoiceRoute, ...devRoutes]),
+  publicLayoutRoute.addChildren([
+    authRoute,
+    magicLinkVerifyRoute,
+    payInvoiceRoute,
+    ...devRoutes,
+  ]),
   authenticatedLayoutRoute.addChildren([
     indexRoute,
     searchRoute,
@@ -66,8 +75,14 @@ const routeTree = rootRoute.addChildren([
       appearanceRoute,
       notificationsRoute,
       billingRoute.addChildren([connectOnboardingRoute]),
-      templatesListRoute.addChildren([templatesIndexRoute, templateDetailRoute]),
-      pricingGuidesListRoute.addChildren([pricingGuidesIndexRoute, pricingGuideDetailRoute]),
+      templatesListRoute.addChildren([
+        templatesIndexRoute,
+        templateDetailRoute,
+      ]),
+      pricingGuidesListRoute.addChildren([
+        pricingGuidesIndexRoute,
+        pricingGuideDetailRoute,
+      ]),
     ]),
     ...legacyRedirectRoutes,
   ]),
@@ -75,10 +90,10 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
-  defaultPreload: "intent",
+  defaultPreload: 'intent',
 });
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
   }

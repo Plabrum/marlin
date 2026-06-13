@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from '@tanstack/react-query';
 
 type WithInvalidateQueries = { invalidate_queries?: string[] | null };
 
@@ -10,7 +10,7 @@ type WithInvalidateQueries = { invalidate_queries?: string[] | null };
 export function handleQueryInvalidation(
   queryClient: QueryClient,
   response: WithInvalidateQueries,
-  onInvalidate?: (queryClient: QueryClient, backendQueryKeys: string[]) => void,
+  onInvalidate?: (queryClient: QueryClient, backendQueryKeys: string[]) => void
 ): void {
   const backendQueryKeys = response.invalidate_queries || [];
 
@@ -19,7 +19,7 @@ export function handleQueryInvalidation(
       queryClient.invalidateQueries({
         predicate: (query) =>
           Array.isArray(query.queryKey) &&
-          typeof query.queryKey[0] === "string" &&
+          typeof query.queryKey[0] === 'string' &&
           (query.queryKey[0] === key || query.queryKey[0].includes(key)),
       });
     });

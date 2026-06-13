@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,8 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import type { ActionDTO } from "@/lib/actions/types";
+} from '@/components/ui/dialog';
+import type { ActionDTO } from '@/lib/actions/types';
 
 interface ActionConfirmationDialogProps {
   open: boolean;
@@ -32,7 +32,7 @@ export function ActionConfirmationDialog({
         <DialogHeader>
           <DialogTitle>{action.label}</DialogTitle>
           <DialogDescription>
-            {action.confirmation_message || "Are you sure you want to proceed?"}
+            {action.confirmation_message || 'Are you sure you want to proceed?'}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -47,9 +47,9 @@ export function ActionConfirmationDialog({
           <Button
             onClick={onConfirm}
             disabled={isExecuting}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className="bg-destructive hover:bg-destructive/90 text-white"
           >
-            {isExecuting ? "Executing..." : "Confirm"}
+            {isExecuting ? 'Executing...' : 'Confirm'}
           </Button>
         </DialogFooter>
       </DialogContent>
