@@ -39,14 +39,19 @@ def get_dependencies() -> dict[str, Any]:
 
 @dep("transaction")
 async def provide_transaction(db_session: AsyncSession, request: Request) -> AsyncGenerator[AsyncSession]:
-    """Provide a database transaction with `app.user_id` and `app.organization_id` set so RLS policies evaluate."""
-    async with db_session.begin():
-        if request.scope.get("user") is not None:
-            user_id = int(request.user.id)
-            organization_id = int(request.user.organization_id)
-            await db_session.execute(text(f"SET LOCAL app.user_id = {user_id}"))
-            await db_session.execute(text(f"SET LOCAL app.organization_id = {organization_id}"))
-        yield db_session
+    """Provide a database transaction with `app.user_id` and `app.organization_id` set so RLS policies evaluate.
+
+    Unauthenticated requests (login, magic-link) have no principal, so no RLS
+    variables are set and policies fail closed.
+    """
+    if request.scope.get("user") is None:
+        async with db_session.begin():
+            yield db_session
+        return
+    async with rls_transaction(
+        db_session, user_id=int(request.user.id), organization_id=int(request.user.organization_id)
+    ) as tx:
+        yield tx
 
 
 @asynccontextmanager
