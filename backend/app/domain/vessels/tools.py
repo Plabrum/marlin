@@ -7,7 +7,7 @@ from msgspec import Struct
 from sqlalchemy import select
 
 from app.domain.vessels.models import Vessel
-from app.platform.llm.registry import SloopTool, ToolContext, ToolResult, register_tool
+from app.platform.llm.registry import MarlinTool, ToolContext, ToolResult, register_tool
 from app.platform.llm.schemas import InputSchema, PropertySchema
 from app.utils.sqids import Sqid
 
@@ -18,7 +18,7 @@ class SearchVesselsInput(Struct):
 
 
 @register_tool
-class SearchVesselsTool(SloopTool):
+class SearchVesselsTool(MarlinTool):
     name = "search_vessels"
     description = "Search vessels by name, HIN, or model. Returns brief summaries."
     input_schema = InputSchema(
@@ -71,7 +71,7 @@ class GetVesselInput(Struct):
 
 
 @register_tool
-class GetVesselTool(SloopTool):
+class GetVesselTool(MarlinTool):
     name = "get_vessel"
     description = "Get full details for a vessel by ID."
     input_schema = InputSchema(

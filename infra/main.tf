@@ -31,7 +31,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "sloopquest"
+      Project     = "marlin"
       Environment = var.environment
       ManagedBy   = "terraform"
     }

@@ -75,7 +75,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_rds_cluster_parameter_group" "main" {
   name        = "${local.name}-aurora-params"
   family      = "aurora-postgresql17"
-  description = "Sloopquest Aurora PostgreSQL parameters"
+  description = "Marlin Survey Aurora PostgreSQL parameters"
 
   parameter {
     name  = "rds.force_ssl"
@@ -133,7 +133,7 @@ resource "aws_rds_cluster_instance" "main" {
 
 resource "aws_secretsmanager_secret" "app" {
   name                    = "${local.name}-app-secrets"
-  description             = "Sloopquest application secrets - managed outside Terraform after initial creation"
+  description             = "Marlin Survey application secrets - managed outside Terraform after initial creation"
   recovery_window_in_days = 7
   tags                    = { Name = "${local.name}-app-secrets" }
 }
@@ -493,7 +493,7 @@ resource "aws_elasticache_subnet_group" "redis" {
 
 resource "aws_elasticache_replication_group" "redis" {
   replication_group_id = "${local.name}-redis-enc"
-  description          = "Sloopquest Redis - sessions and background queue (encrypted)"
+  description          = "Marlin Survey Redis - sessions and background queue (encrypted)"
   engine               = "redis"
   engine_version       = "7.1"
   node_type            = var.redis_node_type

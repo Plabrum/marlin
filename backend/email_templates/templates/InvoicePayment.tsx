@@ -11,7 +11,7 @@ interface InvoicePaymentProps {
 }
 
 export default function InvoicePayment({
-  pay_url = 'https://app.sloopquest.com/pay/example',
+  pay_url = 'https://app.marlinsurvey.com/pay/example',
   invoice_number = 'INV-0001',
   organization_name = 'Acme Marine Surveys',
   total_display = '$1,234.56',

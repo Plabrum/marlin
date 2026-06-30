@@ -4,7 +4,7 @@
 
 A small, opinionated framework for turning a document (text, PDF, image) into typed records that domain code can consume. An extraction is a **tree of typed extractors**: each node declares its msgspec schema, its lookup-or-create logic, and (optionally) child extractors for nested domain objects. The top extractor owns one LLM call against the composed schema; the tree walks the parsed output and writes domain records through normal actions.
 
-The first consumer is **historic survey import** (user forwards a PDF survey to `surveys@sloopquest.com` → a completed `Survey` + linked `Vessel` + `Manufacturer` + matched-or-created `SurveyTemplate` materializes in their workspace). The same framework is intended to back future extractors (invoices, work orders, sailing resumes) without re-architecting.
+The first consumer is **historic survey import** (user forwards a PDF survey to `surveys@marlinsurvey.com` → a completed `Survey` + linked `Vessel` + `Manufacturer` + matched-or-created `SurveyTemplate` materializes in their workspace). The same framework is intended to back future extractors (invoices, work orders, sailing resumes) without re-architecting.
 
 ## Non-goals
 
@@ -317,7 +317,7 @@ async def import_survey_from_pdf_task(
     await send_survey_imported_reply(transaction, message, survey)
 ```
 
-**Routing.** `is_survey_import_email` checks `to_email == "surveys@sloopquest.com"`, `from_email` matches a `User`, and at least one PDF attachment exists. The matched user's org becomes the workspace via `TaskRoleType.USER` — RLS handles scoping for every downstream `get_or_create_*` / `create_*` call. No manual `workspace_id=` plumbing.
+**Routing.** `is_survey_import_email` checks `to_email == "surveys@marlinsurvey.com"`, `from_email` matches a `User`, and at least one PDF attachment exists. The matched user's org becomes the workspace via `TaskRoleType.USER` — RLS handles scoping for every downstream `get_or_create_*` / `create_*` call. No manual `workspace_id=` plumbing.
 
 **Idempotency.** `(message_id, attachment_index)` is the natural dedupe key. SAQ task uniqueness or an idempotency column on `surveys` keyed by `(workspace_id, source_message_id, source_attachment_index)` — implementation detail of the survey domain, not the extraction platform.
 

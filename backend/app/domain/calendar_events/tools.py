@@ -11,7 +11,7 @@ from app.domain.calendar_events.models import CalendarEvent
 from app.domain.calendar_events.schemas import AddressInput
 from app.domain.clients.models import Client
 from app.domain.surveys.models import Survey
-from app.platform.llm.registry import SloopTool, ToolContext, ToolResult, register_tool
+from app.platform.llm.registry import MarlinTool, ToolContext, ToolResult, register_tool
 from app.platform.llm.schemas import InputSchema, PropertySchema
 from app.utils.sqids import Sqid
 
@@ -26,7 +26,7 @@ class ListCalendarEventsInput(Struct):
 
 
 @register_tool
-class ListCalendarEventsTool(SloopTool):
+class ListCalendarEventsTool(MarlinTool):
     name = "list_calendar_events"
     description = "List calendar events, optionally filtered by time window, state, client, or survey."
     input_schema = InputSchema(
@@ -98,7 +98,7 @@ class GetCalendarEventInput(Struct):
 
 
 @register_tool
-class GetCalendarEventTool(SloopTool):
+class GetCalendarEventTool(MarlinTool):
     name = "get_calendar_event"
     description = "Get details for a specific calendar event by ID."
     input_schema = InputSchema(
@@ -172,7 +172,7 @@ class CreateCalendarEventInput(Struct):
 
 
 @register_tool
-class CreateCalendarEventTool(SloopTool):
+class CreateCalendarEventTool(MarlinTool):
     name = "create_calendar_event"
     description = (
         "Create a new calendar event. For timed events set all_day=false and provide start/end "

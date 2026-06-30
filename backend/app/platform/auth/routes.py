@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _rate_limit = RateLimitConfig(rate_limit=("minute", 3))
 
 _DEMO_ORG_ID = 0
-_DEMO_EMAIL_DOMAIN = "sloopquest.com"
+_DEMO_EMAIL_DOMAIN = "marlinsurvey.com"
 _DEMO_EMAIL_PREFIX = "demo"
 
 
@@ -45,7 +45,7 @@ async def request_magic_link(
     auth_service: AuthService,
     transaction: AsyncSession,
 ) -> dict[str, str]:
-    """Request a magic link. Demo addresses (demo@ / demo+*@sloopquest.com) log in instantly."""
+    """Request a magic link. Demo addresses (demo@ / demo+*@marlinsurvey.com) log in instantly."""
     email = data.email.strip().lower()
     local, _, domain = email.partition("@")
 

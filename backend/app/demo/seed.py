@@ -182,8 +182,8 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
 
     # ── 3. Users ─────────────────────────────────────────────────────────────
     user_specs = [
-        {"email": "demo@sloopquest.com", "role": Role.ADMIN, "name": "Alex Harrington"},
-        {"email": "demo+member@sloopquest.com", "role": Role.MEMBER, "name": "Jordan Reeves"},
+        {"email": "demo@marlinsurvey.com", "role": Role.ADMIN, "name": "Alex Harrington"},
+        {"email": "demo+member@marlinsurvey.com", "role": Role.MEMBER, "name": "Jordan Reeves"},
     ]
     users = []
     for spec in user_specs:
@@ -769,7 +769,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             state=MessageState.RECEIVED,
             to_emails=[admin.email],
             s3_key=s3_key,
-            s3_bucket="sloopquest-demo-inbound",
+            s3_bucket="marlin-demo-inbound",
             spf_pass=True,
             dkim_pass=True,
         )

@@ -8,7 +8,7 @@ from app.platform.base.threadable_mixin import ThreadableMixin
 from app.platform.documents.enums import DocumentStates
 from app.platform.state_machine.models import StateMachineMixin
 
-# TODO: apply sloopquest scope (org/vessel/survey) once domain is decided.
+# TODO: apply marlin scope (org/vessel/survey) once domain is decided.
 
 
 class Document(

@@ -47,7 +47,7 @@ export function Wordmark({
       }}
     >
       <StarMark size={dims.star} style={{ color: '#b8845c' }} />
-      <span>Sloopquest</span>
+      <span>Marlin Survey</span>
     </span>
   );
 }

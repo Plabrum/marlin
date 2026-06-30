@@ -49,7 +49,7 @@ export function Footer() {
               <input
                 id="newsletter"
                 type="email"
-                placeholder="you@sloopquest.com"
+                placeholder="you@marlinsurvey.com"
                 className="flex-1 border border-ink/20 bg-paper-card px-4 py-3 font-serif text-[15px] text-ink placeholder:text-ink-muted/70 focus:border-ink focus:outline-none"
               />
               <button
@@ -108,7 +108,7 @@ export function Footer() {
         {/* Bottom strip */}
         <div className="flex flex-col items-start gap-4 border-t border-paper-edge/70 pt-6 md:flex-row md:items-center md:justify-between">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
-            © MMXXVI Sloopquest, Inc. &middot; All soundings honest
+            © MMXXVI Marlin Survey, Inc. &middot; All soundings honest
           </div>
           <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
             <span className="flex items-center gap-2">

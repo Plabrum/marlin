@@ -25,7 +25,7 @@ const STEPS: StepDef[] = [
     state: OnboardingState.inbox,
     title: 'Claim your inbox',
     description:
-      'Pick a short name for your Sloopquest inbox. This is permanent and cannot be changed later.',
+      'Pick a short name for your Marlin Survey inbox. This is permanent and cannot be changed later.',
     Body: InboxStep,
   },
   {

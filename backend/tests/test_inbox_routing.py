@@ -255,7 +255,7 @@ def _make_queue() -> MagicMock:
 async def test_process_inbound_routes_reserved_surveys(
     db_session: AsyncSession,
 ) -> None:
-    s3 = _make_s3_client(_mime_bytes(to="surveys@sloopquest.com"))
+    s3 = _make_s3_client(_mime_bytes(to="surveys@marlinsurvey.com"))
     queue = _make_queue()
 
     result = await process_inbound_email_task(
@@ -278,7 +278,7 @@ async def test_process_inbound_routes_to_user_inbox(db_session: AsyncSession, us
     user.inbox_local_part = "phil"
     await db_session.flush()
 
-    s3 = _make_s3_client(_mime_bytes(to="phil@sloopquest.com"))
+    s3 = _make_s3_client(_mime_bytes(to="phil@marlinsurvey.com"))
     queue = _make_queue()
 
     result = await process_inbound_email_task(
@@ -299,7 +299,7 @@ async def test_process_inbound_routes_to_user_inbox(db_session: AsyncSession, us
 async def test_process_inbound_bounces_unknown_when_authenticated(
     db_session: AsyncSession,
 ) -> None:
-    s3 = _make_s3_client(_mime_bytes(to="nobody@sloopquest.com"))
+    s3 = _make_s3_client(_mime_bytes(to="nobody@marlinsurvey.com"))
     queue = _make_queue()
 
     result = await process_inbound_email_task(
@@ -321,7 +321,7 @@ async def test_process_inbound_drops_unknown_when_spf_fails(
 ) -> None:
     s3 = _make_s3_client(
         _mime_bytes(
-            to="nobody@sloopquest.com",
+            to="nobody@marlinsurvey.com",
             auth_results="amazonses.com; spf=fail; dkim=fail",
         )
     )
@@ -343,7 +343,7 @@ async def test_process_inbound_drops_unknown_when_spf_fails(
 async def test_process_inbound_drops_unknown_when_automated(
     db_session: AsyncSession,
 ) -> None:
-    s3 = _make_s3_client(_mime_bytes(to="nobody@sloopquest.com", auto_submitted="auto-replied"))
+    s3 = _make_s3_client(_mime_bytes(to="nobody@marlinsurvey.com", auto_submitted="auto-replied"))
     queue = _make_queue()
 
     result = await process_inbound_email_task(

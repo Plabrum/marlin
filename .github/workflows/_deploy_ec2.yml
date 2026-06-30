@@ -33,7 +33,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ inputs.instance_id }}" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["/opt/sloopquest/deploy.sh"]' \
+            --parameters 'commands=["/opt/marlin/deploy.sh"]' \
             --timeout-seconds 300 \
             --comment "Deployed from GitHub Actions run ${{ github.run_id }}" \
             --query "Command.CommandId" \

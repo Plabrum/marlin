@@ -4,7 +4,7 @@ const OPENAPI_URL =
   process.env.OPENAPI_URL ?? 'http://localhost:8000/schema/openapi.json';
 
 const config = {
-  sloopquestApi: {
+  marlinApi: {
     output: {
       mode: 'tags-split',
       target: 'src/openapi',

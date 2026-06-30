@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.domain.surveys.models import Survey, SurveyTemplate
 from app.domain.users.models import User
 from app.domain.vessels.models import Vessel
-from app.platform.llm.registry import SloopTool, ToolContext, ToolResult, register_tool
+from app.platform.llm.registry import MarlinTool, ToolContext, ToolResult, register_tool
 from app.platform.llm.schemas import InputSchema, PropertySchema
 from app.utils.sqids import Sqid
 
@@ -20,7 +20,7 @@ class ListSurveysInput(Struct):
 
 
 @register_tool
-class ListSurveysTool(SloopTool):
+class ListSurveysTool(MarlinTool):
     name = "list_surveys"
     description = "List surveys, optionally filtered by vessel ID or state."
     input_schema = InputSchema(
@@ -68,7 +68,7 @@ class GetSurveyInput(Struct):
 
 
 @register_tool
-class GetSurveyTool(SloopTool):
+class GetSurveyTool(MarlinTool):
     name = "get_survey"
     description = "Get details for a specific survey by ID."
     input_schema = InputSchema(

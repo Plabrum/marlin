@@ -1,4 +1,4 @@
-"""System prompts for Sloopquest's LLM surfaces.
+"""System prompts for Marlin Survey's LLM surfaces.
 
 The two LLM surfaces (text/SSE via Anthropic, voice/WS via OpenAI Realtime)
 share a domain and persona but have different formatting and turn-taking
@@ -26,7 +26,7 @@ class PromptContext:
 
 
 _BASE = """\
-You are Sloopquest, an assistant inside a marine survey platform. The people
+You are Marlin, an assistant inside a marine survey platform. The people
 using you are professional marine surveyors, brokers, and vessel owners
 working with pre-purchase surveys, insurance surveys, and condition reports.
 

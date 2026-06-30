@@ -12,7 +12,7 @@ Two concrete workflows drive every design decision. If a feature isn't needed by
 
 ### Example A — Historic survey import (`import_survey_workflow`)
 
-**Trigger:** `Message.CREATED` where `to_email == "surveys@sloopquest.com"` and at least one PDF attachment.
+**Trigger:** `Message.CREATED` where `to_email == "surveys@marlinsurvey.com"` and at least one PDF attachment.
 **Trust:** autocomplete — output is a final Survey.
 **Shape:** linear, three LLM passes in parallel, one assembly step, one notify step.
 

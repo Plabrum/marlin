@@ -20,21 +20,21 @@ systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
 
 # ── App directory ─────────────────────────────────────────────────────────────
-mkdir -p /opt/sloopquest
-cd /opt/sloopquest
+mkdir -p /opt/marlin
+cd /opt/marlin
 
 # ── docker-compose.yml — copied verbatim from the repo ───────────────────────
-cat > /opt/sloopquest/docker-compose.yml <<'COMPOSE'
+cat > /opt/marlin/docker-compose.yml <<'COMPOSE'
 ${compose_content}
 COMPOSE
 
 # Caddyfile - copied verbatim from the repo
-cat > /opt/sloopquest/Caddyfile <<'CADDYFILE'
+cat > /opt/marlin/Caddyfile <<'CADDYFILE'
 ${caddyfile_content}
 CADDYFILE
 
 # ── .env — all non-secret config; secrets are merged in by deploy.sh ─────────
-cat > /opt/sloopquest/.env <<'ENV'
+cat > /opt/marlin/.env <<'ENV'
 API_IMAGE=${ecr_repo_url}:${image_tag}
 API_DOMAIN=${api_subdomain}.${domain}
 POSTGRES_DB=${db_name}
@@ -58,13 +58,13 @@ BETTERSTACK_OTLP_SOURCE_TOKEN=${otlp_token}
 ${k}=${v}
 %{ endfor ~}
 ENV
-chmod 600 /opt/sloopquest/.env
+chmod 600 /opt/marlin/.env
 
 # ── deploy.sh — pull latest image and restart; merge secrets into .env ────────
-cat > /opt/sloopquest/deploy.sh <<'DEPLOY'
+cat > /opt/marlin/deploy.sh <<'DEPLOY'
 #!/bin/bash
 set -euo pipefail
-cd /opt/sloopquest
+cd /opt/marlin
 
 echo "==> ECR login"
 aws ecr get-login-password --region ${aws_region} \
@@ -79,7 +79,7 @@ aws secretsmanager get-secret-value \
   | python3 -c "
 import sys, json, os
 
-env_path = '/opt/sloopquest/.env'
+env_path = '/opt/marlin/.env'
 env = {}
 if os.path.exists(env_path):
     with open(env_path) as f:
@@ -106,12 +106,12 @@ docker compose up -d
 echo "==> Stack status"
 docker compose ps
 DEPLOY
-chmod +x /opt/sloopquest/deploy.sh
+chmod +x /opt/marlin/deploy.sh
 
 # ── Systemd service ───────────────────────────────────────────────────────────
-cat > /etc/systemd/system/sloopquest.service <<'SYSTEMD'
+cat > /etc/systemd/system/marlin.service <<'SYSTEMD'
 [Unit]
-Description=Sloopquest docker-compose stack
+Description=Marlin Survey docker-compose stack
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
@@ -119,9 +119,9 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/sloopquest
-ExecStart=/opt/sloopquest/deploy.sh
-ExecStop=/usr/bin/docker compose -f /opt/sloopquest/docker-compose.yml down
+WorkingDirectory=/opt/marlin
+ExecStart=/opt/marlin/deploy.sh
+ExecStop=/usr/bin/docker compose -f /opt/marlin/docker-compose.yml down
 TimeoutStartSec=300
 Restart=on-failure
 RestartSec=30
@@ -131,7 +131,7 @@ WantedBy=multi-user.target
 SYSTEMD
 
 systemctl daemon-reload
-systemctl enable sloopquest
-systemctl start sloopquest || echo "First-boot deploy failed (image may not exist yet — will retry on next deploy)"
+systemctl enable marlin
+systemctl start marlin || echo "First-boot deploy failed (image may not exist yet — will retry on next deploy)"
 
 echo "==> user-data complete"

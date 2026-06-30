@@ -70,7 +70,7 @@ export function BaseLayout({ preview, children, footerNote }: BaseLayoutProps) {
                     {/* Wordmark */}
                     <Section className="pb-8 text-center">
                       <Text className="font-serif text-[28px] text-ink tracking-tight m-0">
-                        Sloopquest
+                        Marlin Survey
                       </Text>
                       <div className="mx-auto mt-3 h-px w-16 bg-brass" />
                     </Section>
@@ -82,17 +82,17 @@ export function BaseLayout({ preview, children, footerNote }: BaseLayoutProps) {
                       {/* Sign-off */}
                       <Text className="font-body text-[15px] text-ink mt-8 mb-0">
                         Fair winds,<br />
-                        <span className="text-brass-deep">The Sloopquest Team</span>
+                        <span className="text-brass-deep">The Marlin Survey Team</span>
                       </Text>
                     </Section>
 
                     {/* Footer */}
                     <Section className="pt-8 text-center">
                       <Text className="font-mono text-[10px] text-footer-muted uppercase tracking-[0.22em] m-0 mb-1">
-                        &copy; 2026 Sloopquest
+                        &copy; 2026 Marlin Survey
                       </Text>
                       <Text className="font-sans text-[11px] text-footer-subtle m-0">
-                        {footerNote ?? "You're receiving this because you have a Sloopquest account."}
+                        {footerNote ?? "You're receiving this because you have a Marlin Survey account."}
                       </Text>
                     </Section>
 

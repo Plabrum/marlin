@@ -83,7 +83,7 @@ async def session_factory() -> AsyncGenerator[async_sessionmaker[AsyncSession]]:
     async with sm() as s:
         s.add_all(
             [
-                _Vessel(organization_id=42, name="Sloopquest"),
+                _Vessel(organization_id=42, name="Marlin"),
                 _Vessel(organization_id=42, name="Mariner"),
                 _Vessel(organization_id=42, name="Other Org Boat"),
                 _Vessel(organization_id=99, name="Outsider"),  # different org
@@ -130,14 +130,14 @@ async def test_apply_filter_text_contains(session_factory: async_sessionmaker[As
         q = apply_filter(q, _Vessel, TextFilter(column="name", operation="contains", value="loop"), {"name"})
         rows = (await s.execute(q)).scalars().all()
         names = {r.name for r in rows}
-        assert names == {"Sloopquest"}
+        assert names == {"Marlin"}
 
 
 async def test_apply_filter_skips_disallowed_column(session_factory: async_sessionmaker[AsyncSession]):
     async with session_factory() as s:
         q = sa.select(_Vessel).where(_Vessel.organization_id == 42)
         # "name" not in allowed_columns -> filter is silently skipped
-        q = apply_filter(q, _Vessel, TextFilter(column="name", operation="equals", value="Sloopquest"), set())
+        q = apply_filter(q, _Vessel, TextFilter(column="name", operation="equals", value="Marlin"), set())
         rows = (await s.execute(q)).scalars().all()
         assert len(rows) >= 3
 
@@ -200,7 +200,7 @@ async def test_list_endpoint_empty_body_returns_paged_response(
         assert len(body["items"]) == 3
         assert body["has_more"] is False
         names = {item["name"] for item in body["items"]}
-        assert names == {"Sloopquest", "Mariner", "Other Org Boat"}
+        assert names == {"Marlin", "Mariner", "Other Org Boat"}
 
 
 async def test_list_endpoint_text_filter_returns_matching_rows(
@@ -219,7 +219,7 @@ async def test_list_endpoint_text_filter_returns_matching_rows(
         assert resp.status_code == 200, resp.text
         body = resp.json()
         assert body["total"] == 1
-        assert [i["name"] for i in body["items"]] == ["Sloopquest"]
+        assert [i["name"] for i in body["items"]] == ["Marlin"]
 
 
 async def test_schema_crud_metadata_endpoint_returns_metadata():

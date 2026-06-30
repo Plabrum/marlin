@@ -207,7 +207,7 @@ What gets a shadcn primitive vs stays bespoke:
 - Pull quote → bespoke `<figure>` / `<blockquote>` (semantic, no shadcn analog)
 
 ### `cta.tsx`
-- "Open Sloopquest" → `<Button variant="cta" size="cta" asChild>`
+- "Open Marlin Survey" → `<Button variant="cta" size="cta" asChild>`
 - "Or download a sample report" → plain Link
 - CompassRose stays
 - "No card required / iPad-ready / …" badge strip → `<Badge variant="outline">` per item? Or stay as plain spans (currently uses tiny moss dots, which is more decorative than badge-shaped). **Recommend: stay bespoke** — they're inline meta, not badges.

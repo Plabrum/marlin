@@ -1,7 +1,7 @@
 [project]
-name = "sloopquest"
+name = "marlin"
 version = "0.1.0"
-description = "Sloopquest backend API"
+description = "Marlin Survey backend API"
 readme = "README.md"
 requires-python = ">=3.13"
 

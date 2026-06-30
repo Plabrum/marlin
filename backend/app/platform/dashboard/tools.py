@@ -11,7 +11,7 @@ from app.platform.dashboard.enums import ResourceType, WidgetColor, WidgetType
 from app.platform.dashboard.models import Dashboard, Widget
 from app.platform.dashboard.schemas import WidgetQuery
 from app.platform.data.enums import AggregationType, Granularity, TimeRange
-from app.platform.llm.registry import SloopTool, ToolContext, ToolResult, register_tool
+from app.platform.llm.registry import MarlinTool, ToolContext, ToolResult, register_tool
 from app.platform.llm.schemas import InputSchema, PropertySchema
 from app.utils.sqids import Sqid  # Sqid is used in input structs for decoding widget_id
 
@@ -57,7 +57,7 @@ class ListWidgetsInput(Struct):
 
 
 @register_tool
-class ListWidgetsTool(SloopTool):
+class ListWidgetsTool(MarlinTool):
     name = "list_widgets"
     description = "List all widgets currently on the user's dashboard."
     input_schema = InputSchema(properties={})
@@ -108,7 +108,7 @@ class AddWidgetInput(Struct):
 
 
 @register_tool
-class AddWidgetTool(SloopTool):
+class AddWidgetTool(MarlinTool):
     name = "add_widget"
     description = (
         "Add a new widget to the user's dashboard. "
@@ -202,7 +202,7 @@ class RemoveWidgetInput(Struct):
 
 
 @register_tool
-class RemoveWidgetTool(SloopTool):
+class RemoveWidgetTool(MarlinTool):
     name = "remove_widget"
     description = "Remove a widget from the dashboard by its ID."
     input_schema = InputSchema(
@@ -244,7 +244,7 @@ class UpdateWidgetInput(Struct):
 
 
 @register_tool
-class UpdateWidgetTool(SloopTool):
+class UpdateWidgetTool(MarlinTool):
     name = "update_widget"
     description = "Update an existing dashboard widget's configuration, title, or position."
     input_schema = InputSchema(

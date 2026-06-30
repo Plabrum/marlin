@@ -8,13 +8,13 @@ interface UnknownRecipientBounceProps {
 }
 
 export default function UnknownRecipientBounce({
-  original_to = 'unknown@sloopquest.com',
+  original_to = 'unknown@marlinsurvey.com',
   original_subject = '',
 }: UnknownRecipientBounceProps) {
   return (
     <BaseLayout
       preview={`Delivery failure: ${original_to}`}
-      footerNote="This is an automated message from the Sloopquest mail system."
+      footerNote="This is an automated message from the Marlin Survey mail system."
     >
       <Text className="font-mono text-[10px] text-rust uppercase tracking-[0.28em] m-0 mb-3">
         Delivery failure
@@ -26,7 +26,7 @@ export default function UnknownRecipientBounce({
       <Text className="font-body text-[15px] leading-relaxed text-ink-muted m-0 mb-5">
         Your message could not be delivered to{' '}
         <strong className="text-ink font-semibold">{original_to}</strong> because no
-        such mailbox exists at sloopquest.com.
+        such mailbox exists at marlinsurvey.com.
       </Text>
 
       <Text className="font-body text-[15px] leading-relaxed text-ink-muted m-0 mb-5">

@@ -124,7 +124,7 @@ class EmailService:
         await self.send_email(
             user_id=user_id,
             to=to_email,
-            subject="Sign in to Sloopquest",
+            subject="Sign in to Marlin Survey",
             template_name="magic_link",
             context={
                 "magic_link_url": magic_link_url,

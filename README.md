@@ -1,2 +1,2 @@
-# sloopquest
+# marlin
 Marine survey software

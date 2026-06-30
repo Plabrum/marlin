@@ -1,4 +1,4 @@
-# sloopquest backend
+# marlin backend
 
 Litestar + SQLAlchemy + Alembic + SAQ.
 

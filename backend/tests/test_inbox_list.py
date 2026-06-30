@@ -25,7 +25,7 @@ def _msg(**overrides) -> Message:
         body_text="hello world",
         from_email="acme@example.com",
         from_name="Acme",
-        to_emails=["me@sloopquest.test"],
+        to_emails=["me@marlinsurvey.test"],
         s3_key=None,
     )
     base.update(overrides)
@@ -64,7 +64,7 @@ async def threads_with_messages(db_session: AsyncSession, user):
         email_thread_id=b.id,
         direction=MessageDirection.OUT,
         state=MessageState.SENT,
-        from_email="me@sloopquest.test",
+        from_email="me@marlinsurvey.test",
         from_name="Me",
         body_text="I sent this",
     )

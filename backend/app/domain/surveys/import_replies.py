@@ -20,7 +20,7 @@ async def send_survey_imported_reply(
 ) -> None:
     subject = f"Imported: {filename}"
     body_text = (
-        f"We've imported the survey from {filename} into your Sloopquest workspace.\n\n"
+        f"We've imported the survey from {filename} into your Marlin Survey workspace.\n\n"
         f"Open it in the app to review the auto-filled fields before finalizing.\n\n"
         f"(Reference: survey #{survey_id})"
     )
@@ -47,7 +47,7 @@ async def send_extraction_failure_reply(
     subject = f"Couldn't import: {filename}"
     body_text = (
         f"We weren't able to read the survey from {filename}.\n\n"
-        f"You can try forwarding again, or open Sloopquest to enter it manually.\n\n"
+        f"You can try forwarding again, or open Marlin Survey to enter it manually.\n\n"
         f"(Details: {reason})"
     )
     body_html = f"<p>{body_text.replace(chr(10), '<br/>')}</p>"

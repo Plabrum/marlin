@@ -14,7 +14,7 @@ import pytest
 from app.platform.llm.client import AnthropicLLMClient, LocalLLMClient
 from app.platform.llm.enums import MessageRole
 from app.platform.llm.registry import (
-    SloopTool,
+    MarlinTool,
     ToolContext,
     ToolResult,
     get_tool_definitions,
@@ -27,7 +27,7 @@ from app.platform.llm.schemas import InputSchema, PropertySchema
 
 
 @register_tool
-class _EchoTool(SloopTool):
+class _EchoTool(MarlinTool):
     name = "_test_echo"
     description = "Echo a message back (test only)."
     input_schema = InputSchema(

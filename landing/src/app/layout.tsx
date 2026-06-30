@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sloopquest — a workspace for marine surveyors",
+  title: "Marlin Survey — a workspace for marine surveyors",
   description:
     "Capture findings on the dock. Ship polished reports the same day. An almanac-grade workspace built for marine surveyors who care about their craft.",
 };

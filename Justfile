@@ -1,4 +1,4 @@
-# Sloopquest Justfile — https://just.systems
+# Marlin Survey Justfile — https://just.systems
 
 default:
     @just --list
@@ -40,7 +40,7 @@ db-clean:
 
 # Connect to the dev database via psql
 db-psql:
-    psql postgresql://postgres:postgres@localhost:5432/sloopquest
+    psql postgresql://postgres:postgres@localhost:5432/marlin
 
 # Wipe and repopulate the demo organization with fixture data
 fixtures:
@@ -180,7 +180,7 @@ codegen-landing:
 
 # Build backend Docker image
 docker-build:
-    cd backend && docker build -t sloopquest-api:local .
+    cd backend && docker build -t marlin-api:local .
 
 # ─── Prod ─────────────────────────────────────────────────────────────────────
 

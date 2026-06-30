@@ -1,7 +1,7 @@
 /**
  * SSE consumer for the LLM agent loop.
  *
- * Consumes the SSE stream from the Sloopquest LLM endpoints:
+ * Consumes the SSE stream from the Marlin Survey LLM endpoints:
  *   POST /llm/threads/stream                       (create thread + first turn)
  *   POST /llm/threads/{thread_id}/messages/stream  (append + reply)
  *

@@ -30,7 +30,7 @@ export function Cta() {
           </p>
 
           <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <PrimaryButton href={appUrl("/auth")}>Open Sloopquest</PrimaryButton>
+            <PrimaryButton href={appUrl("/auth")}>Open Marlin Survey</PrimaryButton>
           </div>
 
           {/* Tiny details strip */}

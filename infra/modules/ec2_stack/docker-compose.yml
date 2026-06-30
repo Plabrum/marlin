@@ -1,4 +1,4 @@
-name: sloopquest
+name: marlin
 
 services:
   db:
@@ -21,7 +21,7 @@ services:
       - redis_data:/data
 
   api:
-    image: ${API_IMAGE:-sloopquest-api:local}
+    image: ${API_IMAGE:-marlin-api:local}
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -40,7 +40,7 @@ services:
       start_period: 30s
 
   worker:
-    image: ${API_IMAGE:-sloopquest-api:local}
+    image: ${API_IMAGE:-marlin-api:local}
     restart: unless-stopped
     command: ["./scripts/start-worker.sh"]
     stop_grace_period: 60s

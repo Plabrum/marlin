@@ -51,7 +51,7 @@ async def register_document(
     """Register an uploaded document."""
     file_type = _determine_file_type(data.mime_type, data.file_name)
 
-    # TODO: scope by sloopquest org/vessel/survey once domain is decided.
+    # TODO: scope by marlin org/vessel/survey once domain is decided.
     document = Document(
         file_key=data.file_key,
         file_name=data.file_name,

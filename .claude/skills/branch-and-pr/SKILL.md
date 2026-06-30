@@ -66,7 +66,7 @@ description: Reusable git workflow for creating branches, commits, and pull requ
    ## Test plan
    - [ ] ...
 
-   Closes https://linear.app/sloopquest/issue/<TICKET-ID>
+   Closes https://linear.app/marlin/issue/<TICKET-ID>
    EOF
    )"
    ```

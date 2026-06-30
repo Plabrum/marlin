@@ -8,7 +8,7 @@ export function PublicAuthShell({ children }: { children: React.ReactNode }) {
     <div className="bg-background flex min-h-svh flex-col items-center justify-center px-4 py-6">
       <div className="mb-10 flex flex-col items-center text-center">
         <span className="font-display text-foreground text-4xl font-normal tracking-tight">
-          Sloopquest
+          Marlin Survey
         </span>
         <span
           aria-hidden="true"
@@ -16,7 +16,7 @@ export function PublicAuthShell({ children }: { children: React.ReactNode }) {
         />
       </div>
       {children}
-      <p className="t-meta mt-8">&copy; 2026 Sloopquest, Inc.</p>
+      <p className="t-meta mt-8">&copy; 2026 Marlin Survey, Inc.</p>
     </div>
   );
 }

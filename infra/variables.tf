@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "Project name - used as a prefix for all resource names"
   type        = string
-  default     = "sloopquest"
+  default     = "marlin"
 }
 
 variable "environment" {
@@ -55,13 +55,13 @@ variable "aws_region" {
 variable "domain" {
   description = "Root domain. Used for ACM cert, Route53 zone, CORS, SES."
   type        = string
-  default     = "sloopquest.com"
+  default     = "marlinsurvey.com"
 }
 
 variable "ecr_repository" {
   description = "ECR repository name"
   type        = string
-  default     = "sloopquest-api"
+  default     = "marlin-api"
 }
 
 variable "image_tag" {
@@ -99,7 +99,7 @@ variable "vercel_team_id" {
 variable "github_repo" {
   description = "GitHub repository in owner/repo format"
   type        = string
-  default     = "Plabrum/sloopquest"
+  default     = "Plabrum/marlin"
 }
 
 variable "production_branch" {

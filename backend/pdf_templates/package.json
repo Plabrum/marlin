@@ -1,8 +1,8 @@
 {
-  "name": "sloopquest-pdfs",
+  "name": "marlin-pdfs",
   "version": "1.0.0",
   "private": true,
-  "description": "React PDF templates for Sloopquest",
+  "description": "React PDF templates for Marlin Survey",
   "scripts": {
     "build": "tsx scripts/build.ts"
   },

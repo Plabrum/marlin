@@ -1,10 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "PROJECT_ROOT": "/Users/phil/repos/sloopquest",
-    "PYTHONPATH": "/Users/phil/repos/sloopquest/backend",
+    "PROJECT_ROOT": "/Users/phil/repos/marlin",
+    "PYTHONPATH": "/Users/phil/repos/marlin/backend",
     "NODE_ENV": "development",
-    "PLAYWRIGHT_MCP_OUTPUT_DIR": "/Users/phil/repos/sloopquest/.playwright-mcp"
+    "PLAYWRIGHT_MCP_OUTPUT_DIR": "/Users/phil/repos/marlin/.playwright-mcp"
   },
   "hooks": {
     "Stop": [
@@ -12,15 +12,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /Users/phil/repos/sloopquest && git diff --name-only --diff-filter=d | grep '\\.py$' | while read -r f; do [ -f \"$f\" ] && (cd backend && uv run ruff format \"$f\" 2>/dev/null && uv run ruff check --fix \"$f\" 2>/dev/null) || true; done; true"
+            "command": "cd /Users/phil/repos/marlin && git diff --name-only --diff-filter=d | grep '\\.py$' | while read -r f; do [ -f \"$f\" ] && (cd backend && uv run ruff format \"$f\" 2>/dev/null && uv run ruff check --fix \"$f\" 2>/dev/null) || true; done; true"
           },
           {
             "type": "command",
-            "command": "cd /Users/phil/repos/sloopquest && git diff --name-only --diff-filter=d -- '*.py' | grep -q . && (cd backend && uv run basedpyright 2>&1 | tail -20) || true; true"
+            "command": "cd /Users/phil/repos/marlin && git diff --name-only --diff-filter=d -- '*.py' | grep -q . && (cd backend && uv run basedpyright 2>&1 | tail -20) || true; true"
           },
           {
             "type": "command",
-            "command": "cd /Users/phil/repos/sloopquest && git diff --name-only --diff-filter=d -- 'frontend/**/*.ts' 'frontend/**/*.tsx' | grep -q . && (cd frontend && pnpm exec tsc -b --noEmit 2>&1 | tail -30) || true; true"
+            "command": "cd /Users/phil/repos/marlin && git diff --name-only --diff-filter=d -- 'frontend/**/*.ts' 'frontend/**/*.tsx' | grep -q . && (cd frontend && pnpm exec tsc -b --noEmit 2>&1 | tail -30) || true; true"
           }
         ]
       }

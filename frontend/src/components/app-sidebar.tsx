@@ -198,7 +198,7 @@ export function AppSidebar({
             }}
             className="text-[1.35rem] leading-tight font-semibold"
           >
-            Sloopquest
+            Marlin Survey
           </span>
           <span
             style={{

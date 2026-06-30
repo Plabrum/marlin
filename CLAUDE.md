@@ -1,6 +1,6 @@
-# Sloopquest — Claude Code Guidelines
+# Marlin Survey — Claude Code Guidelines
 
-Sloopquest is a marine survey app. Stack-specific rules live alongside the code:
+Marlin Survey is a marine survey app. Stack-specific rules live alongside the code:
 
 - Backend (`backend/`) — see [backend/CLAUDE.md](backend/CLAUDE.md)
 - Frontend (`frontend/`) — see [frontend/CLAUDE.md](frontend/CLAUDE.md)

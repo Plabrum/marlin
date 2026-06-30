@@ -1,11 +1,11 @@
-name: sloopquest
+name: marlin
 
 services:
   db:
     image: pgvector/pgvector:pg16
-    container_name: sloopquest-db
+    container_name: marlin-db
     environment:
-      POSTGRES_DB: sloopquest
+      POSTGRES_DB: marlin
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
@@ -21,9 +21,9 @@ services:
 
   test-db:
     image: pgvector/pgvector:pg16
-    container_name: sloopquest-test-db
+    container_name: marlin-test-db
     environment:
-      POSTGRES_DB: sloopquest
+      POSTGRES_DB: marlin
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
@@ -39,7 +39,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: sloopquest-redis
+    container_name: marlin-redis
     command: redis-server --appendonly yes
     ports:
       - "6379:6379"

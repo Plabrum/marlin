@@ -8,7 +8,7 @@ interface MagicLinkProps {
 }
 
 export default function MagicLink({
-  magic_link_url = 'https://app.sloopquest.com/auth/magic-link?token=example',
+  magic_link_url = 'https://app.marlinsurvey.com/auth/magic-link?token=example',
   expiration_minutes = 15,
 }: MagicLinkProps) {
   return (
@@ -24,12 +24,12 @@ export default function MagicLink({
       </Text>
 
       <Text className="font-body text-[15px] leading-relaxed text-ink-muted m-0 mb-7">
-        Click the button below to securely sign in to Sloopquest. This link expires in{' '}
+        Click the button below to securely sign in to Marlin Survey. This link expires in{' '}
         {expiration_minutes} minutes for your security.
       </Text>
 
       <Section className="mb-8">
-        <Button href={magic_link_url}>Continue to Sloopquest</Button>
+        <Button href={magic_link_url}>Continue to Marlin Survey</Button>
       </Section>
 
       <Divider />

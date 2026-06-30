@@ -48,7 +48,7 @@ module "media" {
 
 resource "aws_secretsmanager_secret" "app" {
   name                    = "${local.name}-app-secrets"
-  description             = "Sloopquest ${var.environment} secrets - populate manually after first apply"
+  description             = "Marlin Survey  secrets - populate manually after first apply"
   recovery_window_in_days = var.environment == "production" ? 7 : 0
 
   tags = { Name = "${local.name}-app-secrets" }

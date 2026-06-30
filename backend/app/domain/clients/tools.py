@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.domain.clients.enums import ClientType
 from app.domain.clients.models import Client
-from app.platform.llm.registry import SloopTool, ToolContext, ToolResult, register_tool
+from app.platform.llm.registry import MarlinTool, ToolContext, ToolResult, register_tool
 from app.platform.llm.schemas import InputSchema, PropertySchema
 from app.utils.sqids import Sqid
 
@@ -19,7 +19,7 @@ class SearchClientsInput(Struct):
 
 
 @register_tool
-class SearchClientsTool(SloopTool):
+class SearchClientsTool(MarlinTool):
     name = "search_clients"
     description = "Search clients by name or email."
     input_schema = InputSchema(
@@ -78,7 +78,7 @@ class CreateClientInput(Struct):
 
 
 @register_tool
-class CreateClientTool(SloopTool):
+class CreateClientTool(MarlinTool):
     name = "create_client"
     description = (
         "Create a new client. client_type must be one of: individual, insurance_company, lender, broker. "

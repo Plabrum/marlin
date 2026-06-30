@@ -12,7 +12,7 @@ from app.domain.users.models import Organization
 
 logger = logging.getLogger(__name__)
 
-DEMO_ORG_NAME = "Sloopquest Demo"
+DEMO_ORG_NAME = "Marlin Survey Demo"
 DEMO_ORG_ID = 0
 
 

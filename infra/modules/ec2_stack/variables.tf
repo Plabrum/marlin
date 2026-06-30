@@ -27,7 +27,7 @@ variable "image_tag" {
 
 variable "db_name" {
   type    = string
-  default = "sloopquest"
+  default = "marlin"
 }
 
 variable "db_username" {

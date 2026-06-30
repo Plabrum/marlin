@@ -105,7 +105,7 @@ async def test_survey_extractor_run_persists_imported_survey(transaction: AsyncS
 def test_extract_pdf_attachments_picks_pdfs():
     msg = EmailMessage()
     msg["From"] = "user@example.com"
-    msg["To"] = "surveys@sloopquest.local"
+    msg["To"] = "surveys@marlinsurvey.local"
     msg.set_content("body")
     msg.add_attachment(b"%PDF-1.4 hello", maintype="application", subtype="pdf", filename="a.pdf")
     msg.add_attachment(b"plain text", maintype="text", subtype="plain", filename="notes.txt")

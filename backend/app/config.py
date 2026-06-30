@@ -36,8 +36,8 @@ class Config:
 
     # ─── S3 ───────────────────────────────────────────────────────────────────
     S3_INBOUND_EMAIL_BUCKET: str = os.getenv("S3_INBOUND_EMAIL_BUCKET", "")
-    S3_MEDIA_BUCKET: str = os.getenv("S3_MEDIA_BUCKET", "sloopquest-media")
-    S3_DOCUMENTS_BUCKET: str = os.getenv("S3_DOCUMENTS_BUCKET", "sloopquest-documents")
+    S3_MEDIA_BUCKET: str = os.getenv("S3_MEDIA_BUCKET", "marlin-media")
+    S3_DOCUMENTS_BUCKET: str = os.getenv("S3_DOCUMENTS_BUCKET", "marlin-documents")
 
     # ─── Upload limits ────────────────────────────────────────────────────────
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", str(50 * 1024 * 1024)))  # 50 MB
@@ -51,12 +51,12 @@ class Config:
 
     # ─── Domain ───────────────────────────────────────────────────────────────
     # Terraform owns the domain (var.domain); the app owns local-parts and display names.
-    DOMAIN: str = os.getenv("DOMAIN", "sloopquest.local")
+    DOMAIN: str = os.getenv("DOMAIN", "marlinsurvey.local")
 
     # ─── SES ──────────────────────────────────────────────────────────────────
     SES_REGION: str = os.getenv("SES_REGION", os.getenv("AWS_REGION", "us-east-1"))
     SES_CONFIGURATION_SET: str = os.getenv("SES_CONFIGURATION_SET", "")
-    SES_FROM_NAME: str = "Sloopquest"
+    SES_FROM_NAME: str = "Marlin Survey"
 
     @property
     def SES_FROM_EMAIL(self) -> str:  # noqa: N802
@@ -106,7 +106,7 @@ class Config:
     ) -> str:
         endpoint = os.getenv("DB_ENDPOINT", "localhost")
         port = port or os.getenv("DB_PORT", "5432")
-        name = os.getenv("DB_NAME", "sloopquest")
+        name = os.getenv("DB_NAME", "marlin")
         user = user or os.getenv("DB_USER", "postgres")
         password = password or os.getenv("DB_PASSWORD", "postgres")
         return f"postgresql{driver}://{user}:{password}@{endpoint}:{port}/{name}"

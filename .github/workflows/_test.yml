@@ -12,7 +12,7 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_DB: sloopquest
+          POSTGRES_DB: marlin
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:

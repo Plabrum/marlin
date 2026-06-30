@@ -305,7 +305,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
     >
       <StarMark size={11} className="text-brass-deep" />
       <span className="text-ink" style={{ fontWeight: 500 }}>
-        Sloopquest
+        Marlin Survey
       </span>
     </span>
   );

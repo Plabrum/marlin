@@ -33,10 +33,10 @@ if [[ -z "${INSTANCE_ID:-}" ]]; then
 fi
 
 if [[ -z "${INSTANCE_ID:-}" ]]; then
-  echo "==> Resolving instance via tag Name=sloopquest*"
+  echo "==> Resolving instance via tag Name=marlin*"
   INSTANCE_ID="$(aws ec2 describe-instances \
     --region "$AWS_REGION" \
-    --filters "Name=tag:Name,Values=sloopquest*" "Name=instance-state-name,Values=running" \
+    --filters "Name=tag:Name,Values=marlin*" "Name=instance-state-name,Values=running" \
     --query 'Reservations[].Instances[].InstanceId | [0]' \
     --output text)"
 fi

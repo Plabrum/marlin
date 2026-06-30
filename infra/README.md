@@ -1,6 +1,6 @@
 # infra/ — Terraform Infrastructure
 
-AWS infrastructure for Sloopquest, managed with Terraform.
+AWS infrastructure for Marlin Survey, managed with Terraform.
 
 **Do NOT apply locally.** All Terraform runs happen via CI/CD or a designated ops machine with the correct AWS credentials and state backend configured.
 
@@ -17,7 +17,7 @@ AWS infrastructure for Sloopquest, managed with Terraform.
 | Transcripts | S3 | STT output from Deepgram |
 | Load balancer | ALB | HTTPS only, HTTP redirects to HTTPS |
 | SSL | ACM | Auto-renewed, DNS-validated via Route53 |
-| DNS | Route53 | `sloopquest.app` zone — root/www/app → Vercel, api → ALB |
+| DNS | Route53 | `marlinsurvey.com` zone — root/www/app → Vercel, api → ALB |
 | Email | SES | Outbound only (magic links, call summaries) |
 | Secrets | Secrets Manager | API keys, session secret — managed outside Terraform |
 | Sessions | SSM (via VPC endpoints) | ECS Exec / SSH into tasks |
@@ -42,9 +42,9 @@ infra/
 
 ## Domain
 
-`sloopquest.app` — registered via Vercel, DNS managed by Route53.
+`marlinsurvey.com` — registered via Vercel, DNS managed by Route53.
 
-After `terraform apply`, get the Route53 nameservers and set them in the Vercel registrar dashboard (Domains → sloopquest.app → Nameservers → Custom):
+After `terraform apply`, get the Route53 nameservers and set them in the Vercel registrar dashboard (Domains → marlinsurvey.com → Nameservers → Custom):
 ```bash
 terraform output route53_nameservers
 ```
@@ -64,7 +64,7 @@ terraform output route53_nameservers
    ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
    terraform -chdir=infra init -reconfigure \
      -backend-config="bucket=tf-state-${ACCOUNT_ID}" \
-     -backend-config="key=Sloopquest/terraform.tfstate" \
+     -backend-config="key=marlin/dev/terraform.tfstate" \
      -backend-config="region=us-east-1" \
      -backend-config="encrypt=true"
    terraform -chdir=infra workspace select -or-create production
@@ -85,7 +85,7 @@ Secrets are created by Terraform but intentionally **not updated** by it (lifecy
 
 ```bash
 aws secretsmanager put-secret-value \
-  --secret-id sloopquest-production-app-secrets \
+  --secret-id marlin-production-app-secrets \
   --secret-string '{"OPENAI_API_KEY": "sk-...", ...}'
 ```
 
@@ -94,12 +94,12 @@ aws secretsmanager put-secret-value \
 ```bash
 # Get a shell in a running API task
 TASK_ARN=$(aws ecs list-tasks \
-  --cluster sloopquest-production-cluster \
-  --service-name sloopquest-production-api-service \
+  --cluster marlin-production-cluster \
+  --service-name marlin-production-api-service \
   --query 'taskArns[0]' --output text)
 
 aws ecs execute-command \
-  --cluster sloopquest-production-cluster \
+  --cluster marlin-production-cluster \
   --task $TASK_ARN \
   --container app \
   --interactive \

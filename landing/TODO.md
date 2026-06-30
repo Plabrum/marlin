@@ -100,7 +100,7 @@ Anything user-facing that's invented and would be embarrassing if a customer cau
 - [ ] `specifications.tsx:98–101` — the quote itself ("Survey on the dock. Publish before dinner…") is mine, not a real surveyor's. Replace with an actual quote.
 
 ### Brand metadata
-- [ ] Coordinates `41°22′N — 70°57′W · Newport, R.I.` appear in the hero strip, anchor glyph block, and a few captions. Pin this to a real HQ (or remove if Sloopquest doesn't have one).
+- [ ] Coordinates `41°22′N — 70°57′W · Newport, R.I.` appear in the hero strip, anchor glyph block, and a few captions. Pin this to a real HQ (or remove if Marlin Survey doesn't have one).
 - [ ] Roman-numeral years (`MMXXVI`) appear throughout. Confirm we want this convention before locking it in — it's stylish but creates a copy-update task every January.
 
 ### Specifications copy

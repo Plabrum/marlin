@@ -36,7 +36,7 @@ def _pg_url() -> str:
     pw = os.getenv("DB_PASSWORD", "postgres")
     host = os.getenv("DB_ENDPOINT", "localhost")
     port = os.getenv("DB_PORT", "5432")
-    name = os.getenv("DB_NAME", "sloopquest")
+    name = os.getenv("DB_NAME", "marlin")
     return f"postgresql+psycopg://{user}:{pw}@{host}:{port}/{name}"
 
 

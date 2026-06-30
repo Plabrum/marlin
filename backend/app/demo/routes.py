@@ -20,8 +20,8 @@ from .wipe import DEMO_ORG_ID
 logger = logging.getLogger(__name__)
 
 _ROLE_TO_EMAIL: dict[Role, str] = {
-    Role.ADMIN: "demo@sloopquest.com",
-    Role.MEMBER: "demo+member@sloopquest.com",
+    Role.ADMIN: "demo@marlinsurvey.com",
+    Role.MEMBER: "demo+member@marlinsurvey.com",
 }
 
 

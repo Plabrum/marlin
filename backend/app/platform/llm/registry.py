@@ -1,6 +1,6 @@
 """Tool registry for the agentic loop.
 
-Domain tools use @register_tool and subclass SloopTool.
+Domain tools use @register_tool and subclass MarlinTool.
 Importing a module that calls @register_tool is sufficient to register tools —
 factory.py's discover_and_import(["tools.py"]) handles this automatically.
 """
@@ -22,7 +22,7 @@ from app.utils.sqids import Sqid
 
 logger = logging.getLogger(__name__)
 
-_TOOL_REGISTRY: dict[str, type["SloopTool"]] = {}
+_TOOL_REGISTRY: dict[str, type["MarlinTool"]] = {}
 
 
 @dataclass
@@ -38,7 +38,7 @@ class ToolResult:
     message: str = ""
 
 
-class SloopTool(ABC):
+class MarlinTool(ABC):
     name: ClassVar[str]
     description: ClassVar[str]
     input_schema: ClassVar[InputSchema]
@@ -53,7 +53,7 @@ class SloopTool(ABC):
         return ToolDefinition(name=cls.name, description=cls.description, input_schema=cls.input_schema)
 
 
-def register_tool(cls: type[SloopTool]) -> type[SloopTool]:
+def register_tool(cls: type[MarlinTool]) -> type[MarlinTool]:
     """Decorator: validate ClassVars then register in _TOOL_REGISTRY."""
     for attr in ("name", "description", "input_schema", "input_struct"):
         if not hasattr(cls, attr):
@@ -64,7 +64,7 @@ def register_tool(cls: type[SloopTool]) -> type[SloopTool]:
     return cls
 
 
-def get_tool_class(name: str) -> type[SloopTool] | None:
+def get_tool_class(name: str) -> type[MarlinTool] | None:
     return _TOOL_REGISTRY.get(name)
 
 

@@ -83,7 +83,7 @@ async def create_imported_survey(
 ) -> Survey:
     """Persist an imported survey in COMPLETED-equivalent state.
 
-    Sloopquest's `SurveyState` uses `delivered` as the terminal post-survey
+    Marlin Survey's `SurveyState` uses `delivered` as the terminal post-survey
     state (no explicit COMPLETED state exists). Imports land directly there
     with the IMPORTED source flag.
     """

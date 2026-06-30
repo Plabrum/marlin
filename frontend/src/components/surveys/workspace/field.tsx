@@ -42,7 +42,7 @@ const ASSIGN_MEDIA: ActionDTO = {
 
 export type Tree = SurveyFormNodeRef & { children: Tree[] };
 
-export const DRAG_MEDIA_TYPE = 'application/x-sloopquest-media-id';
+export const DRAG_MEDIA_TYPE = 'application/x-marlin-media-id';
 
 export function getFieldType(node: SurveyFormNodeRef): string | undefined {
   return (node.config as { type?: string } | null)?.type;
