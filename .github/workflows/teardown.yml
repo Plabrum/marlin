@@ -32,6 +32,7 @@ jobs:
         run: |
           find . -name '*.tf' -exec sed -i '/prevent_destroy *= *true/d' {} +
           sed -i 's|resource "aws_s3_bucket" "main" {|resource "aws_s3_bucket" "main" {\n  force_destroy = true|' modules/s3_bucket/main.tf
+          sed -i 's|resource "aws_ecr_repository" "app" {|resource "aws_ecr_repository" "app" {\n  force_delete = true|' shared.tf
           echo "--- remaining prevent_destroy (should be none) ---"
           grep -rn "prevent_destroy" . || echo "none"
           echo "--- s3 bucket resource ---"
