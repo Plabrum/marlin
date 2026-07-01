@@ -28,6 +28,15 @@ jobs:
         with:
           ref: 72ee9bf199007f100a4c8ef99f21e082005ad334
 
+      - name: Patch config for teardown (drop prevent_destroy, force-empty S3)
+        run: |
+          find . -name '*.tf' -exec sed -i '/prevent_destroy *= *true/d' {} +
+          sed -i 's|resource "aws_s3_bucket" "main" {|resource "aws_s3_bucket" "main" {\n  force_destroy = true|' modules/s3_bucket/main.tf
+          echo "--- remaining prevent_destroy (should be none) ---"
+          grep -rn "prevent_destroy" . || echo "none"
+          echo "--- s3 bucket resource ---"
+          sed -n '1,4p' modules/s3_bucket/main.tf
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
