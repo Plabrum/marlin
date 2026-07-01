@@ -127,7 +127,7 @@ def test_expose_detail_false_omits_detail_handler():
 async def test_apply_filter_text_contains(session_factory: async_sessionmaker[AsyncSession]):
     async with session_factory() as s:
         q = sa.select(_Vessel).where(_Vessel.organization_id == 42, _Vessel.deleted_at.is_(None))
-        q = apply_filter(q, _Vessel, TextFilter(column="name", operation="contains", value="loop"), {"name"})
+        q = apply_filter(q, _Vessel, TextFilter(column="name", operation="contains", value="arl"), {"name"})
         rows = (await s.execute(q)).scalars().all()
         names = {r.name for r in rows}
         assert names == {"Marlin"}
@@ -212,7 +212,7 @@ async def test_list_endpoint_text_filter_returns_matching_rows(
             "/vessels",
             json={
                 "filters": [
-                    {"type": "text", "column": "name", "operation": "contains", "value": "loop"},
+                    {"type": "text", "column": "name", "operation": "contains", "value": "arl"},
                 ]
             },
         )

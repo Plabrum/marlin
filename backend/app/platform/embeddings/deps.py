@@ -9,7 +9,7 @@ from app.platform.embeddings.client import (
 from app.platform.llm.deps import _voice_client
 from app.utils.deps import dep
 
-_use_openai = (not app_config.IS_DEV) or (app_config.USE_REAL_EMBEDDINGS and bool(app_config.OPENAI_API_KEY))
+_use_openai = bool(app_config.OPENAI_API_KEY) and (not app_config.IS_DEV or app_config.USE_REAL_EMBEDDINGS)
 _embedding_client: BaseEmbeddingClient = LLMEmbeddingClient(_voice_client) if _use_openai else LocalEmbeddingClient()
 
 

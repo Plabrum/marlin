@@ -44,6 +44,10 @@ class ClaimInbox(BaseTopLevelAction[ClaimInboxData]):
     form_field_placeholders = {"local_part": "phil"}
 
     @classmethod
+    def is_available(cls, deps: ActionDeps) -> bool:
+        return deps.user.inbox_local_part is None
+
+    @classmethod
     async def execute(
         cls, data: ClaimInboxData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
@@ -58,12 +62,12 @@ class ClaimInbox(BaseTopLevelAction[ClaimInboxData]):
             row.started_at = now
             await deps.sm_service.system_transition(onboarding_state_machine, row, OnboardingState.INBOX)
 
-        await UserService(transaction).claim_inbox_local_part(int(deps.user.id), data.local_part)
+        canonical = await UserService(transaction).claim_inbox_local_part(int(deps.user.id), data.local_part)
 
         await deps.sm_service.transition(onboarding_state_machine, row, OnboardingState.PRICING, actor=deps.user)
 
         return ActionExecutionResponse(
-            message="Inbox claimed",
+            message=f"Inbox claimed: {canonical}@{deps.config.INBOX_DOMAIN}",
             invalidate_queries=["/onboardings", "/auth/me"],
         )
 
