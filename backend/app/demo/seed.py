@@ -12,6 +12,8 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
+import msgspec
+import sqlalchemy as sa
 from faker import Faker
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +24,7 @@ from app.domain.onboarding.models import Onboarding
 from app.domain.reports.enums import ReportState
 from app.domain.subscriptions.enums import SubscriptionPlan, SubscriptionStatus
 from app.domain.surveys.enums import SurveyState
-from app.domain.surveys.models import Survey
+from app.domain.surveys.models import Survey, SurveyMedia
 from app.domain.users.models import Organization
 from app.domain.users.roles import Role
 from app.domain.vessels.enums import FuelType, HullMaterial, PropulsionType, VesselType
@@ -35,6 +37,9 @@ from app.platform.data.enums import AggregationType, Granularity, TimeRange
 from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.materialize import materialize_form_response
 from app.platform.form_dsl.models import FormNode
+from app.platform.form_dsl.schema import FieldDef
+from app.platform.media.enums import MediaStates
+from app.platform.media.models import Media
 from app.platform.state_machine.models import StateTransitionLog
 
 from .marine_template import marine_template
@@ -71,10 +76,10 @@ _STATE_PATHS: dict[SurveyState, list[SurveyState]] = {
 }
 
 # ── Bulk-volume generation ────────────────────────────────────────────────────
-# The four showcase surveys above carry the rich detail (materialized forms,
-# email threads, reports). The bulk records below exist purely to give the
-# dashboard charts and kanban realistic volume — they are intentionally cheap
-# to build (no form materialization).
+# The four showcase surveys above carry extra detail (email threads, reports)
+# that the bulk records below don't need — but every survey, showcase or bulk,
+# gets its form materialized and populated (see _populate_survey_form) so none
+# of them render as an empty checklist in the demo.
 
 # Delivered surveys (each with an invoice) per month, oldest → newest. The
 # gentle upward trend makes the revenue-by-month chart read as a growing
@@ -150,6 +155,308 @@ def _client_spec(rng: random.Random, fake: Faker) -> dict[str, object]:
     if r < 0.92:
         return {"client_type": ClientType.lender, "display_name": f"{fake.city()} Marine Lending"}
     return {"client_type": ClientType.broker, "display_name": f"{fake.last_name()} Yacht Brokers"}
+
+
+# ── Survey form content (marine_template field values, findings, photos) ──────
+# Keyed to the field ids in marine_template.py — this seed is tied to that
+# specific template, not a generic form filler.
+
+_ENGINE_MAKES = [
+    "Yanmar 4JH45",
+    "Yanmar 3YM30",
+    "Perkins 4.236M",
+    "Perkins Sabre M92B",
+    "Volvo Penta D3-110",
+    "Westerbeke 27B",
+    "Caterpillar 3208",
+    "Cummins 6BTA",
+]
+
+_HULL_NOTES = [
+    "Gelcoat shows typical UV chalking on topsides; no structural concerns noted.",
+    "Hull below the waterline is fair with no evidence of print-through or delamination.",
+    "Minor spider-cracking observed near the chainplates; cosmetic in nature.",
+    "Bottom paint is worn in way of the waterline; recommend a fresh coat prior to launch.",
+    "No blisters or soft spots detected during moisture survey of the hull laminate.",
+    "Keel joint sealant shows minor weathering; monitor at next haul-out.",
+]
+
+_ENGINE_NOTES = [
+    "Engine starts promptly and runs smoothly through the RPM range with no unusual vibration.",
+    "Raw water pump impeller shows normal wear consistent with service life.",
+    "Engine mounts are in serviceable condition with no excessive play.",
+    "Exhaust elbow shows light surface corrosion; monitor for through-wall corrosion.",
+    "Oil and coolant levels were within normal range at time of inspection.",
+    "Engine compartment is clean with no signs of active fuel or oil leaks.",
+]
+
+_ELECTRICAL_NOTES = [
+    "DC wiring is neatly run and properly secured throughout the engine compartment.",
+    "House bank shows normal resting voltage; no corrosion at terminals.",
+    "Bilge pump float switch tested and cycles properly.",
+    "Shore power inlet and cord are in good condition with no heat discoloration.",
+]
+
+_HANDLING_NOTES = [
+    "Vessel tracked straight and responded well to helm inputs throughout the sea trial.",
+    "No unusual vibration or noise noted at cruising RPM.",
+    "Steering was responsive with no excessive play at the wheel.",
+    "Vessel achieved the expected cruising speed for its hull type and horsepower.",
+]
+
+_BANK_LABELS = ["House bank", "Starting bank", "Bow thruster bank"]
+
+# Fixed, deterministic file keys — the demo org resets nightly (RESET_DEMO_ORG
+# task), so keys must stay stable across reseeds for manually-uploaded
+# placeholder images (bucket S3_MEDIA_BUCKET, prefix "media/demo-fixtures/")
+# to keep resolving instead of going stale every night.
+_MEDIA_LIBRARY: list[dict[str, str]] = [
+    {"category": "hull", "slug": "hull-topsides-starboard"},
+    {"category": "hull", "slug": "hull-bottom-paint"},
+    {"category": "hull", "slug": "transom-and-swim-platform"},
+    {"category": "hull", "slug": "rudder-and-prop"},
+    {"category": "hull", "slug": "thru-hull-fitting-closeup"},
+    {"category": "hull", "slug": "moisture-meter-reading"},
+    {"category": "engine", "slug": "engine-bay-overview"},
+    {"category": "engine", "slug": "engine-serial-plate"},
+    {"category": "engine", "slug": "raw-water-pump"},
+    {"category": "engine", "slug": "engine-mounts-closeup"},
+    {"category": "engine", "slug": "exhaust-elbow"},
+    {"category": "engine", "slug": "oil-dipstick-check"},
+]
+
+
+async def _create_demo_media_library(session: AsyncSession, org_id: int) -> dict[str, list[Media]]:
+    by_category: dict[str, list[Media]] = {"hull": [], "engine": []}
+    for item in _MEDIA_LIBRARY:
+        media = Media(
+            organization_id=org_id,
+            file_key=f"media/demo-fixtures/{item['slug']}.jpg",
+            file_name=f"{item['slug']}.jpg",
+            file_type="image",
+            file_size=850_000,
+            mime_type="image/jpeg",
+            state=MediaStates.READY,
+        )
+        session.add(media)
+        by_category[item["category"]].append(media)
+    await session.flush()
+    return by_category
+
+
+async def _attach_photos(
+    session: AsyncSession, survey: Survey, node: FormNode, rng: random.Random, pool: list[Media]
+) -> None:
+    picks = rng.sample(pool, k=rng.randint(1, min(3, len(pool))))
+    for i, media in enumerate(picks):
+        session.add(
+            SurveyMedia(
+                organization_id=survey.organization_id,
+                survey_id=survey.id,
+                media_id=media.id,
+                node_id=node.id,
+                caption=node.label,
+                sort_order=i,
+            )
+        )
+    node.value = [str(media.id) for media in picks]
+
+
+async def _add_battery_bank_instances(
+    session: AsyncSession, survey: Survey, repeater_node: FormNode, rng: random.Random
+) -> None:
+    field = msgspec.convert(repeater_node.config, FieldDef)
+    for i in range(rng.randint(1, 3)):
+        instance = FormNode(
+            organization_id=survey.organization_id,
+            owner_type="surveys",
+            owner_id=survey.id,
+            parent_id=repeater_node.id,
+            kind=FormNodeKind.repeater_instance,
+            schema_ref=None,
+            label=f"{field.label} #{i + 1}",
+            sort_order=i,
+        )
+        session.add(instance)
+        await session.flush()
+
+        bank_values = {
+            "bank_label": _BANK_LABELS[i % len(_BANK_LABELS)],
+            "bank_capacity_ah": rng.choice([100, 105, 140, 165, 200, 225]),
+            "bank_age_years": rng.randint(1, 9),
+        }
+        for child_index, child in enumerate(field.fields):
+            session.add(
+                FormNode(
+                    organization_id=survey.organization_id,
+                    owner_type="surveys",
+                    owner_id=survey.id,
+                    parent_id=instance.id,
+                    kind=FormNodeKind.field,
+                    schema_ref=child.id,
+                    label=child.label,
+                    value=bank_values.get(child.id),
+                    config=msgspec.to_builtins(child),
+                    sort_order=child_index,
+                )
+            )
+    await session.flush()
+
+
+async def _add_findings(
+    session: AsyncSession,
+    survey: Survey,
+    by_ref: dict[str, FormNode],
+    rng: random.Random,
+    *,
+    blistering: str,
+    oil_condition: str,
+    moisture_reading: float,
+) -> None:
+    candidates: list[tuple[FormNode, str, str, str, str]] = []
+
+    if blistering in ("moderate", "severe"):
+        severity = "critical" if blistering == "severe" else "advisory"
+        candidates.append(
+            (
+                by_ref["blistering"],
+                severity,
+                f"{blistering.capitalize()} gelcoat blistering on hull bottom",
+                "Blistering observed during moisture survey below the waterline, concentrated near the "
+                "turn of the bilge.",
+                "Recommend moisture survey by a qualified osmosis specialist prior to closing.",
+            )
+        )
+    if moisture_reading > 20:
+        candidates.append(
+            (
+                by_ref["moisture_reading"],
+                "advisory",
+                "Elevated moisture reading in hull laminate",
+                f"Moisture meter reading of {moisture_reading}% exceeds the normal dry-laminate range.",
+                "Recommend monitoring and re-testing after a haul-out drying period.",
+            )
+        )
+    if oil_condition == "needs_change":
+        candidates.append(
+            (
+                by_ref["oil_condition"],
+                "advisory",
+                "Engine oil due for service",
+                "Oil sample appeared dark and past its normal service interval at time of inspection.",
+                "Recommend an oil and filter change prior to extended use.",
+            )
+        )
+
+    extra_pool = [
+        (
+            by_ref["hull_material_notes"],
+            "info",
+            "Minor gelcoat crazing near chainplates",
+            "Cosmetic surface crazing noted; no moisture intrusion detected.",
+            "Monitor at next haul-out; no immediate action required.",
+        ),
+        (
+            by_ref["engine_notes"],
+            "info",
+            "Raw water pump impeller near service interval",
+            "Impeller shows normal wear consistent with service life.",
+            "Replace per manufacturer's service interval.",
+        ),
+        (
+            by_ref["electrical_notes"],
+            "advisory",
+            "Corrosion at battery terminals",
+            "Light corrosion observed at house bank terminals.",
+            "Clean terminals and apply anti-corrosion treatment.",
+        ),
+    ]
+    rng.shuffle(extra_pool)
+    target_count = rng.randint(1, 3)
+    while len(candidates) < target_count and extra_pool:
+        candidates.append(extra_pool.pop())
+
+    for order, (node, severity, summary, detail, recommended_action) in enumerate(candidates):
+        session.add(
+            FormNode(
+                organization_id=survey.organization_id,
+                owner_type="surveys",
+                owner_id=survey.id,
+                parent_id=node.id,
+                kind=FormNodeKind.annotation,
+                schema_ref=None,
+                label=summary,
+                value={
+                    "type": "finding",
+                    "severity": severity,
+                    "summary": summary,
+                    "detail": detail,
+                    "recommended_action": recommended_action,
+                    "originating_value_snapshot": str(node.value) if node.value is not None else None,
+                },
+                sort_order=order,
+            )
+        )
+    await session.flush()
+
+
+async def _populate_survey_form(
+    session: AsyncSession, survey: Survey, rng: random.Random, media_by_category: dict[str, list[Media]]
+) -> None:
+    """Fill a materialized survey's form_nodes with plausible values, findings,
+    and photos so it doesn't render as an empty checklist in the demo."""
+    nodes = (
+        (
+            await session.execute(
+                sa.select(FormNode).where(FormNode.owner_type == "surveys", FormNode.owner_id == survey.id)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    by_ref = {n.schema_ref: n for n in nodes if n.kind == FormNodeKind.field and n.schema_ref}
+
+    by_ref["survey_type"].value = rng.choices(["pre_purchase", "insurance", "appraisal"], weights=[70, 20, 10], k=1)[0]
+    by_ref["overall_rating"].value = rng.choices(
+        ["above_average", "average", "below_average"], weights=[30, 55, 15], k=1
+    )[0]
+    by_ref["market_value"].value = rng.randint(35_000, 480_000)
+    by_ref["in_water"].value = rng.random() < 0.8
+    sea_trial_done = rng.random() < 0.7
+    by_ref["sea_trial"].value = sea_trial_done
+
+    blistering = rng.choices(["none", "minor", "moderate", "severe"], weights=[55, 25, 15, 5], k=1)[0]
+    by_ref["hull_material_notes"].value = rng.choice(_HULL_NOTES)
+    moisture_reading = round(rng.uniform(6.0, 28.0), 1)
+    by_ref["moisture_reading"].value = moisture_reading
+    by_ref["blistering"].value = blistering
+    await _attach_photos(session, survey, by_ref["hull_photos"], rng, media_by_category["hull"])
+
+    by_ref["engine_make_model"].value = rng.choice(_ENGINE_MAKES)
+    by_ref["engine_hours"].value = rng.randint(180, 4200)
+    oil_condition = rng.choices(["clean", "darkening", "needs_change"], weights=[45, 35, 20], k=1)[0]
+    by_ref["oil_condition"].value = oil_condition
+    by_ref["engine_notes"].value = rng.choice(_ENGINE_NOTES)
+    await _attach_photos(session, survey, by_ref["engine_photos"], rng, media_by_category["engine"])
+
+    by_ref["house_bank_voltage"].value = round(rng.uniform(11.9, 13.1), 2)
+    by_ref["electrical_notes"].value = rng.choice(_ELECTRICAL_NOTES)
+    await _add_battery_bank_instances(session, survey, by_ref["battery_bank"], rng)
+
+    if sea_trial_done:
+        by_ref["cruising_rpm"].value = rng.randint(2200, 3400)
+        by_ref["cruising_speed_kts"].value = round(rng.uniform(6.0, 22.0), 1)
+        by_ref["handling_notes"].value = rng.choice(_HANDLING_NOTES)
+
+    await _add_findings(
+        session,
+        survey,
+        by_ref,
+        rng,
+        blistering=blistering,
+        oil_condition=oil_condition,
+        moisture_reading=moisture_reading,
+    )
 
 
 async def seed_demo_org(session: AsyncSession) -> Organization:
@@ -272,9 +579,6 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     logger.info("Created %d vessels", len(vessels))
 
     # ── 6a. Survey template ───────────────────────────────────────────────────
-    import msgspec  # noqa: PLC0415
-    import sqlalchemy as _sa  # noqa: PLC0415
-
     template_definition = marine_template()
     template = SurveyTemplateFactory.build(
         organization_id=org.id,
@@ -285,6 +589,9 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     session.add(template)
     await session.flush()
     logger.info("Created survey template: %s (id=%s)", template.name, template.id)
+
+    media_by_category = await _create_demo_media_library(session, org.id)
+    logger.info("Created %d demo media placeholders", sum(len(v) for v in media_by_category.values()))
 
     # ── 6b. Surveys ───────────────────────────────────────────────────────────
     # Pin created_at to recent dates per state so the showcase surveys land in
@@ -319,7 +626,9 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             definition=template_definition,
         )
     await session.flush()
-    logger.info("Created %d surveys (materialized against template)", len(surveys))
+    for survey in surveys:
+        await _populate_survey_form(session, survey, rng, media_by_category)
+    logger.info("Created %d surveys (materialized and populated against template)", len(surveys))
 
     # ── 6c. Ad-hoc field shared across 3 surveys (triggers PromoteAdHocBanner) ─
     shared_field_def = {
@@ -339,7 +648,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         nodes = (
             (
                 await session.execute(
-                    _sa.select(FormNode).where(FormNode.owner_type == "surveys", FormNode.owner_id == survey.id)
+                    sa.select(FormNode).where(FormNode.owner_type == "surveys", FormNode.owner_id == survey.id)
                 )
             )
             .scalars()
@@ -438,8 +747,20 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
         _add_bulk_survey(state, created_at, inv_state)
 
     await session.flush()
+
+    for bulk_survey, _created_at, _inv_state in bulk_surveys:
+        bulk_survey.template_version = await materialize_form_response(
+            session,
+            bulk_survey,
+            owner_type="surveys",
+            definition=template_definition,
+        )
+    await session.flush()
+    for bulk_survey, _created_at, _inv_state in bulk_surveys:
+        await _populate_survey_form(session, bulk_survey, rng, media_by_category)
+
     logger.info(
-        "Created %d bulk surveys (%d revenue + %d pipeline)",
+        "Created %d bulk surveys (%d revenue + %d pipeline), materialized and populated",
         len(bulk_surveys),
         sum(_REVENUE_PER_MONTH),
         len(_PIPELINE_STATES),

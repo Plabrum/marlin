@@ -40,7 +40,9 @@ class FormNode(OrgScopedMixin, BaseDBModel):
     # and annotations.
     schema_ref: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
     label: Mapped[str] = mapped_column(sa.Text, nullable=False)
-    value: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    # Storage is polymorphic per FieldType (see validate.py): str, number, bool,
+    # a list for MULTISELECT/PHOTO, or a dict for TABLE/SIGNATURE/annotations.
+    value: Mapped[Any] = mapped_column(JSONB, nullable=True)
     # Snapshot of the field-type config so the response renders correctly even
     # if the template node is later renamed or deleted.
     config: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
