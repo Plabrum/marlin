@@ -47,7 +47,7 @@ export function SurveyWorkspace({ data }: { data: SurveyDetail }) {
         currentSectionId={currentSectionId}
         goToSection={goToSection}
       />
-      <div className="grid h-full grid-cols-1 gap-0 md:grid-cols-[minmax(0,1fr)_32rem]">
+      <div className="grid h-full grid-cols-1 gap-0 md:grid-cols-[minmax(0,1fr)_27rem]">
         <main
           data-slot="survey-main"
           className="h-full min-w-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -77,23 +76,21 @@ export function NavUser({ user }: NavUserProps) {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground rounded-lg font-bold">
-                    {getInitials(user)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  {user.name && (
-                    <span className="truncate font-bold">{user.name}</span>
-                  )}
-                  {user.email && (
-                    <span className="truncate text-xs">{user.email}</span>
-                  )}
-                </div>
+            <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground rounded-lg font-bold">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                {user.name && (
+                  <span className="truncate font-bold">{user.name}</span>
+                )}
+                {user.email && (
+                  <span className="truncate text-xs">{user.email}</span>
+                )}
               </div>
-            </DropdownMenuLabel>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => logout.mutate()}>
               <LogOut />

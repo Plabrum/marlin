@@ -188,7 +188,7 @@ export function AppSidebar({
           style={{ fontFamily: "'Cormorant SC', Georgia, serif" }}
           className="hidden text-2xl leading-none font-semibold group-data-[collapsible=icon]:block"
         >
-          SQ
+          M
         </span>
         <div className="flex flex-col items-center leading-none group-data-[collapsible=icon]:hidden">
           <span
