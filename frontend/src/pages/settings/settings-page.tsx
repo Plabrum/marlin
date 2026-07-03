@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TABS = [
   { value: '/settings/account', label: 'Account' },
+  { value: '/settings/billing', label: 'Billing' },
   { value: '/settings/appearance', label: 'Appearance' },
   { value: '/settings/templates', label: 'Templates' },
   { value: '/settings/pricing-guides', label: 'Pricing Guides' },

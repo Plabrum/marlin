@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Download,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { ActionConfirmationDialog } from '@/components/actions/action-confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -114,6 +115,7 @@ export function ObjectActions(props: ObjectActionsProps) {
 
   const handleActionClick = (action: ActionDTO) => {
     if (action.disabled_reason?.cta) {
+      toast.info(action.disabled_reason.message);
       navigate({ to: action.disabled_reason.cta.path });
       return;
     }
