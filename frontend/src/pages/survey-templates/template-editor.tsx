@@ -16,7 +16,6 @@ import { useActionsActionGroupObjectIdExecuteObjectAction } from '@/openapi/acti
 import type {
   FieldDef,
   Section,
-  Subsection,
   SurveyTemplateDetail,
   TemplateDefinition,
 } from '@/openapi/litestarAPI.schemas';
@@ -34,6 +33,7 @@ const FIELD_TYPES = [
   'photo',
   'static_text',
   'signature',
+  'group',
 ] as const;
 
 type EditableTemplate = TemplateDefinition & {
@@ -102,7 +102,6 @@ export function TemplateEditor({
       id: randomId('sec'),
       title: 'New section',
       fields: [],
-      subsections: [],
     });
     update(next);
   }
@@ -209,138 +208,60 @@ function SectionEditor({
         </Button>
       </div>
       <div className="space-y-2 pl-4">
-        <div className="space-y-2">
-          {(section.fields ?? []).map((field, idx) => (
-            <FieldEditor
-              key={field.id}
-              field={field}
-              onChange={(mutator) =>
-                onChange((s) => {
-                  if (!s.fields) s.fields = [];
-                  mutator(s.fields[idx]);
-                })
-              }
-              onRemove={() =>
-                onChange((s) => {
-                  s.fields?.splice(idx, 1);
-                })
-              }
-            />
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              onChange((s) => {
-                if (!s.fields) s.fields = [];
-                s.fields.push({
-                  id: randomId('fld'),
-                  label: 'New field',
-                  type: 'text',
-                });
-              })
-            }
-          >
-            + Add field
-          </Button>
-        </div>
-        {(section.subsections ?? []).map((sub, idx) => (
-          <SubsectionEditor
-            key={sub.id}
-            subsection={sub}
-            onChange={(mutator) =>
-              onChange((s) => {
-                if (!s.subsections) s.subsections = [];
-                mutator(s.subsections[idx]);
-              })
-            }
-            onRemove={() =>
-              onChange((s) => {
-                s.subsections?.splice(idx, 1);
-              })
-            }
-          />
-        ))}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
+        <FieldListEditor
+          fields={section.fields ?? []}
+          onChange={(next) =>
             onChange((s) => {
-              if (!s.subsections) s.subsections = [];
-              s.subsections.push({
-                id: randomId('sub'),
-                title: 'New subsection',
-                fields: [],
-              });
+              s.fields = next;
             })
           }
-        >
-          + Add subsection
-        </Button>
+        />
       </div>
     </div>
   );
 }
 
-function SubsectionEditor({
-  subsection,
+function FieldListEditor({
+  fields,
   onChange,
-  onRemove,
 }: {
-  subsection: Subsection;
-  onChange: (mutator: (s: Subsection) => void) => void;
-  onRemove: () => void;
+  fields: FieldDef[];
+  onChange: (next: FieldDef[]) => void;
 }) {
+  function updateAt(idx: number, mutator: (f: FieldDef) => void) {
+    const next = clone(fields);
+    mutator(next[idx]);
+    onChange(next);
+  }
+
+  function removeAt(idx: number) {
+    const next = clone(fields);
+    next.splice(idx, 1);
+    onChange(next);
+  }
+
   return (
-    <div className="bg-muted/30 space-y-2 rounded-xl border border-dashed p-3">
-      <div className="flex items-center gap-2">
-        <Input
-          value={subsection.title}
-          onChange={(e) =>
-            onChange((s) => {
-              s.title = e.target.value;
-            })
-          }
+    <div className="space-y-2">
+      {fields.map((field, idx) => (
+        <FieldEditor
+          key={field.id}
+          field={field}
+          onChange={(mutator) => updateAt(idx, mutator)}
+          onRemove={() => removeAt(idx)}
         />
-        <Button variant="ghost" size="sm" onClick={onRemove}>
-          Remove
-        </Button>
-      </div>
-      <div className="space-y-2 pl-3">
-        {(subsection.fields ?? []).map((field, idx) => (
-          <FieldEditor
-            key={field.id}
-            field={field}
-            onChange={(mutator) =>
-              onChange((s) => {
-                if (!s.fields) s.fields = [];
-                mutator(s.fields[idx]);
-              })
-            }
-            onRemove={() =>
-              onChange((s) => {
-                s.fields?.splice(idx, 1);
-              })
-            }
-          />
-        ))}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            onChange((s) => {
-              if (!s.fields) s.fields = [];
-              s.fields.push({
-                id: randomId('fld'),
-                label: 'New field',
-                type: 'text',
-              });
-            })
-          }
-        >
-          + Add field
-        </Button>
-      </div>
+      ))}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() =>
+          onChange([
+            ...fields,
+            { id: randomId('fld'), label: 'New field', type: 'text' },
+          ])
+        }
+      >
+        + Add field
+      </Button>
     </div>
   );
 }
@@ -436,6 +357,18 @@ function FieldEditor({
                   .split(',')
                   .map((s) => s.trim())
                   .filter(Boolean);
+              })
+            }
+          />
+        </div>
+      )}
+      {field.type === 'group' && (
+        <div className="bg-muted/30 space-y-2 rounded-xl border border-dashed p-2 pl-3">
+          <FieldListEditor
+            fields={field.fields ?? []}
+            onChange={(next) =>
+              onChange((f) => {
+                f.fields = next;
               })
             }
           />

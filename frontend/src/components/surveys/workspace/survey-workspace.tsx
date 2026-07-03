@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { SurveyState } from '@/openapi/litestarAPI.schemas';
 import { useSetPageSubcrumb } from '@/stores/page-subcrumb';
 import { AddAdHocSectionButton } from './ad-hoc';
 import { AiSurveyorEntry } from './ai-surveyor';
@@ -7,6 +8,7 @@ import { MobileRail } from './mobile-rail';
 import { PhotosRail } from './photos-rail';
 import { SectionBlock } from './section-block';
 import { SectionsRail } from './sections-rail';
+import { SurveyCompletedView } from './survey-completed-view';
 import { useSurveyMedia } from './use-survey-media';
 import { useSurveyTree } from './use-survey-tree';
 import { VesselCard } from './vessel-card';
@@ -38,6 +40,10 @@ export function SurveyWorkspace({ data }: { data: SurveyDetail }) {
     main?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   const sectionMediaItems = media.forSection(currentSectionId, sectionAncestor);
+
+  if (data.state !== SurveyState.in_draft) {
+    return <SurveyCompletedView data={data} />;
+  }
 
   return (
     <div className="bg-background relative h-[calc(100vh-3.5rem)]">

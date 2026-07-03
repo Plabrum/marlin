@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import secrets
 from enum import StrEnum, auto
 
 import msgspec
 from litestar.exceptions import NotFoundException, ValidationException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import config
+from app.domain.invoices.models import Invoice
 from app.domain.reports.builder import build_report_blocks
 from app.domain.reports.models import Report
 from app.domain.surveys.enums import SurveyState
@@ -17,6 +20,7 @@ from app.domain.surveys.schemas import (
     AttachSurveyMediaData,
     CreateSurveyData,
     CreateSurveyTemplateData,
+    GenerateInvoiceData,
     SetSurveyMediaCaptionData,
     UpdateSurveyData,
     UpdateSurveyTemplateData,
@@ -25,7 +29,7 @@ from app.domain.surveys.state_machine import survey_state_machine
 from app.platform.actions.base import BaseObjectAction, BaseTopLevelAction, EmptyActionData, action_group_factory
 from app.platform.actions.deps import ActionDeps
 from app.platform.actions.enums import ActionGroupType, ActionIcon
-from app.platform.actions.schemas import ActionExecutionResponse
+from app.platform.actions.schemas import ActionExecutionResponse, CopyToClipboardActionResult
 from app.platform.form_dsl.actions import invalidate_owner, next_sort_order
 from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.materialize import materialize_form_response
@@ -42,6 +46,8 @@ class SurveyActionKey(StrEnum):
     START_DRAFT = auto()
     DELIVER = auto()
     CANCEL = auto()
+    COPY_SHARE_LINK = auto()
+    GENERATE_INVOICE = auto()
 
 
 survey_actions = action_group_factory(
@@ -97,6 +103,10 @@ class UpdateSurvey(BaseObjectAction[Survey, UpdateSurveyData]):
         "assigned_surveyor_id": {"model": "User", "create_action": None},
         "template_id": {"model": "SurveyTemplate", "create_action": "survey_template_actions__create"},
     }
+
+    @classmethod
+    def is_available(cls, obj: Survey, deps: ActionDeps) -> bool:
+        return obj.state == SurveyState.in_draft
 
     @classmethod
     async def execute(
@@ -200,6 +210,63 @@ class CancelSurvey(BaseObjectAction[Survey, EmptyActionData]):
     ) -> ActionExecutionResponse:
         await deps.sm_service.transition(survey_state_machine, obj, SurveyState.cancelled, actor=deps.user)
         return ActionExecutionResponse(message="Survey cancelled")
+
+
+@survey_actions
+class CopySurveyLink(BaseObjectAction[Survey, EmptyActionData]):
+    action_key = SurveyActionKey.COPY_SHARE_LINK
+    label = "Copy share link"
+    icon = ActionIcon.LINK
+    priority = 40
+
+    @classmethod
+    def is_available(cls, obj: Survey, deps: ActionDeps) -> bool:
+        return obj.state == SurveyState.delivered
+
+    @classmethod
+    async def execute(
+        cls, obj: Survey, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        if obj.access_token is None:
+            obj.access_token = secrets.token_urlsafe(32)
+        share_url = f"{config.FRONTEND_ORIGIN.rstrip('/')}/survey/{obj.access_token}"
+        return ActionExecutionResponse(
+            message="",
+            action_result=CopyToClipboardActionResult(text=share_url, toast="Share link copied"),
+        )
+
+
+@survey_actions
+class GenerateInvoice(BaseObjectAction[Survey, GenerateInvoiceData]):
+    action_key = SurveyActionKey.GENERATE_INVOICE
+    label = "Generate Invoice"
+    icon = ActionIcon.ADD
+    priority = 45
+    form_entity_fields = {
+        "client_id": {"model": "Client", "create_action": None},
+    }
+
+    @classmethod
+    def is_available(cls, obj: Survey, deps: ActionDeps) -> bool:
+        return obj.state == SurveyState.delivered
+
+    @classmethod
+    async def execute(
+        cls, obj: Survey, data: GenerateInvoiceData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        invoice = Invoice(
+            organization_id=deps.user.organization_id,
+            survey_id=obj.id,
+            client_id=data.client_id,
+            access_token=secrets.token_urlsafe(32),
+        )
+        transaction.add(invoice)
+        await transaction.flush()
+        return ActionExecutionResponse(
+            message="Invoice created",
+            created_id=invoice.id,
+            invalidate_queries=["/surveys", "/invoices", f"/surveys/{obj.id}"],
+        )
 
 
 # ── Survey template actions ────────────────────────────────────────────────────

@@ -39,6 +39,7 @@ import { payInvoiceRoute } from '@/router/payment.routes';
 import {
   authRoute,
   magicLinkVerifyRoute,
+  publicSurveyRoute,
   galleryRoute,
 } from '@/router/public.routes';
 import { rootRoute } from '@/router/root.route';
@@ -50,6 +51,7 @@ const routeTree = rootRoute.addChildren([
     authRoute,
     magicLinkVerifyRoute,
     payInvoiceRoute,
+    publicSurveyRoute,
     ...devRoutes,
   ]),
   authenticatedLayoutRoute.addChildren([

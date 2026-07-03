@@ -3,6 +3,7 @@ import { redirectIfAuthenticated } from '@/lib/auth-loader';
 import { AuthPage } from '@/pages/auth-page';
 import { GalleryPage } from '@/pages/gallery-page';
 import { MagicLinkVerifyPage } from '@/pages/magic-link-verify-page';
+import { PublicSurveyPage } from '@/pages/surveys/public-survey-page';
 import { publicLayoutRoute } from '@/router/layout.routes';
 
 export const authRoute = createRoute({
@@ -23,6 +24,12 @@ export const magicLinkVerifyRoute = createRoute({
     token: String(search['token'] ?? ''),
   }),
   component: MagicLinkVerifyPage,
+});
+
+export const publicSurveyRoute = createRoute({
+  getParentRoute: () => publicLayoutRoute,
+  path: '/survey/$accessToken',
+  component: PublicSurveyPage,
 });
 
 export const galleryRoute = import.meta.env.DEV

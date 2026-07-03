@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { CheckCircle2, CreditCard, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConnectRequirements } from '@/components/connect-requirements';
-import { PageTopBar } from '@/components/layout/page-topbar';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -211,13 +210,11 @@ export function BillingPage() {
   }, [search.onboarding, navigate]);
 
   return (
-    <PageTopBar title="Billing">
-      <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
-        <Suspense fallback={<PageSkeleton />}>
-          <SubscriptionSummary />
-          <ConnectStatusSection />
-        </Suspense>
-      </div>
-    </PageTopBar>
+    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+      <Suspense fallback={<PageSkeleton />}>
+        <SubscriptionSummary />
+        <ConnectStatusSection />
+      </Suspense>
+    </div>
   );
 }

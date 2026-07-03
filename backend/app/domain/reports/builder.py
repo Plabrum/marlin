@@ -7,7 +7,6 @@ shape is the contract.
 
 Block shapes:
     {"type": "section",    "id", "label"}
-    {"type": "subsection", "id", "label"}
     {"type": "field",      "id", "label", "field_type", "value", "photos"}
     {"type": "repeater_instance", "id", "label"}
     {"type": "finding",    "id", "severity", "summary", "detail",
@@ -86,10 +85,6 @@ async def build_report_blocks(transaction: AsyncSession, survey: Survey) -> list
 
         if n.kind == FormNodeKind.section:
             blocks.append({"type": "section", "id": encode_id(n), "label": n.label})
-            for child in children.get(n.id, []):
-                emit(child)
-        elif n.kind == FormNodeKind.subsection:
-            blocks.append({"type": "subsection", "id": encode_id(n), "label": n.label})
             for child in children.get(n.id, []):
                 emit(child)
         elif n.kind == FormNodeKind.field:

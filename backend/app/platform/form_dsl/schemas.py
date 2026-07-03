@@ -38,7 +38,7 @@ class AddRepeaterInstanceData(BaseSchema):
 
 
 class AddAdHocFieldData(BaseSchema):
-    parent_id: Sqid  # section or subsection node
+    parent_id: Sqid  # section, group field, or repeater instance node
     label: str
     type: FieldType
     options: list[str] = []

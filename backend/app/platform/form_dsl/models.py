@@ -14,8 +14,8 @@ from app.utils.textenum import TextEnum
 
 
 class FormNode(OrgScopedMixin, BaseDBModel):
-    """One row per addressable thing in a form response: section, subsection,
-    field, repeater instance, or domain-specific annotation.
+    """One row per addressable thing in a form response: section, field
+    (including group fields), repeater instance, or domain-specific annotation.
 
     Owned polymorphically by any model that materializes a `TemplateDefinition`
     — keyed by `(owner_type, owner_id)` where `owner_type` is the owner's

@@ -22,6 +22,7 @@ class FieldType(StrEnum):
     STATIC_TEXT = auto()
     SIGNATURE = auto()
     ANNOTATED_IMAGE = auto()
+    GROUP = auto()
 
 
 class FieldCondition(BaseSchema):
@@ -37,17 +38,11 @@ class FieldDef(BaseSchema):
     allow_finding: bool = True
     config: dict[str, Any] = {}
     condition: FieldCondition | None = None
-    # Repeater-only — sub-fields defining each instance's shape.
+    # Shared by GROUP (child fields of the group) and REPEATER (sub-fields defining each instance's shape).
     fields: list[FieldDef] = []
     min: int | None = None
     max: int | None = None
     instance_label_field: str | None = None
-
-
-class Subsection(BaseSchema):
-    id: str
-    title: str
-    fields: list[FieldDef] = []
 
 
 class Section(BaseSchema):
@@ -55,7 +50,6 @@ class Section(BaseSchema):
     title: str
     condition: FieldCondition | None = None
     fields: list[FieldDef] = []
-    subsections: list[Subsection] = []
 
 
 class TemplateDefinition(BaseSchema):

@@ -655,16 +655,21 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             .all()
         )
         engine_section = next(n for n in nodes if n.kind == FormNodeKind.section and n.schema_ref == "engine")
-        engine_subsection = next(
-            n for n in nodes if n.kind == FormNodeKind.subsection and n.parent_id == engine_section.id
+        engine_group = next(
+            n
+            for n in nodes
+            if n.kind == FormNodeKind.field
+            and n.parent_id == engine_section.id
+            and isinstance(n.config, dict)
+            and n.config.get("type") == "group"
         )
-        existing_count = sum(1 for n in nodes if n.parent_id == engine_subsection.id and n.kind == FormNodeKind.field)
+        existing_count = sum(1 for n in nodes if n.parent_id == engine_group.id and n.kind == FormNodeKind.field)
         session.add(
             FormNode(
                 organization_id=org.id,
                 owner_type="surveys",
                 owner_id=survey.id,
-                parent_id=engine_subsection.id,
+                parent_id=engine_group.id,
                 kind=FormNodeKind.field,
                 schema_ref=None,
                 label=shared_field_def["label"],
