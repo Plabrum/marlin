@@ -12,6 +12,19 @@ from app.platform.form_dsl.schemas import SectionCompletion
 from app.utils.sqids import Sqid
 
 
+class GenerateInvoiceData(BaseSchema):
+    client_id: Sqid
+
+
+class PublicSurveyDetail(BaseSchema):
+    id: Sqid
+    identifier: str | None
+    vessel_name: str
+    organization_name: str
+    delivered_at: datetime
+    blocks: list[dict[str, Any]]
+
+
 class SurveyListItem(ActionableList):
     id: Sqid
     state: SurveyState

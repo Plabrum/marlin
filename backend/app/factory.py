@@ -36,6 +36,7 @@ from app.domain.pricing_guides.routes import pricing_guides_router, pricing_tier
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
 from app.domain.surveys.listeners import install_survey_media_node_detach_listener
+from app.domain.surveys.public_routes import public_survey_router
 from app.domain.surveys.routes import survey_media_router, survey_router, survey_template_router
 from app.domain.users.models import User
 from app.domain.users.queries import get_user_by_id
@@ -194,6 +195,7 @@ def create_app(
             invoice_router,
             invoice_line_items_router,
             public_invoice_router,
+            public_survey_router,
             calendar_event_router,
             payment_method_router,
             pricing_guides_router,

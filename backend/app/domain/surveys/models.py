@@ -93,6 +93,7 @@ class Survey(
         index=True,
     )
     source_attachment_index: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+    access_token: Mapped[str | None] = mapped_column(sa.Text, unique=True, index=True)
 
     vessel: Mapped[Vessel] = relationship("Vessel", foreign_keys=[vessel_id], lazy="raise")
     assigned_surveyor: Mapped[Any] = relationship("User", foreign_keys=[assigned_surveyor_id], lazy="raise")

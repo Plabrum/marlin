@@ -132,7 +132,14 @@ export function ChildObjectRow({
         )}
       </div>
       {status && <div className="shrink-0">{status}</div>}
-      {actions && <div className="shrink-0">{actions}</div>}
+      {actions && (
+        // Not interactive itself — only stops the row's onClick from firing when
+        // one of the action buttons inside is clicked; those buttons handle their own keyboard input.
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+          {actions}
+        </div>
+      )}
     </div>
   );
 }

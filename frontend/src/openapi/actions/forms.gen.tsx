@@ -3,7 +3,7 @@
  */
 import { createTypedForm } from "@/lib/forms/base";
 import type { GeneratedFormProps } from "@/lib/forms/types";
-import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
+import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, GenerateInvoiceData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
 import { ClientType, EnginePosition, EngineType, FuelType, HullMaterial, PartCategory, PricingType, PropulsionType, RiggingType, ServiceType, SubscriptionPlan, VesselType, WidgetType } from "@/openapi/litestarAPI.schemas";
 
 // --- client_actions__create ---
@@ -614,6 +614,24 @@ export function SurveyActionsUpdateForm(props: GeneratedFormProps<UpdateSurveyDa
       <_survey_actions__update.FormEntityCombobox name="assigned_surveyor_id" label="Assigned Surveyor" required modelName="User" />
       <_survey_actions__update.FormEntityCombobox name="template_id" label="Template" modelName="SurveyTemplate" createAction="survey_template_actions__create" />
     </_survey_actions__update.FormSheet>
+  );
+}
+
+// --- survey_actions__generate_invoice ---
+const _survey_actions__generate_invoice = createTypedForm<GenerateInvoiceData>();
+
+export function SurveyActionsGenerateInvoiceForm(props: GeneratedFormProps<GenerateInvoiceData>) {
+  return (
+    <_survey_actions__generate_invoice.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_survey_actions__generate_invoice.FormEntityCombobox name="client_id" label="Client" required modelName="Client" />
+    </_survey_actions__generate_invoice.FormSheet>
   );
 }
 
