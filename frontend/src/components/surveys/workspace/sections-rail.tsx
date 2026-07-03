@@ -20,11 +20,8 @@ export function SectionsRail({
   goToSection: (sectionId: string) => void;
 }) {
   return (
-    <div className="pointer-events-none absolute inset-y-0 left-0 z-20 hidden md:block">
-      <nav
-        aria-label="Sections"
-        className="group pointer-events-auto sticky top-20"
-      >
+    <div className="pointer-events-none absolute inset-y-0 left-0 z-20 hidden md:flex md:items-center">
+      <nav aria-label="Sections" className="group pointer-events-auto">
         <ul className="group-hover:bg-popover group-hover:ring-border flex flex-col gap-1 rounded-r-xl py-2 pr-2 pl-2 transition-colors group-hover:shadow-md group-hover:ring-1">
           {sections.map((s) => {
             const c = completion.get(s.id);

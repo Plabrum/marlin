@@ -46,7 +46,6 @@ async def create_user(db: AsyncSession, *, name: str, email: str, organization_i
             guide_id=guide.id,
             pricing_type=PricingType.flat,
             amount_cents=DEFAULT_PRICING_TIER_CENTS,
-            sort_order=0,
         )
     )
     await db.flush()

@@ -79,16 +79,16 @@ export function SectionBlock({
         <button
           type="button"
           onClick={() => goToSection(previousSection.id)}
-          className="mb-8 flex w-full items-center gap-3 text-left opacity-50 transition hover:opacity-90"
+          className="mb-6 flex w-full items-baseline gap-3 text-left opacity-50 transition hover:opacity-90"
         >
-          <span className="t-kicker">
-            ← Prev · Section {pad2(sectionIndex)}
+          <span className="t-kicker shrink-0">
+            ← Section {pad2(sectionIndex)} of {pad2(totalSections)}
           </span>
-          <span className="font-display text-foreground text-[20px] font-light">
+          <span className="text-foreground truncate text-sm font-light">
             {previousSection.label}
           </span>
           {previousSectionCompletion && (
-            <span className="text-muted-foreground ml-auto font-mono text-[11px]">
+            <span className="text-muted-foreground ml-auto shrink-0 font-mono text-[11px]">
               {pad2(previousSectionCompletion.filled)} /{' '}
               {pad2(previousSectionCompletion.total)}
             </span>
@@ -97,20 +97,18 @@ export function SectionBlock({
       )}
 
       <div className="border-border bg-background sticky top-0 z-10 mb-5 flex items-center justify-between gap-3 border-b pt-4 pb-4">
-        <div>
-          <div className="t-kicker">
+        <div className="flex items-baseline gap-3">
+          <span className="t-kicker shrink-0">
             Section {pad2(sectionIndex + 1)} of {pad2(totalSections)}
-          </div>
-          <div className="mt-1 flex items-baseline gap-3">
-            <h2 className="font-display text-foreground text-[26px] leading-none font-light">
-              {section.label}
-            </h2>
-            {progress && (
-              <span className="text-muted-foreground font-mono text-[12px]">
-                {progress}
-              </span>
-            )}
-          </div>
+          </span>
+          <h2 className="font-display text-foreground text-[26px] leading-none font-light">
+            {section.label}
+          </h2>
+          {progress && (
+            <span className="text-muted-foreground font-mono text-[12px]">
+              {progress}
+            </span>
+          )}
         </div>
         {show && <AddFindingButton parentNodeId={section.id} />}
       </div>
@@ -141,16 +139,16 @@ export function SectionBlock({
         <button
           type="button"
           onClick={() => goToSection(nextSection.id)}
-          className="mt-8 flex w-full items-center gap-3 text-left opacity-50 transition hover:opacity-90"
+          className="mt-8 flex w-full items-baseline gap-3 text-left opacity-50 transition hover:opacity-90"
         >
-          <span className="t-kicker">
-            Next · Section {pad2(sectionIndex + 2)}
+          <span className="t-kicker shrink-0">
+            Section {pad2(sectionIndex + 2)} of {pad2(totalSections)} →
           </span>
-          <span className="font-display text-foreground text-[20px] font-light">
+          <span className="text-foreground truncate text-sm font-light">
             {nextSection.label}
           </span>
           {nextSectionCompletion && (
-            <span className="text-muted-foreground ml-auto font-mono text-[11px]">
+            <span className="text-muted-foreground ml-auto shrink-0 font-mono text-[11px]">
               {pad2(nextSectionCompletion.filled)} /{' '}
               {pad2(nextSectionCompletion.total)}
             </span>
