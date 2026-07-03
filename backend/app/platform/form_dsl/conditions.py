@@ -14,7 +14,7 @@ import msgspec
 
 from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.models import FormNode
-from app.platform.form_dsl.schema import FieldCondition
+from app.platform.form_dsl.schema import FieldCondition, FieldType
 
 
 def _condition_for(node: FormNode) -> FieldCondition | None:
@@ -55,8 +55,9 @@ def section_completion(nodes: Iterable[FormNode]) -> dict[int, dict[str, int]]:
     """Per-section `{filled, total}` counts.
 
     A field counts toward `total` if it is visible (no condition, or condition
-    resolves true) and not static text. It counts toward `filled` if `value`
-    is non-null.
+    resolves true) and not static text or a group (groups carry no value of
+    their own — see validate.py). It counts toward `filled` if `value` is
+    non-null.
     """
     nodes = list(nodes)
     visibility = resolve_visibility(nodes)
@@ -83,7 +84,7 @@ def section_completion(nodes: Iterable[FormNode]) -> dict[int, dict[str, int]]:
             continue
         if visibility.get(n.id, True) is False:
             continue
-        if n.config and n.config.get("type") == "static_text":
+        if n.config and n.config.get("type") in (FieldType.STATIC_TEXT.value, FieldType.GROUP.value):
             continue
         bucket = counts.setdefault(section_id, {"filled": 0, "total": 0})
         bucket["total"] += 1

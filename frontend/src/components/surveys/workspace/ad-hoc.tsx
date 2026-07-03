@@ -24,6 +24,7 @@ const TYPES = [
   'boolean',
   'select',
   'date',
+  'group',
 ] as const;
 const ADD_FIELD: ActionDTO = {
   action: 'form_node_actions__add_ad_hoc_field',

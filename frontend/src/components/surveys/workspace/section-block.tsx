@@ -110,7 +110,12 @@ export function SectionBlock({
             </span>
           )}
         </div>
-        {show && <AddFindingButton parentNodeId={section.id} />}
+        {show && (
+          <div className="flex items-center gap-1">
+            <AddAdHocFieldButton parentNodeId={section.id} />
+            <AddFindingButton parentNodeId={section.id} />
+          </div>
+        )}
       </div>
 
       {!show ? (
@@ -170,51 +175,15 @@ function SectionBody({ section, ...deps }: { section: Tree } & FieldDeps) {
   const fieldChildren = section.children.filter((c) => c.kind === 'field');
   return (
     <div className="space-y-4">
-      {section.children.map((child) => {
-        if (child.kind === 'subsection') {
-          return (
-            <SubsectionBlock key={child.id} subsection={child} {...deps} />
-          );
-        }
-        if (child.kind === 'field') {
-          const idx = fieldChildren.indexOf(child);
-          return (
-            <FieldOrRepeater
-              key={child.id}
-              node={child}
-              fieldIndex={idx}
-              fieldTotal={fieldChildren.length}
-              {...deps}
-            />
-          );
-        }
-        return null;
-      })}
-      <AddAdHocFieldButton parentNodeId={section.id} />
-    </div>
-  );
-}
-
-function SubsectionBlock({
-  subsection,
-  ...deps
-}: { subsection: Tree } & FieldDeps) {
-  const fields = subsection.children.filter((n) => n.kind === 'field');
-  return (
-    <div className="space-y-3">
-      <h3 className="text-muted-foreground text-sm font-medium">
-        {subsection.label}
-      </h3>
-      {fields.map((node, idx) => (
+      {fieldChildren.map((child, idx) => (
         <FieldOrRepeater
-          key={node.id}
-          node={node}
+          key={child.id}
+          node={child}
           fieldIndex={idx}
-          fieldTotal={fields.length}
+          fieldTotal={fieldChildren.length}
           {...deps}
         />
       ))}
-      <AddAdHocFieldButton parentNodeId={subsection.id} />
     </div>
   );
 }

@@ -1201,7 +1201,6 @@ export type FormNodeKind = typeof FormNodeKind[keyof typeof FormNodeKind];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FormNodeKind = {
   section: 'section',
-  subsection: 'subsection',
   field: 'field',
   repeater_instance: 'repeater_instance',
   annotation: 'annotation',
@@ -2272,7 +2271,6 @@ export interface Section {
   title: string;
   condition?: SectionCondition;
   fields?: FieldDef[];
-  subsections?: Subsection[];
 }
 
 export interface SectionCompletion {
@@ -2425,12 +2423,6 @@ export const SubscriptionStatus = {
   paused: 'paused',
   cancelled: 'cancelled',
 } as const;
-
-export interface Subsection {
-  id: string;
-  title: string;
-  fields?: FieldDef[];
-}
 
 export type SurveyDetailTemplate = EntityRef | null;
 
@@ -3353,6 +3345,7 @@ export const FormDslSchemaFieldType = {
   static_text: 'static_text',
   signature: 'signature',
   annotated_image: 'annotated_image',
+  group: 'group',
 } as const;
 
 export interface LlmSchemasMessageSchema {

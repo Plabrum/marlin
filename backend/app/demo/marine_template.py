@@ -13,7 +13,6 @@ from app.platform.form_dsl.schema import (
     FieldDef,
     FieldType,
     Section,
-    Subsection,
     TemplateDefinition,
 )
 
@@ -64,10 +63,11 @@ def marine_template() -> TemplateDefinition:
             Section(
                 id="hull_bottom",
                 title="Hull & Bottom",
-                subsections=[
-                    Subsection(
+                fields=[
+                    FieldDef(
                         id="hull_general",
-                        title="General condition",
+                        label="General condition",
+                        type=FieldType.GROUP,
                         fields=[
                             FieldDef(
                                 id="hull_material_notes",
@@ -97,10 +97,11 @@ def marine_template() -> TemplateDefinition:
             Section(
                 id="engine",
                 title="Engine",
-                subsections=[
-                    Subsection(
+                fields=[
+                    FieldDef(
                         id="engine_main",
-                        title="Main engine",
+                        label="Main engine",
+                        type=FieldType.GROUP,
                         fields=[
                             FieldDef(
                                 id="engine_make_model",
@@ -135,10 +136,11 @@ def marine_template() -> TemplateDefinition:
             Section(
                 id="electrical",
                 title="Electrical",
-                subsections=[
-                    Subsection(
+                fields=[
+                    FieldDef(
                         id="electrical_dc",
-                        title="DC system",
+                        label="DC system",
+                        type=FieldType.GROUP,
                         fields=[
                             FieldDef(
                                 id="house_bank_voltage",
@@ -181,10 +183,11 @@ def marine_template() -> TemplateDefinition:
                 id="sea_trial",
                 title="Sea Trial",
                 condition=FieldCondition(field="sea_trial", equals=True),
-                subsections=[
-                    Subsection(
+                fields=[
+                    FieldDef(
                         id="sea_trial_performance",
-                        title="Performance",
+                        label="Performance",
+                        type=FieldType.GROUP,
                         fields=[
                             FieldDef(
                                 id="cruising_rpm",

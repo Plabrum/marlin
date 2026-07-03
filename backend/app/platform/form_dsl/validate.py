@@ -81,6 +81,9 @@ def validate_field_value(config: dict[str, Any] | None, value: Any) -> Any:
         case FieldType.STATIC_TEXT:
             raise ValidationException(f"Field '{field.label}' is static text and cannot be edited")
 
+        case FieldType.GROUP:
+            raise ValidationException(f"Field '{field.label}' is a group and carries no value of its own")
+
 
 def _expect(ok: bool, field: FieldDef, expected: str) -> None:
     if not ok:

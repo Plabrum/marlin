@@ -144,8 +144,13 @@ class AddAdHocField(BaseTopLevelAction[AddAdHocFieldData]):
         parent = await transaction.get(FormNode, data.parent_id)
         if parent is None:
             raise NotFoundException("Parent node not found")
-        if parent.kind not in (FormNodeKind.section, FormNodeKind.subsection, FormNodeKind.repeater_instance):
-            raise ValidationException("Ad-hoc fields can only be added to sections or subsections")
+        is_group_field = (
+            parent.kind == FormNodeKind.field
+            and parent.config is not None
+            and parent.config.get("type") == FieldType.GROUP.value
+        )
+        if parent.kind not in (FormNodeKind.section, FormNodeKind.repeater_instance) and not is_group_field:
+            raise ValidationException("Ad-hoc fields can only be added to sections, groups, or repeater instances")
 
         field = FieldDef(
             id=f"ad_hoc_{data.label.lower().replace(' ', '_')}",

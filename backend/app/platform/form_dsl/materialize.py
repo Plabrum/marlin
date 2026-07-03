@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.platform.form_dsl.enums import FormNodeKind
 from app.platform.form_dsl.models import FormNode
-from app.platform.form_dsl.schema import FieldDef, Section, Subsection, TemplateDefinition
+from app.platform.form_dsl.schema import FieldDef, FieldType, Section, TemplateDefinition
 
 
 async def materialize_form_response(
@@ -30,23 +30,26 @@ async def materialize_form_response(
         transaction.add(section_node)
         await transaction.flush()
 
-        order = 0
-        for field in section.fields:
-            transaction.add(_field_node(owner, owner_type, parent_id=section_node.id, field=field, sort_order=order))
-            order += 1
-
-        for sub in section.subsections:
-            sub_node = _subsection_node(owner, owner_type, parent_id=section_node.id, sub=sub, sort_order=order)
-            transaction.add(sub_node)
-            await transaction.flush()
-            order += 1
-
-            for field_index, field in enumerate(sub.fields):
-                transaction.add(
-                    _field_node(owner, owner_type, parent_id=sub_node.id, field=field, sort_order=field_index)
-                )
+        await _materialize_fields(transaction, owner, owner_type, section_node.id, section.fields)
 
     return defn.version
+
+
+async def _materialize_fields(
+    transaction: AsyncSession,
+    owner: Any,
+    owner_type: str,
+    parent_id: int,
+    fields: list[FieldDef],
+    order_start: int = 0,
+) -> None:
+    for order, field in enumerate(fields, start=order_start):
+        field_node = _field_node(owner, owner_type, parent_id=parent_id, field=field, sort_order=order)
+        transaction.add(field_node)
+
+        if field.type == FieldType.GROUP:
+            await transaction.flush()
+            await _materialize_fields(transaction, owner, owner_type, field_node.id, field.fields)
 
 
 def _section_node(owner: Any, owner_type: str, *, section: Section, sort_order: int) -> FormNode:
@@ -59,19 +62,6 @@ def _section_node(owner: Any, owner_type: str, *, section: Section, sort_order: 
         schema_ref=section.id,
         label=section.title,
         config={"condition": msgspec.to_builtins(section.condition)} if section.condition else None,
-        sort_order=sort_order,
-    )
-
-
-def _subsection_node(owner: Any, owner_type: str, *, parent_id: int, sub: Subsection, sort_order: int) -> FormNode:
-    return FormNode(
-        organization_id=owner.organization_id,
-        owner_type=owner_type,
-        owner_id=owner.id,
-        parent_id=parent_id,
-        kind=FormNodeKind.subsection,
-        schema_ref=sub.id,
-        label=sub.title,
         sort_order=sort_order,
     )
 

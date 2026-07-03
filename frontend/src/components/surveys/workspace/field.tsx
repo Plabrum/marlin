@@ -14,6 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useActionExecutor } from '@/hooks/actions/use-action-executor';
 import { useDropTarget } from '@/hooks/use-drop-target';
+import { AddAdHocFieldButton } from './ad-hoc';
 import { PhotoActionRow } from './photo-action-row';
 import type { ActionDTO } from '@/lib/actions/types';
 import type {
@@ -287,12 +288,16 @@ export function FieldOrRepeater({
   fieldIndex: number;
   fieldTotal: number;
 } & FieldDeps) {
-  const isRepeater = getFieldType(node) === 'repeater';
+  const fieldType = getFieldType(node);
   const formNodeExecutor = useActionExecutor({
     actionGroup: 'form_node_actions',
   });
 
-  if (!isRepeater) {
+  if (fieldType === 'group') {
+    return <GroupField node={node} {...deps} />;
+  }
+
+  if (fieldType !== 'repeater') {
     return (
       <FieldWithExtras
         node={node}
@@ -362,6 +367,30 @@ function RepeaterInstance({
       </div>
       {fields.map((child, idx) => (
         <FieldWithExtras
+          key={child.id}
+          node={child}
+          fieldIndex={idx}
+          fieldTotal={fields.length}
+          {...deps}
+        />
+      ))}
+    </div>
+  );
+}
+
+function GroupField({ node, ...deps }: { node: Tree } & FieldDeps) {
+  const fields = node.children.filter((c) => c.kind === 'field');
+
+  return (
+    <div className="bg-muted/40 space-y-2 rounded-xl p-3">
+      <div className="flex items-center justify-between">
+        <div className="text-muted-foreground text-xs font-medium">
+          {node.label}
+        </div>
+        <AddAdHocFieldButton parentNodeId={node.id} />
+      </div>
+      {fields.map((child, idx) => (
+        <FieldOrRepeater
           key={child.id}
           node={child}
           fieldIndex={idx}

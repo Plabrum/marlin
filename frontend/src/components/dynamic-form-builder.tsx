@@ -16,7 +16,6 @@ import type {
   FormDefinition,
   FormField,
   FormSection,
-  FormSubsection,
 } from '@/lib/form-dsl/types';
 
 interface Props {
@@ -38,12 +37,8 @@ function newField(): FormField {
   };
 }
 
-function newSubsection(): FormSubsection {
-  return { id: newId('ss'), title: '', fields: [] };
-}
-
 function newSection(): FormSection {
-  return { id: newId('s'), title: '', subsections: [newSubsection()] };
+  return { id: newId('s'), title: '', fields: [] };
 }
 
 export function DynamicFormBuilder({ value, onChange }: Props) {
@@ -73,64 +68,6 @@ export function DynamicFormBuilder({ value, onChange }: Props) {
     updateSections(sections.map((s, i) => (i === si ? { ...s, ...patch } : s)));
   }
 
-  function updateSubsections(si: number, next: FormSubsection[]) {
-    updateSection(si, { subsections: next });
-  }
-
-  function addSubsection(si: number) {
-    updateSubsections(si, [
-      ...(sections[si].subsections ?? []),
-      newSubsection(),
-    ]);
-  }
-
-  function deleteSubsection(si: number, ssi: number) {
-    updateSubsections(
-      si,
-      (sections[si].subsections ?? []).filter((_, i) => i !== ssi)
-    );
-  }
-
-  function updateSubsection(
-    si: number,
-    ssi: number,
-    patch: Partial<FormSubsection>
-  ) {
-    updateSubsections(
-      si,
-      (sections[si].subsections ?? []).map((s, i) =>
-        i === ssi ? { ...s, ...patch } : s
-      )
-    );
-  }
-
-  function addField(si: number, ssi: number) {
-    const subs = sections[si].subsections ?? [];
-    updateSubsection(si, ssi, {
-      fields: [...(subs[ssi].fields ?? []), newField()],
-    });
-  }
-
-  function deleteField(si: number, ssi: number, fi: number) {
-    const subs = sections[si].subsections ?? [];
-    updateSubsection(si, ssi, {
-      fields: (subs[ssi].fields ?? []).filter((_, i) => i !== fi),
-    });
-  }
-
-  function updateField(
-    si: number,
-    ssi: number,
-    fi: number,
-    patch: Partial<FormField>
-  ) {
-    const subs = sections[si].subsections ?? [];
-    const fields = (subs[ssi].fields ?? []).map((f, i) =>
-      i === fi ? { ...f, ...patch } : f
-    );
-    updateSubsection(si, ssi, { fields });
-  }
-
   return (
     <div className="space-y-4">
       {sections.map((section, si) => (
@@ -142,14 +79,7 @@ export function DynamicFormBuilder({ value, onChange }: Props) {
           onMove={(dir) => moveSection(si, dir)}
           onDelete={() => deleteSection(si)}
           onUpdateTitle={(title) => updateSection(si, { title })}
-          onAddSubsection={() => addSubsection(si)}
-          onDeleteSubsection={(ssi) => deleteSubsection(si, ssi)}
-          onUpdateSubsectionTitle={(ssi, t) =>
-            updateSubsection(si, ssi, { title: t })
-          }
-          onAddField={(ssi) => addField(si, ssi)}
-          onDeleteField={(ssi, fi) => deleteField(si, ssi, fi)}
-          onUpdateField={(ssi, fi, patch) => updateField(si, ssi, fi, patch)}
+          onUpdateFields={(fields) => updateSection(si, { fields })}
         />
       ))}
       <Button
@@ -172,12 +102,7 @@ interface SectionEditorProps {
   onMove: (dir: -1 | 1) => void;
   onDelete: () => void;
   onUpdateTitle: (t: string) => void;
-  onAddSubsection: () => void;
-  onDeleteSubsection: (ssi: number) => void;
-  onUpdateSubsectionTitle: (ssi: number, t: string) => void;
-  onAddField: (ssi: number) => void;
-  onDeleteField: (ssi: number, fi: number) => void;
-  onUpdateField: (ssi: number, fi: number, patch: Partial<FormField>) => void;
+  onUpdateFields: (fields: FormField[]) => void;
 }
 
 function SectionEditor({
@@ -187,14 +112,8 @@ function SectionEditor({
   onMove,
   onDelete,
   onUpdateTitle,
-  onAddSubsection,
-  onDeleteSubsection,
-  onUpdateSubsectionTitle,
-  onAddField,
-  onDeleteField,
-  onUpdateField,
+  onUpdateFields,
 }: SectionEditorProps) {
-  const subsections = section.subsections ?? [];
   return (
     <div className="border-border bg-card space-y-3 rounded-lg border p-4">
       <div className="flex items-center gap-2">
@@ -233,60 +152,53 @@ function SectionEditor({
         </Button>
       </div>
 
-      <div className="space-y-3 pl-2">
-        {subsections.map((sub, ssi) => (
-          <div
-            key={sub.id}
-            className="border-border/60 bg-background space-y-2 rounded border p-3"
-          >
-            <div className="flex items-center gap-2">
-              <Input
-                value={sub.title}
-                onChange={(e) => onUpdateSubsectionTitle(ssi, e.target.value)}
-                placeholder="Subsection title"
-                className="h-8 flex-1 text-sm"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => onDeleteSubsection(ssi)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="space-y-2 pl-2">
-              {(sub.fields ?? []).map((field, fi) => (
-                <FieldEditor
-                  key={field.id}
-                  field={field}
-                  onChange={(patch) => onUpdateField(ssi, fi, patch)}
-                  onDelete={() => onDeleteField(ssi, fi)}
-                />
-              ))}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onAddField(ssi)}
-                className="text-muted-foreground"
-              >
-                <Plus className="mr-1 h-3 w-3" /> Add Field
-              </Button>
-            </div>
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onAddSubsection}
-          className="text-muted-foreground"
-        >
-          <Plus className="mr-1 h-3 w-3" /> Add Subsection
-        </Button>
+      <div className="pl-2">
+        <FieldListEditor
+          fields={section.fields ?? []}
+          onChange={onUpdateFields}
+        />
       </div>
+    </div>
+  );
+}
+
+interface FieldListEditorProps {
+  fields: FormField[];
+  onChange: (fields: FormField[]) => void;
+}
+
+function FieldListEditor({ fields, onChange }: FieldListEditorProps) {
+  function addField() {
+    onChange([...fields, newField()]);
+  }
+
+  function deleteField(fi: number) {
+    onChange(fields.filter((_, i) => i !== fi));
+  }
+
+  function updateField(fi: number, patch: Partial<FormField>) {
+    onChange(fields.map((f, i) => (i === fi ? { ...f, ...patch } : f)));
+  }
+
+  return (
+    <div className="space-y-2">
+      {fields.map((field, fi) => (
+        <FieldEditor
+          key={field.id}
+          field={field}
+          onChange={(patch) => updateField(fi, patch)}
+          onDelete={() => deleteField(fi)}
+        />
+      ))}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={addField}
+        className="text-muted-foreground"
+      >
+        <Plus className="mr-1 h-3 w-3" /> Add Field
+      </Button>
     </div>
   );
 }
@@ -322,6 +234,8 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
     field.type === FieldTypeEnum.select ||
     field.type === FieldTypeEnum.multiselect ||
     field.type === FieldTypeEnum.segmented;
+
+  const isGroup = field.type === FieldTypeEnum.group;
 
   return (
     <div className="border-border/50 bg-background space-y-2 rounded border p-3">
@@ -414,6 +328,15 @@ function FieldEditor({ field, onChange, onDelete }: FieldEditorProps) {
           placeholder="Unit (e.g. ft, lbs)"
           className="h-7 w-40 text-xs"
         />
+      )}
+
+      {isGroup && (
+        <div className="border-border/60 rounded border border-dashed p-2 pl-3">
+          <FieldListEditor
+            fields={field.fields ?? []}
+            onChange={(next) => onChange({ fields: next })}
+          />
+        </div>
       )}
     </div>
   );
