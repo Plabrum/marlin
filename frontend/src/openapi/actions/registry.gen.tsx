@@ -16,6 +16,10 @@ import {
   InvoiceActionsUpdateForm,
   InvoiceLineItemActionsCreateForm,
   InvoiceLineItemActionsUpdateForm,
+  QuoteActionsCreateForm,
+  QuoteActionsUpdateForm,
+  QuoteLineItemActionsCreateForm,
+  QuoteLineItemActionsUpdateForm,
   SubscriptionActionsCreateForm,
   SubscriptionActionsUpdateForm,
   PricingGuideActionsCreateForm,
@@ -30,6 +34,7 @@ import {
   PartActionsUpdateForm,
   SurveyActionsCreateForm,
   SurveyActionsUpdateForm,
+  SurveyActionsGenerateQuoteForm,
   SurveyActionsGenerateInvoiceForm,
   SurveyTemplateActionsCreateForm,
   SurveyTemplateActionsUpdateForm,
@@ -83,6 +88,18 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   "invoice_line_item_actions__update": {
     render: (params) => <InvoiceLineItemActionsUpdateForm {...params} />,
   },
+  "quote_actions__create": {
+    render: (params) => <QuoteActionsCreateForm {...params} />,
+  },
+  "quote_actions__update": {
+    render: (params) => <QuoteActionsUpdateForm {...params} />,
+  },
+  "quote_line_item_actions__create": {
+    render: (params) => <QuoteLineItemActionsCreateForm {...params} />,
+  },
+  "quote_line_item_actions__update": {
+    render: (params) => <QuoteLineItemActionsUpdateForm {...params} />,
+  },
   "subscription_actions__create": {
     render: (params) => <SubscriptionActionsCreateForm {...params} />,
   },
@@ -124,6 +141,9 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "survey_actions__update": {
     render: (params) => <SurveyActionsUpdateForm {...params} />,
+  },
+  "survey_actions__generate_quote": {
+    render: (params) => <SurveyActionsGenerateQuoteForm {...params} />,
   },
   "survey_actions__generate_invoice": {
     render: (params) => <SurveyActionsGenerateInvoiceForm {...params} />,

@@ -47,6 +47,7 @@ class Quote(
         SqidType, sa.ForeignKey("pricing_guides.id", ondelete="SET NULL"), index=True
     )
     notes: Mapped[str | None] = mapped_column(sa.Text)
+    total_cents: Mapped[int] = mapped_column(sa.Integer, default=0, server_default="0")
 
     line_items: Mapped[list[QuoteLineItem]] = relationship(
         "QuoteLineItem",
@@ -69,7 +70,8 @@ class QuoteLineItem(OrgScopedMixin, BaseDBModel):
         nullable=False,
         index=True,
     )
-    quote_id: Mapped[int] = mapped_column(
+    quote_id: Mapped[Sqid] = mapped_column(
+        SqidType,
         sa.ForeignKey("quotes.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

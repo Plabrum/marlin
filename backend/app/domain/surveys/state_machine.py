@@ -6,6 +6,14 @@ from app.platform.state_machine.machine import State, StateMachine, Transition
 _staff: set[Role] = {Role.ADMIN, Role.SUPERADMIN}
 
 
+class QuoteState(State[SurveyState, Survey]):
+    value = SurveyState.quote
+    transitions = [
+        Transition(to=SurveyState.scheduled, roles=_staff),
+        Transition(to=SurveyState.cancelled, roles=_staff),
+    ]
+
+
 class ScheduledState(State[SurveyState, Survey]):
     value = SurveyState.scheduled
     transitions = [
@@ -35,6 +43,7 @@ class CancelledState(State[SurveyState, Survey]):
 survey_state_machine = StateMachine(
     enum_type=SurveyState,
     states={
+        SurveyState.quote: QuoteState,
         SurveyState.scheduled: ScheduledState,
         SurveyState.in_draft: InDraftState,
         SurveyState.delivered: DeliveredState,

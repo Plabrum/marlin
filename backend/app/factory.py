@@ -33,6 +33,7 @@ from app.domain.onboarding.routes import onboarding_router, onboardings_router
 from app.domain.parts.routes import part_router
 from app.domain.payment_methods.routes import payment_method_router
 from app.domain.pricing_guides.routes import pricing_guides_router, pricing_tiers_router
+from app.domain.quotes.routes import quote_line_items_router, quote_router
 from app.domain.reports.routes import report_router
 from app.domain.subscriptions.routes import subscription_router
 from app.domain.surveys.listeners import install_survey_media_node_detach_listener
@@ -195,6 +196,8 @@ def create_app(
             invoice_router,
             invoice_line_items_router,
             public_invoice_router,
+            quote_router,
+            quote_line_items_router,
             public_survey_router,
             calendar_event_router,
             payment_method_router,

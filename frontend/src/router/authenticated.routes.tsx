@@ -11,6 +11,7 @@ import { InboxPage } from '@/pages/inbox/inbox-page';
 import { InvoiceDetailPage } from '@/pages/invoices/invoice-detail-page';
 import { InvoicesListPage } from '@/pages/invoices/invoices-list-page';
 import { PricingGuideDetailPage } from '@/pages/pricing-guides/pricing-guide-detail-page';
+import { QuoteDetailPage } from '@/pages/quotes/quote-detail-page';
 import { ReportDetailPage } from '@/pages/reports/report-detail-page';
 import { ReportsPage } from '@/pages/reports/reports-page';
 import { SearchPage } from '@/pages/search/search-page';
@@ -222,6 +223,20 @@ export const invoiceRoute = createRoute({
     crumb: 'Invoice',
   },
   component: InvoiceDetailPage,
+});
+
+export const quoteRoute = createRoute({
+  getParentRoute: () => authenticatedLayoutRoute,
+  path: '/quotes/$quoteId',
+  params: {
+    parse: (p) => ({ quoteId: p.quoteId }),
+    stringify: (p) => ({ quoteId: p.quoteId }),
+  },
+  staticData: {
+    threadable: { type: 'quote', paramKey: 'quoteId' },
+    crumb: 'Quote',
+  },
+  component: QuoteDetailPage,
 });
 
 export const calendarRoute = createRoute({

@@ -29,6 +29,8 @@ class ActionGroupType(StrEnum):
     SURVEY_FINDING_ACTIONS = auto()
     FORM_NODE_ACTIONS = auto()
     ONBOARDING_ACTIONS = auto()
+    QUOTE_ACTIONS = auto()
+    QUOTE_LINE_ITEM_ACTIONS = auto()
 
 
 class ActionResultType(StrEnum):
