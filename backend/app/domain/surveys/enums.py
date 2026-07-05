@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class SurveyState(Enum):
+    quote = "quote"
     scheduled = "scheduled"
     in_draft = "in_draft"
     delivered = "delivered"

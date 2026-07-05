@@ -3,7 +3,7 @@
  */
 import { createTypedForm } from "@/lib/forms/base";
 import type { GeneratedFormProps } from "@/lib/forms/types";
-import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, GenerateInvoiceData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
+import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateQuoteData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, GenerateInvoiceData, GenerateQuoteData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateQuoteData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
 import { ClientType, EnginePosition, EngineType, FuelType, HullMaterial, PartCategory, PricingType, PropulsionType, RiggingType, ServiceType, SubscriptionPlan, VesselType, WidgetType } from "@/openapi/litestarAPI.schemas";
 
 // --- client_actions__create ---
@@ -326,6 +326,90 @@ export function InvoiceLineItemActionsUpdateForm(props: GeneratedFormProps<Updat
   );
 }
 
+// --- quote_actions__create ---
+const _quote_actions__create = createTypedForm<CreateQuoteData>();
+
+export function QuoteActionsCreateForm(props: GeneratedFormProps<CreateQuoteData>) {
+  return (
+    <_quote_actions__create.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_quote_actions__create.FormEntityCombobox name="survey_id" label="Survey" required modelName="Survey" />
+      <_quote_actions__create.FormEntityCombobox name="client_id" label="Client" required modelName="Client" />
+      <_quote_actions__create.FormEntityCombobox name="pricing_guide_id" label="Pricing Guide" modelName="PricingGuide" />
+      <_quote_actions__create.FormText name="notes" label="Notes" />
+    </_quote_actions__create.FormSheet>
+  );
+}
+
+// --- quote_actions__update ---
+const _quote_actions__update = createTypedForm<UpdateQuoteData>();
+
+export function QuoteActionsUpdateForm(props: GeneratedFormProps<UpdateQuoteData>) {
+  return (
+    <_quote_actions__update.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_quote_actions__update.FormEntityCombobox name="client_id" label="Client" required modelName="Client" />
+      <_quote_actions__update.FormEntityCombobox name="pricing_guide_id" label="Pricing Guide" modelName="PricingGuide" />
+      <_quote_actions__update.FormText name="notes" label="Notes" />
+    </_quote_actions__update.FormSheet>
+  );
+}
+
+// --- quote_line_item_actions__create ---
+const _quote_line_item_actions__create = createTypedForm<AddLineItemData>();
+
+export function QuoteLineItemActionsCreateForm(props: GeneratedFormProps<AddLineItemData>) {
+  return (
+    <_quote_line_item_actions__create.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_quote_line_item_actions__create.FormText name="description" label="Description" required />
+      <_quote_line_item_actions__create.FormNumber name="quantity" label="Quantity" required />
+      <_quote_line_item_actions__create.FormCurrency name="unit_price_cents" label="Unit Price" required />
+      <_quote_line_item_actions__create.FormNumber name="sort_order" label="Sort Order" />
+      <_quote_line_item_actions__create.FormString name="invoice_id" label="Invoice" required />
+    </_quote_line_item_actions__create.FormSheet>
+  );
+}
+
+// --- quote_line_item_actions__update ---
+const _quote_line_item_actions__update = createTypedForm<UpdateLineItemData>();
+
+export function QuoteLineItemActionsUpdateForm(props: GeneratedFormProps<UpdateLineItemData>) {
+  return (
+    <_quote_line_item_actions__update.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_quote_line_item_actions__update.FormText name="description" label="Description" required />
+      <_quote_line_item_actions__update.FormNumber name="quantity" label="Quantity" required />
+      <_quote_line_item_actions__update.FormCurrency name="unit_price_cents" label="Unit Price" required />
+      <_quote_line_item_actions__update.FormNumber name="sort_order" label="Sort Order" required />
+    </_quote_line_item_actions__update.FormSheet>
+  );
+}
+
 // --- subscription_actions__create ---
 const _subscription_actions__create = createTypedForm<CreateSubscriptionData>();
 
@@ -594,6 +678,9 @@ export function SurveyActionsCreateForm(props: GeneratedFormProps<CreateSurveyDa
       <_survey_actions__create.FormEntityCombobox name="vessel_id" label="Vessel" required modelName="Vessel" createAction="vessel_actions__create" />
       <_survey_actions__create.FormEntityCombobox name="assigned_surveyor_id" label="Assigned Surveyor" required modelName="User" />
       <_survey_actions__create.FormEntityCombobox name="template_id" label="Template" modelName="SurveyTemplate" createAction="survey_template_actions__create" />
+      <_survey_actions__create.FormCheckbox name="start_as_quote" label="Start As Quote" />
+      <_survey_actions__create.FormEntityCombobox name="client_id" label="Client" modelName="Client" />
+      <_survey_actions__create.FormSelect name="service_type" label="Service Type" options={(Object.values(ServiceType) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) }))} />
     </_survey_actions__create.FormSheet>
   );
 }
@@ -614,6 +701,25 @@ export function SurveyActionsUpdateForm(props: GeneratedFormProps<UpdateSurveyDa
       <_survey_actions__update.FormEntityCombobox name="assigned_surveyor_id" label="Assigned Surveyor" required modelName="User" />
       <_survey_actions__update.FormEntityCombobox name="template_id" label="Template" modelName="SurveyTemplate" createAction="survey_template_actions__create" />
     </_survey_actions__update.FormSheet>
+  );
+}
+
+// --- survey_actions__generate_quote ---
+const _survey_actions__generate_quote = createTypedForm<GenerateQuoteData>();
+
+export function SurveyActionsGenerateQuoteForm(props: GeneratedFormProps<GenerateQuoteData>) {
+  return (
+    <_survey_actions__generate_quote.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_survey_actions__generate_quote.FormEntityCombobox name="client_id" label="Client" required modelName="Client" />
+      <_survey_actions__generate_quote.FormSelect name="service_type" label="Service Type" required options={(Object.values(ServiceType) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) }))} />
+    </_survey_actions__generate_quote.FormSheet>
   );
 }
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from app.domain.pricing_guides.enums import ServiceType
 from app.domain.surveys.enums import SurveyState
 from app.platform.actions.schemas import ActionableDetail, ActionableList, ActionDTO
 from app.platform.base.schemas import BaseSchema, EntityRef
@@ -14,6 +15,11 @@ from app.utils.sqids import Sqid
 
 class GenerateInvoiceData(BaseSchema):
     client_id: Sqid
+
+
+class GenerateQuoteData(BaseSchema):
+    client_id: Sqid
+    service_type: ServiceType
 
 
 class PublicSurveyDetail(BaseSchema):
@@ -127,6 +133,9 @@ class CreateSurveyData(BaseSchema):
     vessel_id: Sqid
     assigned_surveyor_id: Sqid
     template_id: Sqid | None = None
+    start_as_quote: bool = False
+    client_id: Sqid | None = None
+    service_type: ServiceType | None = None
 
 
 class UpdateSurveyData(BaseSchema):

@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import config
 from app.domain.invoices.models import Invoice
+from app.domain.quotes.service import generate_quote_for_survey
 from app.domain.reports.builder import build_report_blocks
 from app.domain.reports.models import Report
 from app.domain.surveys.enums import SurveyState
@@ -21,6 +22,7 @@ from app.domain.surveys.schemas import (
     CreateSurveyData,
     CreateSurveyTemplateData,
     GenerateInvoiceData,
+    GenerateQuoteData,
     SetSurveyMediaCaptionData,
     UpdateSurveyData,
     UpdateSurveyTemplateData,
@@ -48,6 +50,7 @@ class SurveyActionKey(StrEnum):
     CANCEL = auto()
     COPY_SHARE_LINK = auto()
     GENERATE_INVOICE = auto()
+    GENERATE_QUOTE = auto()
 
 
 survey_actions = action_group_factory(
@@ -67,17 +70,22 @@ class CreateSurvey(BaseTopLevelAction[CreateSurveyData]):
         "vessel_id": {"model": "Vessel", "create_action": "vessel_actions__create"},
         "assigned_surveyor_id": {"model": "User", "create_action": None},
         "template_id": {"model": "SurveyTemplate", "create_action": "survey_template_actions__create"},
+        "client_id": {"model": "Client", "create_action": None},
     }
 
     @classmethod
     async def execute(
         cls, data: CreateSurveyData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
+        if data.start_as_quote and (data.client_id is None or data.service_type is None):
+            raise ValidationException("client_id and service_type are required to create a survey as a quote")
+
         survey = Survey(
             organization_id=deps.user.organization_id,
             vessel_id=data.vessel_id,
             assigned_surveyor_id=data.assigned_surveyor_id,
             template_id=data.template_id,
+            state=SurveyState.quote if data.start_as_quote else SurveyState.scheduled,
         )
         transaction.add(survey)
         await transaction.flush()
@@ -90,7 +98,24 @@ class CreateSurvey(BaseTopLevelAction[CreateSurveyData]):
                 transaction, survey, owner_type=Survey.__tablename__, definition=template.definition
             )
 
-        return ActionExecutionResponse(message="Survey created", created_id=survey.id)
+        invalidate_queries = ["/surveys"]
+        if data.start_as_quote:
+            assert data.client_id is not None
+            assert data.service_type is not None
+            await generate_quote_for_survey(
+                transaction,
+                organization_id=deps.user.organization_id,
+                survey_id=survey.id,
+                vessel_id=survey.vessel_id,
+                assigned_surveyor_id=survey.assigned_surveyor_id,
+                client_id=data.client_id,
+                service_type=data.service_type,
+            )
+            invalidate_queries.append("/quotes")
+
+        return ActionExecutionResponse(
+            message="Survey created", created_id=survey.id, invalidate_queries=invalidate_queries
+        )
 
 
 @survey_actions
@@ -128,7 +153,7 @@ class DeleteSurvey(BaseObjectAction[Survey, EmptyActionData]):
 
     @classmethod
     def is_available(cls, obj: Survey, deps: ActionDeps) -> bool:
-        return obj.state in {SurveyState.scheduled, SurveyState.cancelled}
+        return obj.state in {SurveyState.quote, SurveyState.scheduled, SurveyState.cancelled}
 
     @classmethod
     async def execute(
@@ -233,6 +258,40 @@ class CopySurveyLink(BaseObjectAction[Survey, EmptyActionData]):
         return ActionExecutionResponse(
             message="",
             action_result=CopyToClipboardActionResult(text=share_url, toast="Share link copied"),
+        )
+
+
+@survey_actions
+class GenerateQuote(BaseObjectAction[Survey, GenerateQuoteData]):
+    action_key = SurveyActionKey.GENERATE_QUOTE
+    label = "Create Quote"
+    icon = ActionIcon.ADD
+    priority = 44
+    form_entity_fields = {
+        "client_id": {"model": "Client", "create_action": None},
+    }
+
+    @classmethod
+    def is_available(cls, obj: Survey, deps: ActionDeps) -> bool:
+        return obj.state != SurveyState.cancelled
+
+    @classmethod
+    async def execute(
+        cls, obj: Survey, data: GenerateQuoteData, transaction: AsyncSession, deps: ActionDeps
+    ) -> ActionExecutionResponse:
+        quote = await generate_quote_for_survey(
+            transaction,
+            organization_id=deps.user.organization_id,
+            survey_id=obj.id,
+            vessel_id=obj.vessel_id,
+            assigned_surveyor_id=obj.assigned_surveyor_id,
+            client_id=data.client_id,
+            service_type=data.service_type,
+        )
+        return ActionExecutionResponse(
+            message="Quote created",
+            created_id=quote.id,
+            invalidate_queries=["/surveys", "/quotes", f"/surveys/{obj.id}"],
         )
 
 
