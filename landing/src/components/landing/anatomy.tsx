@@ -6,24 +6,20 @@ export function Anatomy() {
   return (
     <Plate id="workspace">
       {/* Header */}
-      <div className="mb-12 grid grid-cols-12 gap-x-6 border-b border-paper-edge/70 pb-8">
-        <div className="col-span-12 md:col-span-3">
-          <SectionLabel numeral="IV" title="Plate 01" />
-        </div>
-        <div className="col-span-12 md:col-span-9">
+      <div className="mb-12 flex flex-col gap-6 border-b border-paper-edge/70 pb-8 md:mb-16 md:flex-row md:items-end md:justify-between">
+        <div>
+          <SectionLabel numeral="IV" title="Plate 01" className="mb-3" />
           <h2 className="font-display text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1] tracking-[-0.02em] text-ink">
-            Anatomy of{" "}
+            The{" "}
             <span className="fv-display-italic italic text-brass-deep">
-              the workspace.
+              workspace.
             </span>
           </h2>
-          <p className="mt-4 max-w-2xl font-serif text-[17px] leading-[1.55] text-ink-soft">
-            Six regions, each doing one thing well. The document is the only
-            thing that scrolls. The nav, photos, findings, and dictation
-            panel all follow along with{" "}
-            <em className="italic">whatever section you&rsquo;re on.</em>
-          </p>
         </div>
+        <p className="max-w-md font-serif text-[16px] italic leading-[1.5] text-ink-soft">
+          Build your report with AI assistance, straight from the findings
+          you capture in the field.
+        </p>
       </div>
 
       <WorkspaceMock />

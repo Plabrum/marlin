@@ -1,57 +1,44 @@
-import { appUrl } from "@/lib/app-url";
-import { AnchorGlyph, StarMark } from "./marks";
 import { Plate } from "./plate";
-import { PrimaryButton } from "./primary-button";
 import { SectionLabel } from "./section-label";
 
-type Tier = {
+type BillingOption = {
   numeral: string;
   kicker: string;
   name: string;
-  italicWord: string;
   price: string;
   unit: string;
   blurb: string;
-  includes: string[];
   footnote: string;
 };
 
-const tiers: Tier[] = [
+const billingOptions: BillingOption[] = [
   {
     numeral: "I",
-    kicker: "In commission",
-    name: "Working",
-    italicWord: "season.",
+    kicker: "Billed monthly",
+    name: "Monthly",
     price: "$50",
     unit: "flat · per month",
     blurb:
-      "Active surveying: capture, draft, deliver. One flat fee, every vessel on your books, billed monthly.",
-    includes: [
-      "Unlimited vessels and surveys",
-      "All field types and templates",
-      "Branded PDF & client web link",
-      "Offline capture, full-resolution media",
-      "Hands-free dictation",
-    ],
+      "Pause anytime in the off season. No charge while paused, pick back up when you're surveying again.",
     footnote: "No per-seat, no per-survey. Bring the whole crew.",
   },
   {
     numeral: "II",
-    kicker: "Hauled out",
-    name: "Cold",
-    italicWord: "storage.",
-    price: "$5",
-    unit: "flat · per month",
-    blurb:
-      "Off-season parking. Files stay encrypted and indexed, reports remain shareable, your archive simply sleeps until you launch back in.",
-    includes: [
-      "Full archive, read-only",
-      "Live share links stay current",
-      "One-click return to active",
-      "No data migration on resume",
-    ],
-    footnote: "Switch in or out, any month.",
+    kicker: "Billed annually",
+    name: "Annual",
+    price: "$300",
+    unit: "flat · per year",
+    blurb: "Same plan, paid once a year. Works out to $25/mo.",
+    footnote: "Switch to monthly at renewal, any time.",
   },
+];
+
+const included = [
+  "Unlimited vessels and surveys",
+  "All field types and templates",
+  "Branded PDF & client web link",
+  "Hands-free dictation",
+  "Offline capture, photos included",
 ];
 
 export function Pricing() {
@@ -62,9 +49,9 @@ export function Pricing() {
         <div className="col-span-12 md:col-span-8">
           <SectionLabel numeral="VI" title="Posted Tariff" className="mb-3" />
           <h2 className="fv-display-soft font-display text-[clamp(2.4rem,5.4vw,4.4rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink">
-            Two fees, plainly{" "}
+            Simple{" "}
             <span className="fv-display-italic italic text-ink-soft">
-              posted.
+              pricing.
             </span>
           </h2>
         </div>
@@ -78,9 +65,9 @@ export function Pricing() {
 
       {/* Fee schedule — two columns, like a posted ledger */}
       <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
-        {tiers.map((t, i) => (
+        {billingOptions.map((b, i) => (
           <article
-            key={t.numeral}
+            key={b.numeral}
             className={`relative flex flex-col border-paper-edge/70 ${
               i === 0
                 ? "md:border-r md:pr-12"
@@ -90,82 +77,58 @@ export function Pricing() {
             {/* Top rail: numeral + ledger no. */}
             <div className="mb-6 flex items-baseline justify-between">
               <div className="fv-display-numeral font-display text-[88px] leading-none text-brass-deep">
-                {t.numeral}
+                {b.numeral}
               </div>
               <div className="t-meta tracking-[0.28em]">
                 ★ ENTRY {String(i + 1).padStart(2, "0")}
               </div>
             </div>
 
-            <div className="t-kicker mb-4 text-[11px]">{t.kicker}</div>
+            <div className="t-kicker mb-4 text-[11px]">{b.kicker}</div>
 
             <h3 className="fv-card-soft mb-6 font-display text-[28px] font-light leading-[1.1] tracking-[-0.01em] text-ink">
-              {t.name}{" "}
-              <span className="fv-card-italic italic text-brass-deep">
-                {t.italicWord}
-              </span>
+              {b.name}
             </h3>
 
             {/* Price block — large numeral, mono unit beneath */}
             <div className="mb-6 flex items-baseline gap-3 border-y border-paper-edge/70 py-5">
               <span className="fv-display-soft font-display text-[64px] font-light leading-none tracking-[-0.02em] text-ink">
-                {t.price}
+                {b.price}
               </span>
               <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-muted">
-                {t.unit}
+                {b.unit}
               </span>
             </div>
 
             <p className="mb-6 font-serif text-[16px] leading-[1.6] text-ink-soft">
-              {t.blurb}
+              {b.blurb}
             </p>
 
-            <ul className="mb-6 space-y-2.5">
-              {t.includes.map((line) => (
-                <li
-                  key={line}
-                  className="flex items-baseline gap-3 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft"
-                >
-                  <span aria-hidden className="text-brass">
-                    ✦
-                  </span>
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-
             <p className="mt-auto border-t border-paper-edge/70 pt-4 font-serif text-[13px] italic leading-[1.45] text-ink-muted">
-              {t.footnote}
+              {b.footnote}
             </p>
           </article>
         ))}
       </div>
 
-      {/* Footer rail — invitation + small print */}
-      <div className="mt-16 flex flex-col gap-8 border-t border-paper-edge/70 pt-8 md:flex-row md:items-center md:justify-between md:gap-6">
-        <div className="flex items-start gap-4">
-          <AnchorGlyph size={28} className="mt-1 shrink-0 text-brass-deep" />
-          <div>
-            <div className="font-display text-[20px] font-light leading-[1.2] tracking-[-0.01em] text-ink">
-              First month is{" "}
-              <span className="fv-card-italic italic text-brass-deep">
-                on the house.
+      {/* Included — shared across both billing options */}
+      <div className="mt-14 border-t border-paper-edge/70 pt-10">
+        <div className="t-kicker mb-5 text-[11px]">Included, either way</div>
+        <ul className="grid grid-cols-1 gap-x-10 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          {included.map((line) => (
+            <li
+              key={line}
+              className="flex items-baseline gap-3 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft"
+            >
+              <span aria-hidden className="text-brass">
+                ✦
               </span>
-            </div>
-            <p className="mt-1 font-serif text-[14px] leading-[1.5] text-ink-soft">
-              No card, no demo call. Bill begins in month two.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <PrimaryButton href={appUrl("/auth")}>Begin a survey</PrimaryButton>
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-muted">
-            <StarMark size={8} className="text-brass" />
-            <span>Invoiced monthly · cancel any time</span>
-          </div>
-        </div>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
       </div>
+
     </Plate>
   );
 }
