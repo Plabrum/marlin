@@ -1,4 +1,3 @@
-import { appUrl } from "@/lib/app-url";
 import { CompassRose, Soundings } from "./marks";
 import { PrimaryButton } from "./primary-button";
 
@@ -16,7 +15,7 @@ export function Hero() {
             <span className="sm:hidden">Vol. I &middot; No. 01</span>
           </span>
           <span className="hidden lg:block">
-            41&deg;29′N &nbsp;—&nbsp; 71&deg;19′W &nbsp;·&nbsp; Newport, R.I.
+            41&deg;18′N &nbsp;—&nbsp; 72&deg;55′W &nbsp;·&nbsp; New Haven, CT
           </span>
           <span className="hidden sm:inline">Charted in fair weather</span>
           <span className="sm:hidden">Fair weather</span>
@@ -31,17 +30,17 @@ export function Hero() {
             </div>
 
             <h1 className="rise rise-3 fv-display-soft font-display text-[clamp(3.6rem,9.8vw,9.2rem)] font-light leading-[0.92] tracking-[-0.025em] text-ink">
-              <span className="block">Marine surveys,</span>
+              <span className="block">The complete</span>
               <span className="block">
-                charted{" "}
+                survey{" "}
                 <span className="fv-display-italic font-display italic text-brass-deep">
-                  carefully.
+                  business.
                 </span>
               </span>
             </h1>
 
             <div className="rise rise-5 mt-12 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-              <PrimaryButton href={appUrl("/auth")}>Begin a survey</PrimaryButton>
+              <PrimaryButton href="/#waitlist">Join waitlist</PrimaryButton>
             </div>
           </div>
 
@@ -63,9 +62,9 @@ export function Hero() {
 
             <div className="rise rise-5 relative border-l border-paper-edge pl-6">
               <p className="font-serif text-[17px] leading-[1.55] text-ink-soft">
-                The dock is your day. The booking, the paperwork, the report,
-                the email to the client: all of it happens{" "}
-                <em className="italic text-ink">quietly, in the background.</em>
+                Focus on the findings. We send the quote, write the report,
+                deliver it, invoice, and{" "}
+                <em className="italic text-ink">collect payment.</em>
               </p>
             </div>
           </div>

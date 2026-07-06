@@ -4,29 +4,27 @@ import { SectionLabel } from "./section-label";
 type Spec = { k: string; v: string; sub?: string };
 
 const specs: Spec[] = [
-  {
-    k: "Field types",
-    v: "14",
-    sub: "text · multiple choice · photo grid · number grid · notes · signature · repeating group · …",
-  },
   { k: "Sections", v: "Unlimited", sub: "per template, nesting supported" },
   { k: "Smart sections", v: "Yes", sub: "questions appear and disappear based on prior answers" },
   { k: "Saving", v: "Automatic", sub: "every field, every time. No save button to remember." },
   {
     k: "Photo capture",
-    v: "Camera · Library · Drag",
+    v: "Yes, offline",
     sub: "auto-assigned by context, drag from “unassigned”",
   },
+  { k: "Offline capture", v: "Findings and photos", sub: "syncs on reconnect" },
   { k: "Report formats", v: "PDF · Web link", sub: "branded, share-able, indexed by finding" },
-  { k: "Offline capture", v: "Yes", sub: "syncs the moment you're back on wifi" },
-  { k: "Storage", v: "Encrypted, US-hosted", sub: "your data, locked at rest and in transit" },
+  { k: "Report write-up", v: "Generated from findings", sub: "client-ready language, not a blank page" },
+  { k: "Storage", v: "Encrypted, US-hosted", sub: "locked at rest and in transit" },
   { k: "Templates", v: "Versioned", sub: "one-click to promote per-survey additions" },
   { k: "Dictation", v: "Hands-free", sub: "speak into a field, it lands as text in the right place" },
-  { k: "Scheduling", v: "Calendar sync", sub: "client inquiries become bookings, with reminders" },
+  { k: "Scheduling", v: "Calendar sync", sub: "client inquiries become bookings, two-way sync" },
   { k: "Inbox", v: "Threaded by survey", sub: "client email and attachments live with the file" },
-  { k: "Invoicing", v: "Auto-drafted", sub: "drafted on booking, sent on delivery, tracked to paid" },
+  { k: "Invoicing", v: "Auto-drafted", sub: "drafted on completion, sent on delivery, tracked to paid" },
   { k: "Finance", v: "Built-in dashboard", sub: "paid · outstanding · monthly P&L, no spreadsheet" },
-  { k: "Compliance", v: "NAMS-aligned", sub: "built to SOC 2 and GDPR practices" },
+  { k: "Search", v: "Cross-entity, instant", sub: "clients, vessels, surveys, invoices, one search box" },
+  { k: "Parts & manufacturers", v: "Tracked per vessel", sub: "equipment catalog tied to the hull" },
+  { k: "Pricing guides", v: "Configurable tiers", sub: "drive quotes and invoices automatically" },
 ];
 
 export function Specifications() {

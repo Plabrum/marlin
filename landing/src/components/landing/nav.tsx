@@ -8,9 +8,6 @@ const links = [
   { href: "/#workspace", label: "Workspace" },
   { href: "/#specs", label: "Specs" },
   { href: "/#pricing", label: "Pricing" },
-  // TODO: re-enable when /almanac (blog / quarterly field-notes) is built out
-  // beyond the stub page. Flesh out as an MDX index when we commit to publishing.
-  // { href: "/almanac", label: "Almanac" },
 ];
 
 export function Nav() {
@@ -40,9 +37,9 @@ export function Nav() {
           >
             Sign in
           </Link>
-          <PrimaryButton href={appUrl("/auth")} size="compact" showStar={false}>
-            <span className="sm:hidden">Begin</span>
-            <span className="hidden sm:inline">Begin a survey</span>
+          <PrimaryButton href="/#waitlist" size="compact" showStar={false}>
+            <span className="sm:hidden">Waitlist</span>
+            <span className="hidden sm:inline">Join waitlist</span>
           </PrimaryButton>
         </div>
       </div>
