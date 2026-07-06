@@ -1,0 +1,104 @@
+@page {
+  size: letter;
+  margin: 1in 0.75in;
+
+  @bottom-center {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 9px;
+    color: #666;
+  }
+}
+
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 11px;
+  color: #1a1a1a;
+  position: relative;
+}
+
+.watermark {
+  position: fixed;
+  top: 40%;
+  left: 10%;
+  width: 80%;
+  text-align: center;
+  transform: rotate(-35deg);
+  font-size: 64px;
+  font-weight: bold;
+  color: rgba(200, 30, 30, 0.25);
+  z-index: 1000;
+}
+
+header.report-header {
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+header.report-header h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+header.report-header .meta {
+  font-size: 10px;
+  color: #555;
+}
+
+.section-heading {
+  font-size: 15px;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+}
+
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.field-row .label {
+  color: #555;
+}
+
+.field-row .value {
+  font-weight: 600;
+}
+
+.finding {
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-left: 4px solid #999;
+  background: #f7f7f7;
+}
+
+.finding.severity-critical {
+  border-left-color: #c81e1e;
+}
+
+.finding.severity-advisory {
+  border-left-color: #d99a1b;
+}
+
+.finding.severity-info {
+  border-left-color: #2b7fd9;
+}
+
+.finding .severity {
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #555;
+}
+
+footer.report-footer {
+  margin-top: 30px;
+  font-size: 9px;
+  color: #666;
+  border-top: 1px solid #ccc;
+  padding-top: 8px;
+}

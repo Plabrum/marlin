@@ -13,6 +13,17 @@ from app.platform.form_dsl.schemas import SectionCompletion
 from app.utils.sqids import Sqid
 
 
+class AdHocSuggestion(BaseSchema):
+    label: str
+    type: str
+    count: int
+
+
+class AdHocSuggestionsResponse(BaseSchema):
+    threshold: int
+    suggestions: list[AdHocSuggestion]
+
+
 class GenerateInvoiceData(BaseSchema):
     client_id: Sqid
 

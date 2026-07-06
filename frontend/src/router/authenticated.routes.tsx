@@ -2,6 +2,7 @@ import { createRoute, Outlet, redirect } from '@tanstack/react-router';
 import { isCalendarView } from '@/components/calendar/types';
 import { queryClient } from '@/lib/query-client';
 import { getPricingGuidesIdDetailHandlerSuspenseQueryOptions } from '@/openapi/pricing-guides/pricing-guides';
+import { getReportTemplatesIdDetailHandlerSuspenseQueryOptions } from '@/openapi/report-templates/report-templates';
 import { getSurveyTemplatesIdDetailHandlerSuspenseQueryOptions } from '@/openapi/survey-templates/survey-templates';
 import { ClientDetailPage } from '@/pages/clients/client-detail-page';
 import { ClientsListPage } from '@/pages/clients/clients-list-page';
@@ -12,6 +13,7 @@ import { InvoiceDetailPage } from '@/pages/invoices/invoice-detail-page';
 import { InvoicesListPage } from '@/pages/invoices/invoices-list-page';
 import { PricingGuideDetailPage } from '@/pages/pricing-guides/pricing-guide-detail-page';
 import { QuoteDetailPage } from '@/pages/quotes/quote-detail-page';
+import { ReportTemplateDetailPage } from '@/pages/report-templates/report-template-detail-page';
 import { ReportDetailPage } from '@/pages/reports/report-detail-page';
 import { ReportsPage } from '@/pages/reports/reports-page';
 import { SearchPage } from '@/pages/search/search-page';
@@ -21,6 +23,7 @@ import { BillingPage } from '@/pages/settings/billing-page';
 import { ConnectOnboardingPage } from '@/pages/settings/connect-onboarding-page';
 import { NotificationsPage } from '@/pages/settings/notifications-page';
 import { PricingGuidesListPage } from '@/pages/settings/pricing-guides/pricing-guides-list-page';
+import { ReportTemplatesListPage } from '@/pages/settings/report-templates/report-templates-list-page';
 import { SettingsShell } from '@/pages/settings/settings-page';
 import { TemplatesListPage } from '@/pages/settings/templates/templates-list-page';
 import { SubscriptionsPage } from '@/pages/subscriptions/subscriptions-page';
@@ -32,6 +35,7 @@ import { VesselsListPage } from '@/pages/vessels/vessels-list-page';
 import { authenticatedLayoutRoute } from '@/router/layout.routes';
 import type {
   PricingGuideDetail,
+  ReportTemplateDetail,
   SurveyTemplateDetail,
 } from '@/openapi/litestarAPI.schemas';
 import '@/router/types';
@@ -360,6 +364,40 @@ export const templateDetailRoute = createRoute({
       'Survey template',
   },
   component: SurveyTemplateDetailPage,
+});
+
+export const reportTemplatesListRoute = createRoute({
+  getParentRoute: () => settingsLayoutRoute,
+  path: 'report-templates',
+  staticData: { crumb: 'Report Templates' },
+  component: () => <Outlet />,
+});
+
+export const reportTemplatesIndexRoute = createRoute({
+  getParentRoute: () => reportTemplatesListRoute,
+  path: '/',
+  component: ReportTemplatesListPage,
+});
+
+export const reportTemplateDetailRoute = createRoute({
+  getParentRoute: () => reportTemplatesListRoute,
+  path: '$reportTemplateId',
+  params: {
+    parse: (p) => ({ reportTemplateId: p.reportTemplateId }),
+    stringify: (p) => ({ reportTemplateId: p.reportTemplateId }),
+  },
+  loader: ({ params }) =>
+    queryClient.ensureQueryData(
+      getReportTemplatesIdDetailHandlerSuspenseQueryOptions(
+        params.reportTemplateId
+      )
+    ),
+  staticData: {
+    crumb: (m) =>
+      (m.loaderData as ReportTemplateDetail | undefined)?.name ??
+      'Report template',
+  },
+  component: ReportTemplateDetailPage,
 });
 
 export const pricingGuidesListRoute = createRoute({

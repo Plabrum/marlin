@@ -43,6 +43,8 @@ import {
   OnboardingActionsConfirmPricingForm,
   ReportActionsCreateForm,
   ReportActionsUpdateForm,
+  ReportTemplateActionsCreateForm,
+  ReportTemplateActionsUpdateForm,
   WidgetActionsCreateForm,
   WidgetActionsUpdateForm,
 } from "./forms.gen";
@@ -168,6 +170,12 @@ export const generatedRegistry: Record<string, { render: (params: any) => ReactE
   },
   "report_actions__update": {
     render: (params) => <ReportActionsUpdateForm {...params} />,
+  },
+  "report_template_actions__create": {
+    render: (params) => <ReportTemplateActionsCreateForm {...params} />,
+  },
+  "report_template_actions__update": {
+    render: (params) => <ReportTemplateActionsUpdateForm {...params} />,
   },
   "widget_actions__create": {
     render: (params) => <WidgetActionsCreateForm {...params} />,

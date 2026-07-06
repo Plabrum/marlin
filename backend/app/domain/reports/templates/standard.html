@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      {% include "_base.css" %}
+    </style>
+  </head>
+  <body>
+    {% if watermark %}
+    <div class="watermark">DRAFT</div>
+    {% endif %}
+
+    <header class="report-header">
+      <h1>{{ organization_name }} — Survey Report {{ identifier }}</h1>
+      <div class="meta">
+        {{ vessel_name }}{% if delivered_at %} &middot; Delivered {{ delivered_at.strftime("%B %-d, %Y") }}{% endif %}
+      </div>
+    </header>
+
+    {% for block in blocks %}
+      {% if block.type == "section" %}
+        <div class="section-heading">{{ block.label }}</div>
+      {% elif block.type == "field" %}
+        <div class="field-row">
+          <span class="label">{{ block.label }}</span>
+          <span class="value">{{ block.value }}</span>
+        </div>
+      {% elif block.type == "finding" %}
+        <div class="finding severity-{{ block.severity }}">
+          <div class="severity">{{ block.severity }}</div>
+          <div class="summary">{{ block.summary }}</div>
+          {% if block.detail %}<div class="detail">{{ block.detail }}</div>{% endif %}
+          {% if block.recommended_action %}
+            <div class="recommended-action">Recommended: {{ block.recommended_action }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    {% if organization_footer or organization_signature %}
+      <footer class="report-footer">
+        {% if organization_signature %}<div>{{ organization_signature }}</div>{% endif %}
+        {% if organization_footer %}<div>{{ organization_footer }}</div>{% endif %}
+      </footer>
+    {% endif %}
+  </body>
+</html>

@@ -10,6 +10,7 @@ from app.config import Config, config
 from app.domain.users.models import Organization, User
 from app.platform.actions.registry import ActionRegistry
 from app.platform.billing.service import BillingService
+from app.platform.clients.s3 import BaseS3Client
 from app.platform.comms.service.emails import EmailService
 from app.platform.state_machine.machine import StateMachineService
 from app.utils.deps import dep
@@ -28,6 +29,7 @@ class ActionDeps:
     sm_service: StateMachineService
     billing: BillingService
     email: EmailService
+    s3: BaseS3Client
 
 
 @dep("action_registry", sync_to_thread=False)
@@ -43,6 +45,7 @@ def provide_action_deps(
     billing_service: BillingService,
     email_service: EmailService,
     organization: Organization,
+    s3_client: BaseS3Client,
 ) -> ActionDeps:
     task_queues = request.app.state.task_queues
     return ActionDeps(
@@ -55,4 +58,5 @@ def provide_action_deps(
         sm_service=StateMachineService(transaction),
         billing=billing_service,
         email=email_service,
+        s3=s3_client,
     )

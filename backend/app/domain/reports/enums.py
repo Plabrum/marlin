@@ -6,3 +6,7 @@ class ReportState(Enum):
     ready_for_review = "ready_for_review"
     watermarked_delivered = "watermarked_delivered"
     released = "released"
+
+
+class ReportLayoutKey(Enum):
+    standard = "standard"

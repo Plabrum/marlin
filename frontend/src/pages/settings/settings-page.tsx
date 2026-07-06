@@ -12,6 +12,7 @@ const TABS = [
   { value: '/settings/billing', label: 'Billing' },
   { value: '/settings/appearance', label: 'Appearance' },
   { value: '/settings/templates', label: 'Templates' },
+  { value: '/settings/report-templates', label: 'Report Templates' },
   { value: '/settings/pricing-guides', label: 'Pricing Guides' },
   { value: '/settings/notifications', label: 'Notifications' },
 ] as const;

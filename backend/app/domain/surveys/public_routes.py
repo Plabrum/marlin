@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.domain.reports.enums import ReportState
 from app.domain.reports.models import Report
 from app.domain.surveys.models import Survey
 from app.domain.surveys.schemas import PublicSurveyDetail
@@ -28,7 +29,13 @@ async def get_public_survey(access_token: str, db_session: AsyncSession) -> Publ
     survey, organization = row
 
     report = (
-        await db_session.execute(select(Report).where(Report.survey_id == survey.id, Report.deleted_at.is_(None)))
+        await db_session.execute(
+            select(Report).where(
+                Report.survey_id == survey.id,
+                Report.deleted_at.is_(None),
+                Report.state.in_([ReportState.watermarked_delivered, ReportState.released]),
+            )
+        )
     ).scalar_one_or_none()
     if report is None:
         raise NotFoundException()

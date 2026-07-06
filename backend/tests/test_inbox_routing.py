@@ -374,6 +374,7 @@ def _action_deps_for(current_user: User) -> ActionDeps:
         sm_service=AsyncMock(),
         billing=MagicMock(),
         email=MagicMock(),
+        s3=MagicMock(),
     )
 
 

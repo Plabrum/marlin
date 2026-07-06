@@ -18,6 +18,7 @@ export const crudOperations: Record<string, { query: { useQuery: boolean } }> = 
   list_Quote: { query: { useQuery: true } },
   list_QuoteLineItem: { query: { useQuery: true } },
   list_Report: { query: { useQuery: true } },
+  list_ReportTemplate: { query: { useQuery: true } },
   list_Subscription: { query: { useQuery: true } },
   list_Survey: { query: { useQuery: true } },
   list_SurveyTemplate: { query: { useQuery: true } },
