@@ -7,6 +7,7 @@ import { listClient } from '@/openapi/client/client';
 import { listInvoice } from '@/openapi/invoice/invoice';
 import { ActionGroupType } from '@/openapi/litestarAPI.schemas';
 import { listReport } from '@/openapi/report/report';
+import { listReportTemplate } from '@/openapi/report-templates/report-templates';
 import { listSurvey } from '@/openapi/survey/survey';
 import { listSurveyTemplate } from '@/openapi/survey-templates/survey-templates';
 import { listUser } from '@/openapi/user/user';
@@ -34,6 +35,10 @@ const ENTITY_LOADERS: Record<string, () => Promise<ComboboxOption[]>> = {
     ),
   SurveyTemplate: () =>
     listSurveyTemplate({ limit: 200 }).then((r) =>
+      r.items.map((t) => ({ value: t.id, label: t.name ?? t.id }))
+    ),
+  ReportTemplate: () =>
+    listReportTemplate({ limit: 200 }).then((r) =>
       r.items.map((t) => ({ value: t.id, label: t.name ?? t.id }))
     ),
   Invoice: () =>

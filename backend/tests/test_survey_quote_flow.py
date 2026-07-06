@@ -41,6 +41,7 @@ def _make_deps(transaction: AsyncSession, user) -> ActionDeps:
         sm_service=StateMachineService(transaction),
         billing=MagicMock(),
         email=MagicMock(),
+        s3=MagicMock(),
     )
 
 

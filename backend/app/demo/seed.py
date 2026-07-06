@@ -54,7 +54,7 @@ if str(_backend_root) not in sys.path:
 
 from tests.factories.clients import ClientFactory  # noqa: E402
 from tests.factories.invoices import InvoiceFactory, InvoiceLineItemFactory  # noqa: E402
-from tests.factories.reports import ReportFactory  # noqa: E402
+from tests.factories.reports import ReportFactory, ReportTemplateFactory  # noqa: E402
 from tests.factories.subscriptions import SubscriptionFactory  # noqa: E402
 from tests.factories.surveys import SurveyFactory, SurveyTemplateFactory  # noqa: E402
 from tests.factories.users import UserFactory  # noqa: E402
@@ -590,6 +590,11 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
     await session.flush()
     logger.info("Created survey template: %s (id=%s)", template.name, template.id)
 
+    report_template = ReportTemplateFactory.build(organization_id=org.id, name="Standard")
+    session.add(report_template)
+    await session.flush()
+    logger.info("Created report template: %s (id=%s)", report_template.name, report_template.id)
+
     media_by_category = await _create_demo_media_library(session, org.id)
     logger.info("Created %d demo media placeholders", sum(len(v) for v in media_by_category.values()))
 
@@ -873,6 +878,7 @@ async def seed_demo_org(session: AsyncSession) -> Organization:
             ReportFactory.build(
                 organization_id=org.id,
                 survey_id=survey.id,
+                template_id=report_template.id,
                 state=report_state,
                 title=f"Survey Report — {survey_state.value.replace('_', ' ').title()}",
                 released_at=now - timedelta(days=5) if report_state == ReportState.released else None,

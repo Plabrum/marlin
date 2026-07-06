@@ -27,6 +27,9 @@ import {
   templatesListRoute,
   templatesIndexRoute,
   templateDetailRoute,
+  reportTemplatesListRoute,
+  reportTemplatesIndexRoute,
+  reportTemplateDetailRoute,
   pricingGuidesListRoute,
   pricingGuidesIndexRoute,
   pricingGuideDetailRoute,
@@ -82,6 +85,10 @@ const routeTree = rootRoute.addChildren([
       templatesListRoute.addChildren([
         templatesIndexRoute,
         templateDetailRoute,
+      ]),
+      reportTemplatesListRoute.addChildren([
+        reportTemplatesIndexRoute,
+        reportTemplateDetailRoute,
       ]),
       pricingGuidesListRoute.addChildren([
         pricingGuidesIndexRoute,

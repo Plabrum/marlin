@@ -11,6 +11,7 @@ class ActionGroupType(StrEnum):
     SURVEY_TEMPLATE_ACTIONS = auto()
     INVOICE_ACTIONS = auto()
     REPORT_ACTIONS = auto()
+    REPORT_TEMPLATE_ACTIONS = auto()
     SUBSCRIPTION_ACTIONS = auto()
     ORGANIZATION_ACTIONS = auto()
     USER_ACTIONS = auto()

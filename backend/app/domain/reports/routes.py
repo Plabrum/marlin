@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from litestar import Router
 
-from app.domain.reports.models import Report
-from app.domain.reports.schemas import ReportDetail, ReportListItem
+from app.domain.reports.models import Report, ReportTemplate
+from app.domain.reports.schemas import (
+    ReportDetail,
+    ReportListItem,
+    ReportTemplateDetail,
+    ReportTemplateListItem,
+)
 from app.domain.users.models import User
 from app.platform.base.crud import CRUDConfig, make_crud_controller
 from app.platform.data.enums import FieldType
@@ -33,6 +38,7 @@ def _to_detail(report: Report, user: User) -> ReportDetail:
         released_file_key=report.released_file_key,
         released_at=report.released_at,
         blocks=report.blocks or [],
+        template_id=report.template_id,
         created_at=report.created_at,
         updated_at=report.updated_at,
     )
@@ -57,3 +63,27 @@ _config = CRUDConfig(
 _controller = make_crud_controller("", _config)
 
 report_router = Router(path="/reports", route_handlers=[_controller], tags=["reports"])
+
+
+def _to_report_template_list_item(template: ReportTemplate, user: User) -> ReportTemplateListItem:
+    return ReportTemplateListItem(id=template.id, name=template.name, layout_key=template.layout_key)
+
+
+def _to_report_template_detail(template: ReportTemplate, user: User) -> ReportTemplateDetail:
+    return ReportTemplateDetail(id=template.id, name=template.name, layout_key=template.layout_key)
+
+
+_report_template_config = CRUDConfig(
+    model=ReportTemplate,
+    to_list_item=_to_report_template_list_item,
+    to_detail=_to_report_template_detail,
+    filterable_columns={"name", "created_at"},
+    sortable_columns={"name", "created_at"},
+    label_field="name",
+)
+
+_report_template_controller = make_crud_controller("", _report_template_config)
+
+report_template_router = Router(
+    path="/report-templates", route_handlers=[_report_template_controller], tags=["report-templates"]
+)

@@ -34,7 +34,7 @@ from app.domain.parts.routes import part_router
 from app.domain.payment_methods.routes import payment_method_router
 from app.domain.pricing_guides.routes import pricing_guides_router, pricing_tiers_router
 from app.domain.quotes.routes import quote_line_items_router, quote_router
-from app.domain.reports.routes import report_router
+from app.domain.reports.routes import report_router, report_template_router
 from app.domain.subscriptions.routes import subscription_router
 from app.domain.surveys.listeners import install_survey_media_node_detach_listener
 from app.domain.surveys.public_routes import public_survey_router
@@ -204,6 +204,7 @@ def create_app(
             pricing_guides_router,
             pricing_tiers_router,
             report_router,
+            report_template_router,
             subscription_router,
             user_router,
             onboarding_router,

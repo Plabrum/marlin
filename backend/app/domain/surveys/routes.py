@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import msgspec
-import sqlalchemy as sa
-from litestar import Router, get
+from litestar import Router, get, post
+from litestar.exceptions import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.config import config
+from app.domain.surveys import queries as survey_queries
 from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.schemas import (
+    AdHocSuggestion,
+    AdHocSuggestionsResponse,
     SurveyDetail,
     SurveyFormNodeRef,
     SurveyListItem,
@@ -20,9 +23,10 @@ from app.domain.surveys.schemas import (
 from app.domain.users.models import User
 from app.platform.actions.deps import ActionDeps
 from app.platform.actions.registry import ActionRegistry
-from app.platform.base.crud import CRUDConfig, make_crud_controller
-from app.platform.base.schemas import EntityRef
-from app.platform.clients.s3 import BaseS3Client, LocalS3Client, S3Client
+from app.platform.auth.guards import requires_session
+from app.platform.base.crud import CRUDConfig, CRUDEntry, CRUDRegistry, _crud_metadata, make_crud_controller
+from app.platform.base.schemas import EntityRef, ListRequest, PagedResponse
+from app.platform.clients.s3 import BaseS3Client
 from app.platform.data.enums import FieldType
 from app.platform.data.service import FieldConfig
 from app.platform.form_dsl.conditions import resolve_visibility, section_completion
@@ -80,6 +84,11 @@ def _to_form_node_ref(
 
 
 def _to_survey_detail(survey: Survey, user: User, action_deps: ActionDeps | None = None) -> SurveyDetail:
+    # crud.py's detail_handler always resolves `action_deps` via real DI for any
+    # authenticated route (see provide_action_deps) — it's never actually None
+    # here. The `| None = None` only exists so this function stays structurally
+    # assignable to CRUDConfig.to_detail's `Callable[[ModelT, User], DetailT]`.
+    assert action_deps is not None
     template_ref = (
         EntityRef(
             id=survey.template.id,
@@ -94,7 +103,7 @@ def _to_survey_detail(survey: Survey, user: User, action_deps: ActionDeps | None
     media_by_node: dict[int, list[SurveyMediaListItem]] = {}
     unassigned_media: list[SurveyMediaListItem] = []
     for sm in survey.survey_media:
-        item = _survey_media_to_item(sm, user)
+        item = _survey_media_to_item(sm, user, action_deps.s3)
         if sm.node_id is None:
             unassigned_media.append(item)
         else:
@@ -162,17 +171,6 @@ _survey_config = CRUDConfig(
 _survey_controller = make_crud_controller("", _survey_config)
 
 
-class AdHocSuggestion(msgspec.Struct):
-    label: str
-    type: str
-    count: int
-
-
-class AdHocSuggestionsResponse(msgspec.Struct):
-    threshold: int
-    suggestions: list[AdHocSuggestion]
-
-
 _AD_HOC_PROMOTE_THRESHOLD = 3
 
 
@@ -181,22 +179,10 @@ async def list_ad_hoc_suggestions(
     transaction: AsyncSession,
     user: User,
 ) -> AdHocSuggestionsResponse:
-    label_expr = FormNode.label
-    type_expr = sa.text("config->>'type'")
-    stmt = (
-        sa.select(label_expr, type_expr, sa.func.count(sa.distinct(FormNode.owner_id)))
-        .where(
-            FormNode.owner_type == Survey.__tablename__,
-            FormNode.schema_ref.is_(None),
-            FormNode.kind == "field",
-            FormNode.deleted_at.is_(None),
-        )
-        .group_by(label_expr, type_expr)
-        .having(sa.func.count(sa.distinct(FormNode.owner_id)) >= _AD_HOC_PROMOTE_THRESHOLD)
-        .order_by(sa.func.count(sa.distinct(FormNode.owner_id)).desc(), label_expr)
-    )
-    rows = (await transaction.execute(stmt)).all()
-    suggestions = [AdHocSuggestion(label=row[0], type=row[1] or "text", count=int(row[2])) for row in rows]
+    rows = await survey_queries.list_ad_hoc_suggestions(transaction, promote_threshold=_AD_HOC_PROMOTE_THRESHOLD)
+    suggestions = [
+        AdHocSuggestion(label=row.label, type=row.field_type or "text", count=row.survey_count) for row in rows
+    ]
     return AdHocSuggestionsResponse(threshold=_AD_HOC_PROMOTE_THRESHOLD, suggestions=suggestions)
 
 
@@ -237,17 +223,25 @@ survey_template_router = Router(
 
 
 # ── SurveyMedia ────────────────────────────────────────────────────────────────
+#
+# SurveyMedia's list/detail transformers need a genuinely request-scoped
+# `s3_client` to generate presigned URLs — something make_crud_controller's
+# fixed `(obj, user)` transformer signature can't provide (its generated
+# handlers call transformers as plain functions, not through Litestar DI).
+# So SurveyMedia gets hand-written handlers below instead of
+# make_crud_controller, replicating that factory's behavior exactly (same
+# route paths/operation IDs/guards/filtering/sorting/pagination/action
+# hydration) so the OpenAPI spec — and therefore Orval codegen — is unaffected.
 
 
-def _get_s3() -> BaseS3Client:
-    return LocalS3Client() if config.IS_DEV else S3Client(config.AWS_REGION)
-
-
-def _survey_media_to_item(sm: SurveyMedia, user: User) -> SurveyMediaListItem:
-    s3 = _get_s3()
-    view_url = s3.generate_presigned_download_url(bucket=config.S3_MEDIA_BUCKET, key=sm.media.file_key, expires_in=3600)
+def _survey_media_to_item(sm: SurveyMedia, user: User, s3_client: BaseS3Client) -> SurveyMediaListItem:
+    view_url = s3_client.generate_presigned_download_url(
+        bucket=config.S3_MEDIA_BUCKET, key=sm.media.file_key, expires_in=3600
+    )
     thumbnail_url = (
-        s3.generate_presigned_download_url(bucket=config.S3_MEDIA_BUCKET, key=sm.media.thumbnail_key, expires_in=3600)
+        s3_client.generate_presigned_download_url(
+            bucket=config.S3_MEDIA_BUCKET, key=sm.media.thumbnail_key, expires_in=3600
+        )
         if sm.media.thumbnail_key
         else None
     )
@@ -266,15 +260,26 @@ def _survey_media_to_item(sm: SurveyMedia, user: User) -> SurveyMediaListItem:
     )
 
 
-def _survey_media_to_detail(sm: SurveyMedia, user: User) -> SurveyMediaDetail:
-    item = _survey_media_to_item(sm, user)
+def _survey_media_to_detail(sm: SurveyMedia, user: User, s3_client: BaseS3Client) -> SurveyMediaDetail:
+    item = _survey_media_to_item(sm, user, s3_client)
     return SurveyMediaDetail(**{f: getattr(item, f) for f in item.__struct_fields__})
+
+
+# Metadata-only — never invoked. This CRUDConfig exists solely so we can reuse
+# make_crud_controller's filter/load-option/metadata plumbing (below) instead
+# of duplicating it; its to_list_item/to_detail fields just need to type-check.
+def _survey_media_metadata_list_item(sm: SurveyMedia, user: User) -> SurveyMediaListItem:
+    raise NotImplementedError
+
+
+def _survey_media_metadata_detail(sm: SurveyMedia, user: User) -> SurveyMediaDetail:
+    raise NotImplementedError
 
 
 _survey_media_config = CRUDConfig(
     model=SurveyMedia,
-    to_list_item=_survey_media_to_item,
-    to_detail=_survey_media_to_detail,
+    to_list_item=_survey_media_metadata_list_item,
+    to_detail=_survey_media_metadata_detail,
     list_load_options=[joinedload(SurveyMedia.media)],
     detail_load_options=[joinedload(SurveyMedia.media)],
     filterable_columns={"survey_id", "node_id"},
@@ -282,6 +287,98 @@ _survey_media_config = CRUDConfig(
     default_sort="sort_order",
 )
 
-_survey_media_controller = make_crud_controller("", _survey_media_config)
 
-survey_media_router = Router(path="/survey-media", route_handlers=[_survey_media_controller], tags=["survey-media"])
+@post(
+    "/",
+    guards=[requires_session],
+    tags=["surveymedia"],
+    status_code=200,
+    operation_id="list_SurveyMedia",
+    summary="ListHandler",
+)
+async def _list_survey_media(
+    data: ListRequest,
+    user: User,
+    transaction: AsyncSession,
+    s3_client: BaseS3Client,
+    action_deps: ActionDeps | None = None,
+) -> PagedResponse[SurveyMediaListItem]:
+    limit = max(1, min(data.limit, 200))
+    offset = max(0, data.offset)
+
+    rows, total = await survey_queries.list_survey_media(
+        transaction,
+        organization_id=user.organization_id,
+        filters=data.filters,
+        sorts=data.sorts,
+        filterable_columns=_survey_media_config.filterable_columns,
+        sortable_columns=_survey_media_config.sortable_columns,
+        default_sort_column=_survey_media_config.default_sort or "created_at",
+        load_options=_survey_media_config.list_load_options,
+        limit=limit,
+        offset=offset,
+    )
+
+    items = [_survey_media_to_item(row, user, s3_client) for row in rows]
+
+    if action_deps is not None:
+        action_group = ActionRegistry().find_by_model(SurveyMedia)
+        if action_group is not None:
+            for item, row in zip(items, rows, strict=True):
+                item.actions = action_group.get_available_actions(action_deps, row)
+
+    return PagedResponse(
+        items=items,
+        total=total,
+        offset=offset,
+        limit=limit,
+        has_more=offset + len(items) < total,
+    )
+
+
+@get(
+    "/{id:str}",
+    guards=[requires_session],
+    tags=["surveymedia"],
+    operation_id="SurveyMediaIdDetailHandler",
+    summary="DetailHandler",
+)
+async def _detail_survey_media(
+    id: Sqid,
+    user: User,
+    transaction: AsyncSession,
+    s3_client: BaseS3Client,
+    action_deps: ActionDeps | None = None,
+) -> SurveyMediaDetail:
+    obj = await survey_queries.get_survey_media(
+        transaction,
+        id=id,
+        organization_id=user.organization_id,
+        load_options=_survey_media_config.detail_load_options,
+    )
+    if obj is None:
+        raise NotFoundException()
+
+    detail = _survey_media_to_detail(obj, user, s3_client)
+    if action_deps is not None:
+        action_group = ActionRegistry().find_by_model(SurveyMedia)
+        if action_group is not None:
+            detail.actions = action_group.get_available_actions(action_deps, obj)
+    return detail
+
+
+_crud_metadata["list_SurveyMedia"] = {
+    "filterable": sorted(_survey_media_config.filterable_columns or []),
+    "sortable": sorted(_survey_media_config.sortable_columns or []),
+}
+CRUDRegistry().register(SurveyMedia, CRUDEntry(path="", config=_survey_media_config))
+
+survey_media_router = Router(
+    path="/survey-media",
+    # Registered detail-before-list to match the OpenAPI path ordering that
+    # make_crud_controller previously produced (Litestar enumerates Controller
+    # handler attributes alphabetically: "detail_handler" < "list_handler"),
+    # keeping the generated orval output byte-identical.
+    route_handlers=[_detail_survey_media, _list_survey_media],
+    tags=["survey-media"],
+)

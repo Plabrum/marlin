@@ -3,8 +3,8 @@
  */
 import { createTypedForm } from "@/lib/forms/base";
 import type { GeneratedFormProps } from "@/lib/forms/types";
-import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateQuoteData, CreateReportData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, GenerateInvoiceData, GenerateQuoteData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateQuoteData, UpdateReportData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
-import { ClientType, EnginePosition, EngineType, FuelType, HullMaterial, PartCategory, PricingType, PropulsionType, RiggingType, ServiceType, SubscriptionPlan, VesselType, WidgetType } from "@/openapi/litestarAPI.schemas";
+import type { AddEngineData, AddLineItemData, AddPricingTierData, ClaimInboxData, ComposeData, ConfirmPricingData, CreateCalendarEventData, CreateClientData, CreateInvoiceData, CreatePricingGuideData, CreateQuoteData, CreateReportData, CreateReportTemplateData, CreateSubscriptionData, CreateSurveyData, CreateSurveyTemplateData, CreateWidgetData, ForwardData, GenerateInvoiceData, GenerateQuoteData, ManufacturerCreateData, ManufacturerUpdateData, PartCreateData, PartUpdateData, ReplyData, SetSurveyMediaCaptionData, UpdateCalendarEventData, UpdateClientData, UpdateEngineData, UpdateInvoiceData, UpdateLineItemData, UpdatePricingGuideData, UpdatePricingTierData, UpdateQuoteData, UpdateReportData, UpdateReportTemplateData, UpdateSubscriptionData, UpdateSurveyData, UpdateSurveyTemplateData, UpdateWidgetData, VesselCreateData, VesselUpdateData } from "@/openapi/litestarAPI.schemas";
+import { ClientType, EnginePosition, EngineType, FuelType, HullMaterial, PartCategory, PricingType, PropulsionType, ReportLayoutKey, RiggingType, ServiceType, SubscriptionPlan, VesselType, WidgetType } from "@/openapi/litestarAPI.schemas";
 
 // --- client_actions__create ---
 const _client_actions__create = createTypedForm<CreateClientData>();
@@ -850,6 +850,7 @@ export function ReportActionsCreateForm(props: GeneratedFormProps<CreateReportDa
       isSubmitting={props.isSubmitting}
     >
       <_report_actions__create.FormEntityCombobox name="survey_id" label="Survey" required modelName="Survey" />
+      <_report_actions__create.FormEntityCombobox name="template_id" label="Template" required modelName="ReportTemplate" />
       <_report_actions__create.FormString name="title" label="Title" />
     </_report_actions__create.FormSheet>
   );
@@ -873,6 +874,44 @@ export function ReportActionsUpdateForm(props: GeneratedFormProps<UpdateReportDa
       <_report_actions__update.FormCurrency name="market_value_cents" label="Market Value" />
       <_report_actions__update.FormCurrency name="replacement_value_cents" label="Replacement Value" />
     </_report_actions__update.FormSheet>
+  );
+}
+
+// --- report_template_actions__create ---
+const _report_template_actions__create = createTypedForm<CreateReportTemplateData>();
+
+export function ReportTemplateActionsCreateForm(props: GeneratedFormProps<CreateReportTemplateData>) {
+  return (
+    <_report_template_actions__create.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_report_template_actions__create.FormString name="name" label="Name" required />
+      <_report_template_actions__create.FormSelect name="layout_key" label="Layout Key" required options={(Object.values(ReportLayoutKey) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) }))} />
+    </_report_template_actions__create.FormSheet>
+  );
+}
+
+// --- report_template_actions__update ---
+const _report_template_actions__update = createTypedForm<UpdateReportTemplateData>();
+
+export function ReportTemplateActionsUpdateForm(props: GeneratedFormProps<UpdateReportTemplateData>) {
+  return (
+    <_report_template_actions__update.FormSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      title={props.actionLabel}
+      onSubmit={props.onSubmit}
+      defaultValues={props.defaultValues}
+      isSubmitting={props.isSubmitting}
+    >
+      <_report_template_actions__update.FormString name="name" label="Name" required />
+      <_report_template_actions__update.FormSelect name="layout_key" label="Layout Key" required options={(Object.values(ReportLayoutKey) as string[]).map(v => ({ value: v, label: v.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) }))} />
+    </_report_template_actions__update.FormSheet>
   );
 }
 

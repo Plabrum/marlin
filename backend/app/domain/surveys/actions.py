@@ -10,8 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import config
 from app.domain.invoices.models import Invoice
 from app.domain.quotes.service import generate_quote_for_survey
-from app.domain.reports.builder import build_report_blocks
-from app.domain.reports.models import Report
 from app.domain.surveys.enums import SurveyState
 from app.domain.surveys.models import Survey, SurveyMedia, SurveyTemplate
 from app.domain.surveys.operations import create_survey_template
@@ -200,19 +198,10 @@ class DeliverSurvey(BaseObjectAction[Survey, EmptyActionData]):
     async def execute(
         cls, obj: Survey, data: EmptyActionData, transaction: AsyncSession, deps: ActionDeps
     ) -> ActionExecutionResponse:
-        blocks = await build_report_blocks(transaction, obj)
-        report = Report(
-            organization_id=deps.user.organization_id,
-            survey_id=obj.id,
-            title=None,
-            blocks=blocks,
-        )
-        transaction.add(report)
         await deps.sm_service.transition(survey_state_machine, obj, SurveyState.delivered, actor=deps.user)
-        await transaction.flush()
         return ActionExecutionResponse(
             message="Survey delivered",
-            invalidate_queries=["/surveys", "/reports", f"/surveys/{obj.id}"],
+            invalidate_queries=["/surveys", f"/surveys/{obj.id}"],
         )
 
 

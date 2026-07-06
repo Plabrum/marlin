@@ -1,22 +1,22 @@
-import { Suspense } from "react";
-import { useParams } from "@tanstack/react-router";
-import { KeyValueGrid } from "@/components/layout/key-value-grid";
-import { PageTopBar } from "@/components/layout/page-topbar";
-import { ObjectActions } from "@/components/object-detail/object-actions";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCents } from "@/lib/format";
-import { useActionsActionGroupObjectIdListObjectActions } from "@/openapi/actions/actions";
-import { useReportsIdDetailHandlerSuspense } from "@/openapi/report/report";
+import { Suspense } from 'react';
+import { useParams } from '@tanstack/react-router';
+import { KeyValueGrid } from '@/components/layout/key-value-grid';
+import { PageTopBar } from '@/components/layout/page-topbar';
+import { ObjectActions } from '@/components/object-detail/object-actions';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatCents } from '@/lib/format';
+import { useActionsActionGroupObjectIdListObjectActions } from '@/openapi/actions/actions';
+import { useReportsIdDetailHandlerSuspense } from '@/openapi/report/report';
 
 function ReportDetailContent() {
-  const { reportId } = useParams({ from: "/_authenticated/reports/$reportId" });
+  const { reportId } = useParams({ from: '/_authenticated/reports/$reportId' });
   const { data } = useReportsIdDetailHandlerSuspense(reportId);
   const { data: actionsData, refetch: refetchActions } =
-    useActionsActionGroupObjectIdListObjectActions("report_actions", reportId);
+    useActionsActionGroupObjectIdListObjectActions('report_actions', reportId);
 
   return (
     <PageTopBar
-      title={data.title ?? "Report"}
+      title={data.title ?? 'Report'}
       actions={
         <ObjectActions
           data={{ ...data, actions: actionsData?.actions ?? [] }}
@@ -28,13 +28,20 @@ function ReportDetailContent() {
       <div className="p-6">
         <KeyValueGrid
           items={[
-            { label: "Title", value: data.title ?? "—" },
-            { label: "State", value: data.state },
-            { label: "Survey ID", value: data.survey_id },
-            { label: "Market Value", value: formatCents(data.market_value_cents) },
-            { label: "Replacement Value", value: formatCents(data.replacement_value_cents) },
-            { label: "Released", value: data.released_at ?? "—" },
-            { label: "Summary", value: data.summary ?? "—", span: 2 },
+            { label: 'Title', value: data.title ?? '—' },
+            { label: 'State', value: data.state },
+            { label: 'Survey ID', value: data.survey_id },
+            { label: 'Template', value: data.template_id ?? '—' },
+            {
+              label: 'Market Value',
+              value: formatCents(data.market_value_cents),
+            },
+            {
+              label: 'Replacement Value',
+              value: formatCents(data.replacement_value_cents),
+            },
+            { label: 'Released', value: data.released_at ?? '—' },
+            { label: 'Summary', value: data.summary ?? '—', span: 2 },
           ]}
         />
       </div>
