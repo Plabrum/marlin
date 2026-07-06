@@ -19,10 +19,10 @@ export function Lede() {
         {/* Body — magazine lede with drop cap */}
         <div className="col-span-12 md:col-span-9 md:max-w-[820px]">
           <p className="dropcap font-serif text-[22px] leading-[1.5] text-ink md:text-[26px] md:leading-[1.48]">
-            Marine surveying comes down to one thing: what you find on the
-            boat. The quote, the report, delivery, the invoice, getting paid:
-            all of it{" "}
-            <em className="italic text-brass-deep">is handled.</em> Record
+            What takes an afternoon on the boat used to take days at a desk.
+            Marlin Survey turns your findings into the quote, the report, the
+            invoice, and the payment —{" "}
+            <em className="italic text-brass-deep">automatically.</em> Record
             findings by hand, voice, or keyboard, with photos, on the dock or
             with no signal at all.
           </p>
