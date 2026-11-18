@@ -239,7 +239,6 @@ resource "aws_instance" "app" {
   # user_data only runs at first boot - replace instance if it changes
   lifecycle {
     create_before_destroy = true
-    prevent_destroy       = true
   }
 }
 

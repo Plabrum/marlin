@@ -5,8 +5,6 @@ name: Build · Test · Deploy
 # To switch to production: change the default to "ecs" and open a PR.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       deploy_infrastructure:
